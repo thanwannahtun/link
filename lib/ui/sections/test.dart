@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link/ui/widget_extension.dart';
 
 class B extends StatelessWidget {
   const B({super.key});
@@ -6,11 +7,7 @@ class B extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('B'),
-        leading: Container(),
-        centerTitle: true,
-      ),
+      body: const Text("B").center(),
     );
   }
 }
@@ -21,11 +18,7 @@ class C extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('C'),
-        leading: Container(),
-        centerTitle: true,
-      ),
+      body: const Text("C").center(),
     );
   }
 }
@@ -36,11 +29,7 @@ class D extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('D'),
-        leading: Container(),
-        centerTitle: true,
-      ),
+      body: const Text("D").center(),
     );
   }
 }

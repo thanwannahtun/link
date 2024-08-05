@@ -5,6 +5,7 @@ import 'package:link/domain/api_utils/api_error_handler.dart';
 import 'package:link/domain/bloc_utils/bloc_crud_status.dart';
 import 'package:link/models/user.dart';
 import 'package:link/repositories/authentication.dart';
+import 'package:link/repositories/user.dart';
 
 part 'authentication_state.dart';
 
@@ -18,6 +19,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     ));
     try {
       User appUser = await AuthenticationRepo().signUpUser(user: user);
+
+      await UserRepo().insertUser(appUser);
+
       emit(state.copyWith(
           status: BlocStatus.done,
           message: "Successfully Signed Up!",
@@ -39,10 +43,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     emit(state.copyWith(status: BlocStatus.doing, message: "Signing In..."));
     try {
       User appUser = await AuthenticationRepo().signInUser(user: user);
+
+      await UserRepo().insertUser(appUser);
+
       emit(state.copyWith(
         status: BlocStatus.done,
         user: appUser,
-        message: "Successfully Signed Ip!",
+        message: "Successfully Signed In!",
       ));
     } on DioException catch (e) {
       emit(state.copyWith(
@@ -54,6 +61,29 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           status: BlocStatus.doNot,
           error: e.toString(),
           message: "Sign In Failed!"));
+    }
+  }
+
+  logOutUser({required User user}) async {
+    emit(state.copyWith(status: BlocStatus.doing, message: "Loging Out..."));
+    try {
+      /// notice delete all user data
+      await UserRepo().deleteUser();
+
+      emit(state.copyWith(
+        status: BlocStatus.done,
+        message: "Good Bye!",
+      ));
+    } on DioException catch (e) {
+      emit(state.copyWith(
+        status: BlocStatus.doNot,
+        error: ApiErrorHandler.handle(e).message,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: BlocStatus.doNot,
+        error: e.toString(),
+      ));
     }
   }
 }

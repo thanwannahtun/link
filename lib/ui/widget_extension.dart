@@ -36,4 +36,14 @@ extension WidgetExt on Widget {
       child: this,
     );
   }
+
+  Widget center({
+    Key? key,
+    double? widthFactor,
+    double? heightFactor,
+  }) {
+    return Center(
+      child: this,
+    );
+  }
 }

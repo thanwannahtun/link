@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link/ui/screens/app.dart';
+import 'package:link/ui/screens/post_agency_profile.dart';
 import 'package:link/ui/screens/route_list_screen.dart';
 import 'package:link/ui/utils/route_list.dart';
 
@@ -17,6 +18,13 @@ class RouteGenerator {
           settings: settings,
           builder: (context) {
             return const RouteListScreen();
+          },
+        );
+      case RouteLists.agencyProfile:
+        return navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return const AgencyProfile();
           },
         );
       default:

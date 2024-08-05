@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/token_validator/token_validator_cubit.dart';
+import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/ui/utils/route_generator.dart';
@@ -16,6 +18,13 @@ class LinkApplication extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<TokenValidatorCubit>(
+          create: (BuildContext context) =>
+              TokenValidatorCubit()..checkTokenExpiration(),
+        ),
+        BlocProvider<AuthenticationCubit>(
+          create: (BuildContext context) => AuthenticationCubit(),
+        ),
         BlocProvider<BottomSelectCubit>(
           create: (BuildContext context) => BottomSelectCubit(),
         ),

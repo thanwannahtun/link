@@ -16,16 +16,14 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     emit(state.copyWith(status: BlocStatus.doing));
     try {
       List<PostRoute> posts = await PostRouteRepo().fetchRoutes();
-      print("posts ::  $posts");
       emit(state.copyWith(status: BlocStatus.done, routes: posts));
     } on DioException catch (e) {
       print("DioException ::  $e");
 
       emit(state.copyWith(
-          status: BlocStatus.done, error: ApiErrorHandler.handle(e).message));
+          status: BlocStatus.doNot, error: ApiErrorHandler.handle(e).message));
     } catch (e, stackTrace) {
       print("Error ::  $e  :: staceTrace [[ $stackTrace ]] ");
-
       emit(state.copyWith(status: BlocStatus.doNot, error: e.toString()));
     }
   }
