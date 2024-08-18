@@ -1,43 +1,50 @@
+import 'package:flutter/material.dart';
+
 enum SeatStatus { available, booked }
 
 class Seat {
   Seat({
-    this.routeId,
-    this.name,
+    this.id,
+    this.number,
     this.status,
+    this.type,
   });
 
-  final int? routeId;
-  final String? name;
+  final String? id;
+  final String? number;
+  final String? type;
   final SeatStatus? status;
 
   Seat copyWith({
-    int? routeId,
-    String? name,
+    String? id,
+    String? number,
     SeatStatus? status,
+    String? type,
   }) {
     return Seat(
-      routeId: routeId ?? this.routeId,
-      name: name ?? this.name,
+      id: id ?? this.id,
+      number: number ?? this.number,
+      type:type ?? this.type,
       status: status ?? this.status,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "routeId": routeId,
-      "name": name,
+      "_id": id,
+      "number": number,
+      "type":type,
       "status": status?.name,
     };
   }
 
   factory Seat.fromJson(Map<String, dynamic> json) {
-    print("seat::::: ${json['number'].runtimeType} : ${json['number']} ");
     dynamic status = json['status']?.toString().toLowerCase();
-    print("seat :: $json");
     return Seat(
-      routeId: json['routeId'] as int?,
-      name: json['number'] as String?,
+      id: json['_id'],
+      number: json['number'],
+        type: json['type'] as String?,
+
       // status: json['status'] != null ? SeatStatus.values[status] : null,
       status: json['status'] != null
           ? SeatStatus.values.firstWhere(
@@ -48,6 +55,6 @@ class Seat {
 
   @override
   String toString() {
-    return 'Seat{routeId=$routeId, name=$name, status=$status}';
+    return 'Seat{_id=$id, number=$number, type=$type, status=$status}';
   }
 }

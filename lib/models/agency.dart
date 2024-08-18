@@ -1,40 +1,42 @@
+import 'package:link/models/user.dart';
+
 class Agency {
   Agency({
     this.id,
     this.userId,
     this.name,
     this.description,
-    this.logo,
+    this.profileImage,
     this.contactInfo,
     this.address,
     this.createdAt,
   });
 
-  final int? id;
-  final int? userId;
+  final String? id;
+  final User? userId;
   final String? name;
   final String? description;
-  final String? logo;
+  final String? profileImage;
   final String? contactInfo;
   final String? address;
-  final String? createdAt;
+  final DateTime? createdAt;
 
   Agency copyWith({
-    int? id,
-    int? userId,
+    String? id,
+    User? userId,
     String? name,
     String? description,
-    String? logo,
+    String? profileImage,
     String? contactInfo,
     String? address,
-    String? createdAt,
+    DateTime? createdAt,
   }) {
     return Agency(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       name: name ?? this.name,
       description: description ?? this.description,
-      logo: logo ?? this.logo,
+      profileImage: profileImage ?? this.profileImage,
       contactInfo: contactInfo ?? this.contactInfo,
       address: address ?? this.address,
       createdAt: createdAt ?? this.createdAt,
@@ -43,11 +45,11 @@ class Agency {
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
+      "_id": id,
       "userId": userId,
       "name": name,
       "description": description,
-      "logo": logo,
+      "profile_image": profileImage,
       "contactInfo": contactInfo,
       "address": address,
       "createdAt": createdAt,
@@ -56,19 +58,23 @@ class Agency {
 
   factory Agency.fromJson(Map<String, dynamic> json) {
     return Agency(
-      id: json['id'],
-      userId: json['userId'],
+      id: json['_id'],
+      userId: json['user_id'] == null
+          ? null
+          : User.fromJson(json['user_id'] as Map<String, dynamic>),
       name: json['name'],
       description: json['description'],
-      logo: json['logo'],
+      profileImage: json['profile_image'] ??
+          "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
       contactInfo: json['contactInfo'],
       address: json['address'],
-      createdAt: json['createdAt'],
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
   }
 
   @override
   String toString() {
-    return 'Agency{id=$id, userId=$userId, name=$name, description=$description, logo=$logo, contactInfo=$contactInfo, address=$address, createdAt=$createdAt}';
+    return 'Agency{_id=$id, userId=$userId, name=$name, description=$description, profileImage=$profileImage, contactInfo=$contactInfo, address=$address, createdAt=$createdAt}';
   }
 }

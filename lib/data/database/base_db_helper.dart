@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:link/data/database/table_creator.dart';
 
 class BaseDBHelper {
-  final String _dbName = 'dbName.db';
+  final String _dbName = 'link_myanmar.db';
   final int _dbVersion = 1;
 
   Database? _database;

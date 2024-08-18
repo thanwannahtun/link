@@ -45,6 +45,16 @@ dependencies:
   hive: ^2.2.3
   flutter_spinkit: ^5.2.1
   shimmer: ^3.0.0
+  cached_network_image: ^3.4.0
+
+  # image picker
+  image_picker: ^1.1.2
+  # zoomable image
+  photo_view: ^0.15.0
+
+  # date time
+  date_time_picker: ^2.1.0
+
 
 dev_dependencies:
   flutter_test:

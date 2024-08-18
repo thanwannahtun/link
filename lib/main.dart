@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
 import 'package:link/bloc/token_validator/token_validator_cubit.dart';
 import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
@@ -31,6 +32,9 @@ class LinkApplication extends StatelessWidget {
         BlocProvider<PostRouteCubit>(
           create: (context) => PostRouteCubit(),
         ),
+        // BlocProvider<PostCreateUtilCubit>(
+        //   create: (context) => PostCreateUtilCubit(),
+        // ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

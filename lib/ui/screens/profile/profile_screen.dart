@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:link/core/utils/app_insets.dart';
-import 'package:link/ui/widget_extension.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -13,11 +10,20 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+             InkWell(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const ShowCustomAppBarBody(),
+                ));
+              },
+              child:
+                  const ListTile(title: Text("Create a new post => ")),
+            ),
             SizedBox(height: MediaQuery.of(context).size.height * 2),
             InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const _showCustomAppBarBody(),
+                  builder: (context) => const ShowCustomAppBarBody(),
                 ));
               },
               child:
@@ -64,8 +70,8 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _showCustomAppBarBody extends StatelessWidget {
-  const _showCustomAppBarBody({
+class ShowCustomAppBarBody extends StatelessWidget {
+  const ShowCustomAppBarBody({
     super.key,
   });
 

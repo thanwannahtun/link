@@ -46,4 +46,25 @@ extension WidgetExt on Widget {
       child: this,
     );
   }
+
+  Widget expanded({
+    Key? key,
+    int flex = 1,
+  }) {
+    return Expanded(
+      flex: flex,
+      key: key,
+      child: this,
+    );
+  }
+}
+
+extension NumExtension on num {
+  SizedBox sizedBox({double? height, double? width, Widget? child}) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: child,
+    );
+  }
 }

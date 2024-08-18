@@ -44,7 +44,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
         context
             .read<BottomSelectCubit>()
             .navigateTo(state: NavigationStates.values[index]);
-        setState(() {});
+        // setState(() {});
       },
     );
   }

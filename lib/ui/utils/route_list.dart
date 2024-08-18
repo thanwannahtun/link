@@ -6,4 +6,8 @@ class RouteLists {
   static const String signOut = "/sign_out";
 
   static const String agencyProfile = "/agency_profile";
+
+  static const String postDetailPage = "/post_detail";
+
+  static const String postCreatePage = "/post_create";
 }

@@ -1,1 +1,1 @@
-enum BlocStatus { initial, doing, done, doNot }
+enum BlocStatus { initial, doing, done, doNot, limited }

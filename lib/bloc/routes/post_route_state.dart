@@ -5,11 +5,11 @@ class PostRouteState extends Equatable {
       {required this.status, required this.routes, this.error});
 
   final BlocStatus status;
-  final List<PostRoute> routes;
+  final List<Post> routes;
   final String? error;
 
   PostRouteState copyWith(
-      {BlocStatus? status, List<PostRoute>? routes, String? error}) {
+      {BlocStatus? status, List<Post>? routes, String? error}) {
     return PostRouteState(
         status: status ?? this.status,
         routes: routes ?? this.routes,

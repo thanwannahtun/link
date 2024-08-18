@@ -5,27 +5,27 @@ import 'package:link/models/like.dart';
 import 'package:link/models/midpoint.dart';
 import 'package:link/models/seat.dart';
 
-class PostRoute {
-  PostRoute({
-    this.routeId,
-    this.agency,
-    this.origin,
-    this.destination,
-    this.scheduleDate,
-    this.pricePerTraveler,
-    this.seats,
-    this.createdAt,
-    this.midpoints,
-    this.commentCounts,
-    this.likeCounts,
-    this.shareCounts,
-    this.comments,
-    this.likes,
-    this.title,
-    this.description,
-  });
+class Post {
+  Post(
+      {this.id,
+      this.agency,
+      this.origin,
+      this.destination,
+      this.scheduleDate,
+      this.pricePerTraveler,
+      this.seats,
+      this.createdAt,
+      this.midpoints,
+      this.commentCounts,
+      this.likeCounts,
+      this.shareCounts,
+      this.comments,
+      this.likes,
+      this.title,
+      this.description,
+      this.images});
 
-  final int? routeId;
+  final String? id;
   final Agency? agency;
   final City? origin;
   final City? destination;
@@ -33,7 +33,7 @@ class PostRoute {
   final double? pricePerTraveler;
   final List<Seat>? seats;
   final DateTime? createdAt;
-  final List<MidPoint>? midpoints;
+  final List<Midpoint>? midpoints;
   final int? commentCounts;
   final int? likeCounts;
   final int? shareCounts;
@@ -41,13 +41,17 @@ class PostRoute {
   final List<Like>? likes;
   final String? title;
   final String? description;
+  final List<String>? images;
 
   Map<String, dynamic> toJson() {
     return {
-      "id": routeId,
-      "agency": agency?.toJson(),
-      "origin": origin?.toJson(),
-      "destination": destination?.toJson(),
+      "_id": id,
+      // "agency": agency?.toJson(),
+      "agency": agency?.id,
+      // "origin": origin?.toJson(),
+      "origin": origin?.id,
+      // "destination": destination?.toJson(),
+      "destination": destination?.id,
       "scheduleDate": scheduleDate?.toIso8601String(),
       "pricePerTraveler": pricePerTraveler,
       "seats": seats?.map((e) => e.toJson()).toList(),
@@ -57,13 +61,14 @@ class PostRoute {
       "likeCounts": likeCounts,
       "shareCounts": shareCounts,
       "title": title,
+      "images": images,
       "description": description,
     };
   }
 
-  factory PostRoute.fromJson(Map<String, dynamic> json) {
-    return PostRoute(
-      routeId: json['routeId'] as int?,
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      id: json['_id'],
       title: json['title'],
       description: json['description'],
       agency: json['agency'] != null
@@ -76,13 +81,13 @@ class PostRoute {
           ? City.fromJson(json['destination'] as Map<String, dynamic>)
           : null,
       scheduleDate: DateTime.parse(json['scheduleDate'] ?? ""),
-      pricePerTraveler: (json['pricePerTraveller'] as num).toDouble(),
+      pricePerTraveler: (json['pricePerTraveler'] as num).toDouble(),
       seats: (json['seats'] as List<dynamic>?)
           ?.map((e) => Seat.fromJson(e as Map<String, dynamic>))
           .toList(),
       createdAt: DateTime.parse(json['createdAt']),
       midpoints: (json['midpoints'] as List<dynamic>?)
-          ?.map((e) => MidPoint.fromJson(e))
+          ?.map((e) => Midpoint.fromJson(e))
           .toList(),
       commentCounts: json['commentCounts'],
       likeCounts: json['likeCounts'],
@@ -93,11 +98,15 @@ class PostRoute {
       comments: (json['comments'] as List<dynamic>?)
           ?.map((e) => Comment.fromJson(e))
           .toList(),
+      images: (json['images'] as List<dynamic>?)
+              ?.map((item) => item as String)
+              .toList() ??
+          [],
     );
   }
 
-  PostRoute copyWith(
-      {int? routeId,
+  Post copyWith(
+      {String? id,
       Agency? agency,
       String? title,
       String? description,
@@ -107,14 +116,15 @@ class PostRoute {
       double? pricePerTraveler,
       List<Seat>? seats,
       DateTime? createdAt,
-      List<MidPoint>? midpoints,
+      List<Midpoint>? midpoints,
       int? commentCounts,
       int? likeCounts,
       int? shareCounts,
       List<Comment>? comments,
+      List<String>? images,
       List<Like>? likes}) {
-    return PostRoute(
-        routeId: routeId ?? this.routeId,
+    return Post(
+        id: id ?? id,
         agency: agency ?? this.agency,
         title: title ?? this.title,
         description: description ?? this.title,
@@ -129,11 +139,12 @@ class PostRoute {
         likeCounts: likeCounts ?? this.likeCounts,
         shareCounts: shareCounts ?? this.shareCounts,
         comments: comments ?? this.comments,
+        images: images ?? this.images,
         likes: likes ?? this.likes);
   }
 
   @override
   String toString() {
-    return 'PostRoute{routeId=$routeId, agency=$agency, origin=$origin, destination=$destination, scheduleDate=$scheduleDate, pricePerTraveler=$pricePerTraveler, seats=$seats, createdAt=$createdAt, midpoints=$midpoints, commentCounts=$commentCounts, likeCounts=$likeCounts, shareCounts=$shareCounts, comments=$comments, likes=$likes, title=$title, description=$description}';
+    return 'PostRoute{_id=$id, agency=$agency, origin=$origin, destination=$destination, scheduleDate=$scheduleDate, pricePerTraveler=$pricePerTraveler, seats=$seats, createdAt=$createdAt, midpoints=$midpoints, commentCounts=$commentCounts, likeCounts=$likeCounts, shareCounts=$shareCounts, comments=$comments, likes=$likes, title=$title, description=$description ,images=$images}';
   }
 }

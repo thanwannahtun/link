@@ -5,14 +5,14 @@ class City {
     this.stateId,
   });
 
-  final int? id;
+  final String? id;
   final String? name;
-  final int? stateId;
+  final String? stateId;
 
   City copyWith({
-    int? id,
+    String? id,
     String? name,
-    int? stateId,
+    String? stateId,
   }) {
     return City(
       id: id ?? this.id,
@@ -23,22 +23,22 @@ class City {
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
+      "_id": id,
       "name": name,
-      "stateId": stateId,
+      "country_id": stateId, // ! tempory
     };
   }
 
   factory City.fromJson(Map<String, dynamic> json) {
     return City(
-      id: json['id'],
-      name: json['name'] as String?,
-      stateId: json['stateId'],
+      id: json['_id'],
+      name: json['name'],
+      stateId: json['country_id'], // ! tempory
     );
   }
 
   @override
   String toString() {
-    return 'City{id=$id, name=$name, stateId=$stateId}';
+    return 'City{_id=$id, name=$name, country_id=$stateId}'; // ! tempory
   }
 }

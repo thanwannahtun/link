@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:link/models/post_route.dart';
+import 'package:link/core/utils/app_date_util.dart';
+import 'package:link/models/post.dart';
 import 'package:link/ui/utils/expandable_text.dart';
 import 'package:link/ui/widget_extension.dart';
 
+// ignore: must_be_immutable
 class PostRouteCard extends StatelessWidget {
   PostRouteCard({
     super.key,
@@ -15,9 +17,10 @@ class PostRouteCard extends StatelessWidget {
     this.onCommentPressed,
     this.onLocationPressed,
     this.onPhonePressed,
+    this.paddingLeft,
   });
 
-  final PostRoute post;
+  final Post post;
   bool loading;
 
   /// start
@@ -28,6 +31,7 @@ class PostRouteCard extends StatelessWidget {
   void Function()? onCommentPressed;
   void Function()? onStarPressed;
   void Function()? onLocationPressed;
+  EdgeInsetsGeometry? paddingLeft;
 
   /// end
 
@@ -48,20 +52,23 @@ class PostRouteCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   // crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InkWell(
-                      onTap: loading ? null : onAgencyPressed,
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        color: Colors.black38,
-                        child: loading
-                            ? null
-                            : Image.network(
-                                post.agency?.logo ?? "",
-                                fit: BoxFit.cover,
-                              ),
-                      ).clipRRect(
-                        borderRadius: BorderRadius.circular(50),
+                    Padding(
+                      padding: paddingLeft ?? const EdgeInsets.only(),
+                      child: InkWell(
+                        onTap: loading ? null : onAgencyPressed,
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          color: Colors.black38,
+                          child: loading
+                              ? null
+                              : Image.network(
+                                  post.agency?.profileImage ?? "",
+                                  fit: BoxFit.cover,
+                                ),
+                        ).clipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
                       ),
                     ),
                     const SizedBox(
@@ -98,7 +105,8 @@ class PostRouteCard extends StatelessWidget {
                                   const TextStyle(fontWeight: FontWeight.bold)),
                         ),
                         Text(
-                          post.scheduleDate?.toIso8601String() ?? "",
+                          // post.scheduleDate?.toIso8601String() ?? "",
+                          AppDateUtil.formatDateTime(post.scheduleDate),
                           style:
                               const TextStyle(fontSize: 10, color: Colors.red),
                         ),
@@ -108,41 +116,47 @@ class PostRouteCard extends StatelessWidget {
                 ).sizedBox(),
               ), // profile section
               Expanded(
-                  flex: 1,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      child: InkWell(
-                          onTap: loading ? null : onMenuPressed,
-                          child: const Icon(Icons.more_vert_outlined)),
-                    ),
-                  )), // option section
+                flex: 1,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    child: InkWell(
+                        onTap: loading ? null : onMenuPressed,
+                        child: const Icon(Icons.more_vert_outlined)),
+                  ),
+                ),
+              ), // option section
             ],
           ), // head
           const SizedBox(
             height: 5,
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                post.title ?? "",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              if (post.description != null)
-                Column(children: [
-                  SizedBox.fromSize(
-                    size: const Size.fromHeight(10),
-                  ),
-                  ExpandableText(
-                    text: post.description ?? "",
-                  ),
-                  SizedBox.fromSize(
-                    size: const Size.fromHeight(10),
-                  ),
-                ]),
-            ],
+          Padding(
+            padding: paddingLeft ?? const EdgeInsets.only(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  post.title ?? "",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                if (post.description != null)
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox.fromSize(
+                          size: const Size.fromHeight(10),
+                        ),
+                        ExpandableText(
+                          text: post.description ?? "",
+                        ),
+                        SizedBox.fromSize(
+                          size: const Size.fromHeight(10),
+                        ),
+                      ]),
+              ],
+            ),
           ),
           Container(
             height: 200,
@@ -196,7 +210,7 @@ class PostRouteCard extends StatelessWidget {
                                   }
                                 },
                                 child: Text(
-                                  post.midpoints![index].cityName ?? "",
+                                  post.midpoints![index].city?.name ?? "",
                                   style: textStyle,
                                 )),
                             if (index < post.midpoints!.length - 1)
@@ -226,40 +240,71 @@ class PostRouteCard extends StatelessWidget {
           //   ],
           // ),
           // image
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                  child: InkWell(
-                      onTap: loading ? null : onStarPressed,
-                      child: const Icon(Icons.hotel_class_outlined))),
-              Expanded(
-                  child: InkWell(
-                      onTap: loading ? null : onCommentPressed,
-                      child: const Icon(Icons.comment))),
-              Expanded(
-                  child: InkWell(
-                      onTap: loading ? null : onPhonePressed,
-                      child: const Icon(Icons.phone))),
-              Expanded(
-                child: InkWell(
-                    onTap: loading ? null : onLocationPressed,
-                    child: const Icon(Icons.location_on_outlined)),
-              ),
-              Expanded(
-                child: InkWell(
-                    onTap: loading ? null : onSharePressed,
-                    child: const Icon(Icons.share)),
-              ),
-            ],
-          ).padding(padding: const EdgeInsets.all(10.0)),
+          BuildCardFooter(
+                  loading: loading,
+                  onStarPressed: onStarPressed,
+                  onCommentPressed: onCommentPressed,
+                  onPhonePressed: onPhonePressed,
+                  onLocationPressed: onLocationPressed,
+                  onSharePressed: onSharePressed)
+              .padding(padding: const EdgeInsets.all(10.0)),
           // icons
           const Divider(
             height: 0.3,
           ),
         ],
       ),
+    );
+  }
+}
+
+class BuildCardFooter extends StatelessWidget {
+  const BuildCardFooter({
+    super.key,
+    required this.loading,
+    required this.onStarPressed,
+    required this.onCommentPressed,
+    required this.onPhonePressed,
+    required this.onLocationPressed,
+    required this.onSharePressed,
+  });
+
+  final bool loading;
+  final void Function()? onStarPressed;
+  final void Function()? onCommentPressed;
+  final void Function()? onPhonePressed;
+  final void Function()? onLocationPressed;
+  final void Function()? onSharePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+            child: InkWell(
+                onTap: loading ? null : onStarPressed,
+                child: const Icon(Icons.hotel_class_outlined))),
+        Expanded(
+            child: InkWell(
+                onTap: loading ? null : onCommentPressed,
+                child: const Icon(Icons.comment))),
+        Expanded(
+            child: InkWell(
+                onTap: loading ? null : onPhonePressed,
+                child: const Icon(Icons.phone))),
+        Expanded(
+          child: InkWell(
+              onTap: loading ? null : onLocationPressed,
+              child: const Icon(Icons.location_on_outlined)),
+        ),
+        Expanded(
+          child: InkWell(
+              onTap: loading ? null : onSharePressed,
+              child: const Icon(Icons.share)),
+        ),
+      ],
     );
   }
 }

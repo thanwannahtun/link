@@ -10,7 +10,7 @@ class User {
       this.accessToken,
       this.refreshToken,
       this.createdAt});
-  final int? id;
+  final String? id;
   final String? firstName;
   final String? lastName;
   final String? fullName;
@@ -21,7 +21,7 @@ class User {
   final String? accessToken;
   final String? refreshToken;
   User copyWith(
-      {int? id,
+      {String? id,
       String? firstName,
       String? lastName,
       String? fullName,
@@ -46,7 +46,7 @@ class User {
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
+      "_id": id,
       "firstName": firstName,
       "lastName": lastName,
       "fullName": fullName,
@@ -61,10 +61,10 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as int,
+      id: json['_id'] as String?,
       firstName: json['firstName'],
       lastName: json['lastName'],
-      fullName: json['fullName'],
+      fullName: json['name'],
       createdAt: json['createdAt'],
       email: json['email'],
       password: json['password'],
@@ -80,10 +80,10 @@ class User {
   }
 }
 
-enum Role { admin, user }
+enum Role {
+  admin('admin'),
+  user('user');
 
-extension on Role {
-  get getValue {
-    return name;
-  }
+  final String name;
+  const Role(this.name);
 }

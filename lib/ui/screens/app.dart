@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link/bloc/token_validator/token_validator_cubit.dart';
-import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/ui/screens/app_bottom_navigation_bar.dart';
 import 'package:link/ui/screens/profile/profile_screen.dart';
 import 'package:link/ui/screens/route_list_screen.dart';
 import 'package:link/ui/sections/test.dart';
-import 'package:link/ui/utils/route_list.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -17,7 +14,15 @@ class App extends StatelessWidget {
     return Scaffold(
       body: BlocConsumer<BottomSelectCubit, NavigationStates>(
         builder: (context, state) {
-          return toggleScreen(state);
+          return IndexedStack(
+            index: toggleIndexedScreen(state),
+            children: const [
+              RouteListScreen(),
+              B(),
+              C(),
+              ProfileScreen(),
+            ],
+          );
         },
         listener: (context, state) {},
       ),
@@ -25,18 +30,18 @@ class App extends StatelessWidget {
     );
   }
 
-  Widget toggleScreen(NavigationStates state) {
+  int toggleIndexedScreen(NavigationStates state) {
     switch (state) {
       case NavigationStates.A:
-        return const RouteListScreen();
+        return 0;
       case NavigationStates.B:
-        return const B();
+        return 1;
       case NavigationStates.C:
-        return const C();
+        return 2;
       case NavigationStates.D:
-        return const ProfileScreen();
+        return 3;
       default:
-        return const RouteListScreen();
+        return 0;
     }
   }
 }
