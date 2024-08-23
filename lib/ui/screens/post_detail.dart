@@ -4,6 +4,8 @@ import 'package:link/models/comment.dart';
 import 'package:link/models/like.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
+import 'package:link/ui/utils/context.dart';
+import 'package:link/ui/widgets/comment_persistent_footer_button.dart';
 
 class PostDetailPage extends StatefulWidget {
   const PostDetailPage({super.key});
@@ -34,7 +36,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               post: post ?? Post(),
               onCommentPressed: onCommentPressed,
               onLocationPressed: () {},
-              onStarPressed: onStarPressed,
+              onStarPressed: () {},
               paddingLeft: const EdgeInsets.only(left: 10),
             ),
           ],
@@ -47,10 +49,11 @@ class _PostDetailPageState extends State<PostDetailPage> {
   void Function()? onCommentPressed() {
     List<Comment> comments = post?.comments ?? [];
 
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return ListView.builder(
+    Context.showBottomSheet(context,
+        setViewInset: true,
+        isScrollControlled: true,
+        body: ListView.builder(
+          shrinkWrap: true,
           itemCount: comments.length,
           itemBuilder: (context, index) {
             Comment comment = comments[index];
@@ -63,43 +66,46 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   : ""),
             );
           },
-        );
-      },
-    );
+        ),
+        persistentFooterButtons: [
+          CommentPersistentFooterButton(
+            onIconPressed: () {},
+            onEditingComplete: () {},
+          )
+        ]);
     return null;
   }
 
-  // ? : onCommentPressed
-  void Function()? onStarPressed() {
-    List<Like> likes = post?.likes ?? [];
+  // ? : onStarPressed
+  // void Function()? onStarPressed() {
+  //   List<Like> likes = post?.likes ?? [];
 
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return ListView.builder(
-          itemCount: likes.length,
-          itemBuilder: (context, index) {
-            if (likes.isEmpty) {
-              return const ListTile(
-                title: Text("Be the First Person!"),
-                subtitle: Text("hit the like button!"),
-              );
-            }
+  //   Context.showBottomSheet(
+  //     context,
+  //     body: ListView.builder(
+  //       shrinkWrap: true,
+  //       itemCount: likes.length,
+  //       itemBuilder: (context, index) {
+  //         if (likes.isEmpty) {
+  //           return const ListTile(
+  //             title: Text("Be the First Person!"),
+  //             subtitle: Text("hit the like button!"),
+  //           );
+  //         }
 
-            Like like = likes[index];
+  //         Like like = likes[index];
 
-            return ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(like.user?.fullName ?? ""),
-              subtitle: Text(like.user?.email ?? "user@gmail.com"),
-              trailing: Text(like.createdAt != null
-                  ? AppDateUtil.formatDateTime(like.createdAt)
-                  : ""),
-            );
-          },
-        );
-      },
-    );
-    return null;
-  }
+  //         return ListTile(
+  //           leading: const Icon(Icons.person),
+  //           title: Text(like.user?.fullName ?? ""),
+  //           subtitle: Text(like.user?.email ?? "user@gmail.com"),
+  //           trailing: Text(like.createdAt != null
+  //               ? AppDateUtil.formatDateTime(like.createdAt)
+  //               : ""),
+  //         );
+  //       },
+  //     ),
+  //   );
+  //   return null;
+  // }
 }

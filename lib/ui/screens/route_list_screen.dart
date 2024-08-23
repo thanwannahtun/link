@@ -26,11 +26,11 @@ class _RouteListScreenState extends State<RouteListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        leading: Container(),
-        title: const Text("Link"),
-      ),
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   leading: Container(),
+      //   title: const Text("Link"),
+      // ),
       body: BlocConsumer<PostRouteCubit, PostRouteState>(
         builder: (context, state) {
           debugPrint("::::::::::::: ${state.status}");

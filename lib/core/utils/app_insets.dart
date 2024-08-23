@@ -4,6 +4,9 @@ class AppInsets {
   static const double inset8 = 8.0;
   static const double inset10 = 10.0;
   static const double inset15 = 15.0;
+  static const double inset20 = 20.0;
+  static const double inset25 = 25.0;
+  static const double inset30 = 30.0;
 
   /// [FONT SIZE]
   static const double font10 = 10.0;

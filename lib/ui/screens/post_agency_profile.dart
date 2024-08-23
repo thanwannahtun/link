@@ -5,6 +5,7 @@ import 'package:link/models/post.dart';
 import 'package:link/models/seat.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/widget_extension.dart';
+import 'package:link/ui/widgets/comment_persistent_footer_button.dart';
 import 'package:link/ui/widgets/photo_view_gallery_widget.dart';
 
 class AgencyProfile extends StatefulWidget {
@@ -289,7 +290,10 @@ class CommentShareContactFooterButtons extends StatelessWidget {
           ],
         ),
         persistentFooterButtons: [
-          _commentFooterButton(context),
+          CommentPersistentFooterButton(
+            onIconPressed: () {},
+            onEditingComplete: () {},
+          )
         ],
         // useSafeArea: true,
         padding: const EdgeInsets.all(0.0),
@@ -297,57 +301,6 @@ class CommentShareContactFooterButtons extends StatelessWidget {
         setViewInset: true);
     return null;
   }
-
-  Row _commentFooterButton(BuildContext context) {
-    return Row(
-      children: [
-        IconButton.filledTonal(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return const ExampleRoute();
-                },
-              )).then((v) => {});
-            },
-            icon: const Icon(Icons.image)),
-        const Flexible(
-          // Use Flexible instead of Expanded
-          child: TextField(
-            decoration: InputDecoration(
-              suffixIcon: Icon(Icons.subdirectory_arrow_left_rounded),
-              border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.all(Radius.circular(12))),
-              filled: true,
-              fillColor: Colors.black12,
-              hintText: "Leave a comment...",
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-//   Row _commentFooterButton() {
-//     return Row(
-//       children: [
-//         IconButton.filledTonal(onPressed: () {}, icon: const Icon(Icons.image)),
-//         const Expanded(
-//           child: TextField(
-//             decoration: InputDecoration(
-//               suffixIcon: Icon(Icons.subdirectory_arrow_left_rounded),
-//               border: OutlineInputBorder(
-//                   borderSide: BorderSide.none,
-//                   borderRadius: BorderRadius.all(Radius.circular(12))),
-//               filled: true,
-//               fillColor: Colors.black12,
-//               hintText: "Leave a comment...",
-//             ),
-//           ),
-//         )
-//       ],
-//     );
-//   }
 }
 
 /// SeatsGrid widget

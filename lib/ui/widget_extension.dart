@@ -33,7 +33,7 @@ extension WidgetExt on Widget {
       width: width,
       height: height,
       key: key,
-      child: this,
+      // child: this,
     );
   }
 
@@ -65,6 +65,16 @@ extension NumExtension on num {
       width: width,
       height: height,
       child: child,
+    );
+  }
+}
+
+extension StyleExtension on Text {
+  Text bold({TextAlign? textAlign}) {
+    return Text(
+      data ?? "",
+      textAlign: textAlign,
+      style: const TextStyle(fontWeight: FontWeight.bold),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -26,6 +27,7 @@ class Context {
     bool showDragHandle = true,
     bool useSafeArea = false,
     bool resizeToAvoidBottomInset = false,
+    bool borderTransparent = false,
     EdgeInsetsGeometry? padding,
 
     /// [viewInset] for device keyboard height default to false
@@ -40,6 +42,7 @@ class Context {
       isDismissible: isDismissible,
       useSafeArea: useSafeArea,
       enableDrag: enableDrag,
+      constraints: constraints,
       showDragHandle: showDragHandle,
       sheetAnimationStyle: sheetAnimationStyle ??
           AnimationStyle(
@@ -56,10 +59,16 @@ class Context {
                       .viewInsets
                       .bottom, // Adjust for the keyboard
                 ),
-                child: Scaffold(
-                  resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-                  body: SingleChildScrollView(padding: padding, child: body),
-                  persistentFooterButtons: persistentFooterButtons,
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerTheme: DividerThemeData(
+                        color: borderTransparent ? Colors.transparent : null),
+                  ),
+                  child: Scaffold(
+                    resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+                    body: SingleChildScrollView(padding: padding, child: body),
+                    persistentFooterButtons: persistentFooterButtons,
+                  ),
                 ),
               )
             : Scaffold(
@@ -67,6 +76,53 @@ class Context {
                 body: SingleChildScrollView(padding: padding, child: body),
                 persistentFooterButtons: persistentFooterButtons,
               );
+      },
+    );
+  }
+
+  static Future<T?> showAlertDialog<T>(
+    BuildContext context, {
+    required Widget headerWidget,
+    required List<T> itemList,
+    required Widget? Function(BuildContext, int) itemBuilder,
+  }) async {
+    return await showDialog<T>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: SizedBox(
+            // color: Colors.amber,
+            height: MediaQuery.of(context).size.height * 0.5,
+            width: MediaQuery.of(context).size.height * 0.7,
+            child: Expanded(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [Expanded(child: headerWidget)],
+                  ),
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                          border: Border(
+                              top: BorderSide(color: Colors.black87),
+                              bottom: BorderSide(color: Colors.black87))),
+                      child: ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: itemBuilder,
+                          physics: const ClampingScrollPhysics(),
+                          separatorBuilder: (context, index) => const Divider(
+                                height: 1,
+                                thickness: 0.2,
+                              ),
+                          itemCount: itemList.length),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
       },
     );
   }
