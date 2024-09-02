@@ -33,7 +33,7 @@ extension WidgetExt on Widget {
       width: width,
       height: height,
       key: key,
-      // child: this,
+      child: this,
     );
   }
 
@@ -43,6 +43,9 @@ extension WidgetExt on Widget {
     double? heightFactor,
   }) {
     return Center(
+      heightFactor: heightFactor,
+      widthFactor: widthFactor,
+      key: key,
       child: this,
     );
   }

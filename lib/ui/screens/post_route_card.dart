@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:link/core/utils/app_date_util.dart';
+import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/utils/expandable_text.dart';
 import 'package:link/ui/widget_extension.dart';
@@ -63,7 +63,8 @@ class PostRouteCard extends StatelessWidget {
                           child: loading
                               ? null
                               : Image.network(
-                                  post.agency?.profileImage ?? "",
+                                  post.agency?.profileImage ??
+                                      "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
                                   fit: BoxFit.cover,
                                 ),
                         ).clipRRect(
@@ -106,7 +107,7 @@ class PostRouteCard extends StatelessWidget {
                         ),
                         Text(
                           // post.scheduleDate?.toIso8601String() ?? "",
-                          AppDateUtil.formatDateTime(post.scheduleDate),
+                          DateTimeUtil.formatDateTime(post.scheduleDate),
                           style:
                               const TextStyle(fontSize: 10, color: Colors.red),
                         ),
@@ -131,33 +132,11 @@ class PostRouteCard extends StatelessWidget {
           const SizedBox(
             height: 5,
           ),
-          Padding(
-            padding: paddingLeft ?? const EdgeInsets.only(),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  post.title ?? "",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                if (post.description != null)
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox.fromSize(
-                          size: const Size.fromHeight(10),
-                        ),
-                        ExpandableText(
-                          text: post.description ?? "",
-                        ),
-                        SizedBox.fromSize(
-                          size: const Size.fromHeight(10),
-                        ),
-                      ]),
-              ],
-            ),
-          ),
+
+          /// Title & Description
+          _buildPostTitleDescription(),
+
+          /// Images
           Container(
             height: 200,
             width: double.infinity,
@@ -165,65 +144,9 @@ class PostRouteCard extends StatelessWidget {
             child: Image.network(
                 "https://images.stockcake.com/public/8/4/f/84f518cc-4f5c-4bd4-95fd-7432ac50086d_large/doctors-in-meeting-stockcake.jpg"),
           ),
-          SizedBox(
-            height: 50,
-            width: double.infinity,
 
-            /// temporary
-            child: loading
-                ? ListView.builder(
-                    itemCount: 5,
-                    scrollDirection: Axis.horizontal,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) => Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      child: Container(
-                        width: 100,
-                        height: double.infinity,
-                        color: Colors.black38,
-                      ),
-                    ).clipRRect(borderRadius: BorderRadius.circular(50)),
-                  )
-                : ListView.builder(
-                    itemCount: post.midpoints?.length ?? 0,
-                    scrollDirection: Axis.horizontal,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      if (index < post.midpoints!.length) {
-                        TextStyle textStyle = const TextStyle(
-                            fontSize: 12, color: Colors.black54);
-                        if (index == 0 ||
-                            index == (post.midpoints!.length - 1)) {
-                          textStyle = textStyle.copyWith(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black);
-                        }
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextButton(
-                                onPressed: () {
-                                  if (loading) {
-                                    return;
-                                  }
-                                },
-                                child: Text(
-                                  post.midpoints![index].city?.name ?? "",
-                                  style: textStyle,
-                                )),
-                            if (index < post.midpoints!.length - 1)
-                              const Text(
-                                  ' -> '), // Add separator if not the last item
-                          ],
-                        );
-                      } else {
-                        return Container(); // Placeholder, should not be reached
-                      }
-                    },
-                  ),
-          ),
+          /// Midpoints
+          _buildMidpoints(),
           // ),
           const Divider(
             height: 0.3,
@@ -240,6 +163,7 @@ class PostRouteCard extends StatelessWidget {
           //   ],
           // ),
           // image
+          /// Card Footer
           BuildCardFooter(
                   loading: loading,
                   onStarPressed: onStarPressed,
@@ -254,6 +178,95 @@ class PostRouteCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Padding _buildPostTitleDescription() {
+    return Padding(
+      padding: paddingLeft ?? const EdgeInsets.only(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            post.title ?? "",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          if (post.description != null)
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              SizedBox.fromSize(
+                size: const Size.fromHeight(10),
+              ),
+              ExpandableText(
+                text: post.description ?? "",
+              ),
+              SizedBox.fromSize(
+                size: const Size.fromHeight(10),
+              ),
+            ]),
+        ],
+      ),
+    );
+  }
+
+  SizedBox _buildMidpoints() {
+    return SizedBox(
+      height: 50,
+      width: double.infinity,
+
+      /// temporary
+      child: loading
+          ? ListView.builder(
+              itemCount: 5,
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              itemBuilder: (context, index) => Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: Container(
+                  width: 100,
+                  height: double.infinity,
+                  color: Colors.black38,
+                ),
+              ).clipRRect(borderRadius: BorderRadius.circular(50)),
+            )
+          : ListView.builder(
+              itemCount: post.midpoints?.length ?? 0,
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                if (index < post.midpoints!.length) {
+                  TextStyle textStyle =
+                      const TextStyle(fontSize: 12, color: Colors.black54);
+                  if (index == 0 || index == (post.midpoints!.length - 1)) {
+                    textStyle = textStyle.copyWith(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black);
+                  }
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
+                          onPressed: () {
+                            if (loading) {
+                              return;
+                            }
+                          },
+                          child: Text(
+                            post.midpoints![index].city?.name ?? "",
+                            style: textStyle,
+                          )),
+                      if (index < post.midpoints!.length - 1)
+                        const Text(
+                            ' -> '), // Add separator if not the last item
+                    ],
+                  );
+                } else {
+                  return Container(); // Placeholder, should not be reached
+                }
+              },
+            ),
     );
   }
 }

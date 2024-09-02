@@ -40,26 +40,7 @@ class _RouteListScreenState extends State<RouteListScreen> {
             return _buildShimmer(context);
           }
           posts = state.routes;
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListView.separated(
-              itemBuilder: (context, index) {
-                Post post = posts[index];
-                return PostRouteCard(
-                  post: post,
-                  onStarPressed: () => goPageDetail(post),
-                  onCommentPressed: () => goPageDetail(post),
-                  onAgencyPressed: () => Navigator.of(context)
-                      .pushNamed(RouteLists.agencyProfile, arguments: post),
-                );
-              },
-              itemCount: posts.length,
-              separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(
-                height: 20,
-              ),
-            ),
-          );
+          return _showPosts();
         },
         listener: (context, state) {},
       ),
@@ -74,6 +55,28 @@ class _RouteListScreenState extends State<RouteListScreen> {
           ));
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Padding _showPosts() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListView.separated(
+        itemBuilder: (context, index) {
+          Post post = posts[index];
+          return PostRouteCard(
+            post: post,
+            onStarPressed: () => goPageDetail(post),
+            onCommentPressed: () => goPageDetail(post),
+            onAgencyPressed: () => Navigator.of(context)
+                .pushNamed(RouteLists.agencyProfile, arguments: post),
+          );
+        },
+        itemCount: posts.length,
+        separatorBuilder: (BuildContext context, int index) => const SizedBox(
+          height: 20,
+        ),
       ),
     );
   }

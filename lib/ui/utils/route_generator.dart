@@ -6,64 +6,70 @@ import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/screens/post_agency_profile.dart';
 import 'package:link/ui/screens/post_detail.dart';
 import 'package:link/ui/screens/route_list_screen.dart';
+import 'package:link/ui/screens/splash_screen.dart';
 import 'package:link/ui/utils/route_list.dart';
 
 class RouteGenerator {
-  Route generateRoute(RouteSettings settings) {
+  static Route<T>? onGenerateRoute<T>(RouteSettings settings) {
     switch (settings.name) {
+      case RouteLists.splashScreen:
+        return _navigateRoute(
+            settings: settings,
+            builder: (context) {
+              return const SplashScreen();
+            });
       case RouteLists.app:
-        return navigateRoute(
+        return _navigateRoute(
             settings: settings,
             builder: (context) {
               return const App();
             });
       case RouteLists.routePostList:
-        return navigateRoute(
+        return _navigateRoute(
           settings: settings,
           builder: (context) {
             return const RouteListScreen();
           },
         );
       case RouteLists.agencyProfile:
-        return navigateRoute(
+        return _navigateRoute(
           settings: settings,
           builder: (context) {
             return const AgencyProfile();
           },
         );
       case RouteLists.postDetailPage:
-        return navigateRoute(
+        return _navigateRoute(
           settings: settings,
           builder: (context) {
             return const PostDetailPage();
           },
         );
       case RouteLists.postCreatePage:
-        return navigateRoute(
+        return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return
-                 MultiBlocProvider(providers: [
-                  BlocProvider<PostCreateUtilCubit>(
-                    create: (BuildContext context) => PostCreateUtilCubit(),
-                  ),
-                ], child:
-                const UploadNewPostPage(),
-             );
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<PostCreateUtilCubit>(
+                  create: (BuildContext context) => PostCreateUtilCubit(),
+                ),
+              ],
+              child: const UploadNewPostPage(),
+            );
           },
         );
       default:
-        return navigateRoute(
+        return _navigateRoute(
           settings: settings,
           builder: (context) => const NoRouteScreen(),
         );
     }
   }
 
-  MaterialPageRoute<T> navigateRoute<T>(
-      {required RouteSettings settings,
-      required Widget Function(BuildContext context) builder}) {
-    return MaterialPageRoute<T>(builder: builder, settings: settings);
+  static Route<T>? _navigateRoute<T>(
+      {required WidgetBuilder builder, RouteSettings? settings}) {
+    return MaterialPageRoute(builder: builder, settings: settings);
   }
 }
 

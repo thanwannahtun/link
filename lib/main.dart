@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
+import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/token_validator/token_validator_cubit.dart';
 import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
@@ -19,6 +19,9 @@ class LinkApplication extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<CityCubit>(
+          create: (context) => CityCubit()..fetchCities(),
+        ),
         BlocProvider<TokenValidatorCubit>(
           create: (BuildContext context) =>
               TokenValidatorCubit()..checkTokenExpiration(),
@@ -38,8 +41,8 @@ class LinkApplication extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        onGenerateRoute: RouteGenerator().generateRoute,
-        initialRoute: RouteLists.app,
+        onGenerateRoute: RouteGenerator.onGenerateRoute,
+        initialRoute: RouteLists.splashScreen,
         title: 'Link',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

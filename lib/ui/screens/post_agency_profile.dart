@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:link/core/utils/app_date_util.dart';
+import 'package:link/core/styles/app_style.dart';
+import 'package:link/core/utils/date_time_util.dart';
+import 'package:link/core/utils/app_insets.dart';
 import 'package:link/models/comment.dart';
 import 'package:link/models/post.dart';
 import 'package:link/models/seat.dart';
@@ -35,12 +37,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          post?.agency?.name ?? "Agency Profile",
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ),
+      appBar: _buildAppBar(),
       // primary: true,
       persistentFooterButtons: [
         CommentShareContactFooterButtons(
@@ -49,89 +46,130 @@ class _AgencyProfileState extends State<AgencyProfile> {
       ],
       body: post == null
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      post?.title ?? "",
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      post?.description ?? "",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 20),
+          : _buildPostBody(),
+    );
+  }
 
-                    /// PhotoViewGalleryWidget
-                    (post?.images ?? []).isEmpty
-                        ? Container()
-                        : PhotoViewZoomableWidget(post: post),
-                    const SizedBox(height: 15),
-                    _buildInfoSection(
-                      "From",
-                      post?.origin?.name ?? "Unknown",
-                    ),
-                    const SizedBox(height: 5),
-                    _buildInfoSection(
-                      "To",
-                      post?.destination?.name ?? "Unknown",
-                    ),
-                    const SizedBox(height: 5),
-                    _buildInfoSection(
-                      "Schedule Date",
-                      AppDateUtil.formatDateTime(post?.scheduleDate),
-                      // post?.scheduleDate?.toIso8601String() ?? "Unknown",
-                    ),
-                    const SizedBox(height: 5),
-                    _buildInfoSection(
-                      "Price per Traveler",
-                      post?.pricePerTraveler != null
-                          ? "\$${post!.pricePerTraveler}"
-                          : "Unknown",
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Seats Available:",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    SeatsGrid(seats: post?.seats ?? [])
-                        .padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                        )
-                        .padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10)),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Divider(),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Reviews",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          "${post?.commentCounts ?? 0} comments",
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-
-                    BuildReviewWidget(post: post)
-                  ],
-                ),
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: Row(
+        children: [
+          InkWell(
+            onTap: () {},
+            child: Container(
+              width: 40,
+              height: 40,
+              color: Colors.black38,
+              child: Image.network(
+                post?.agency?.profileImage ??
+                    "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
+                fit: BoxFit.cover,
               ),
+            ).clipRRect(
+              borderRadius: BorderRadius.circular(50),
             ),
+          ),
+          const SizedBox(
+            width: AppInsets.inset8,
+          ),
+          Text(
+            post?.agency?.name ?? "Agency Profile",
+            style: const TextStyle(
+                fontSize: AppInsets.font15, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+            style: AppStyle.buttonLight,
+            onPressed: () {},
+            icon: const Icon(Icons.mark_unread_chat_alt))
+      ],
+    );
+  }
+
+  SingleChildScrollView _buildPostBody() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              post?.title ?? "",
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              post?.description ?? "",
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 20),
+
+            /// PhotoViewGalleryWidget
+            (post?.images ?? []).isEmpty
+                ? Container()
+                : PhotoViewZoomableWidget(post: post).sizedBox(
+                    height: 350,
+                    width: double.infinity,
+                  ),
+            const SizedBox(height: 15),
+            _buildInfoSection(
+              "From",
+              post?.origin?.name ?? "Unknown",
+            ),
+            const SizedBox(height: 5),
+            _buildInfoSection(
+              "To",
+              post?.destination?.name ?? "Unknown",
+            ),
+            const SizedBox(height: 5),
+            _buildInfoSection(
+              "Schedule Date",
+              DateTimeUtil.formatDateTime(post?.scheduleDate),
+              // post?.scheduleDate?.toIso8601String() ?? "Unknown",
+            ),
+            const SizedBox(height: 5),
+            _buildInfoSection(
+              "Price per Traveler",
+              post?.pricePerTraveler != null
+                  ? "\$${post!.pricePerTraveler}"
+                  : "Unknown",
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "Seats Available:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            SeatsGrid(seats: post?.seats ?? [])
+                .padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                )
+                .padding(padding: const EdgeInsets.symmetric(vertical: 10)),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Divider(),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Reviews",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "${post?.commentCounts ?? 0} comments",
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+
+            BuildReviewWidget(post: post)
+          ],
+        ),
+      ),
     );
   }
 
@@ -184,13 +222,10 @@ class PhotoViewZoomableWidget extends StatelessWidget {
           images: post?.images ?? [],
         ),
       )),
-      child: SizedBox(
-        height: 350,
-        width: double.infinity,
-        child: PhotoViewGalleryWidget(
-            backgroundDecoration: const BoxDecoration(color: Colors.black12),
-            images: post?.images ?? []),
-      ),
+      child: PhotoViewGalleryWidget(
+              backgroundDecoration: const BoxDecoration(color: Colors.black12),
+              images: post?.images ?? [])
+          .expanded(),
     );
   }
 }
@@ -224,7 +259,7 @@ class BuildReviewWidget extends StatelessWidget {
                 title: Text(comment.content ?? ""),
                 subtitle: Text(comment.user?.email ?? "user@gmail.com"),
                 trailing: Text(comment.createdAt != null
-                    ? AppDateUtil.formatDateTime(comment.createdAt)
+                    ? DateTimeUtil.formatDateTime(comment.createdAt)
                     : ""),
               );
             },
@@ -282,7 +317,7 @@ class CommentShareContactFooterButtons extends StatelessWidget {
                   title: Text(comment.content ?? ""),
                   subtitle: Text(comment.user?.email ?? "user@gmail.com"),
                   trailing: Text(comment.createdAt != null
-                      ? AppDateUtil.formatDateTime(comment.createdAt)
+                      ? DateTimeUtil.formatDateTime(comment.createdAt)
                       : ""),
                 );
               },

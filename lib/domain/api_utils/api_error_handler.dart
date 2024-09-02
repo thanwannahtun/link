@@ -1,26 +1,31 @@
 import 'package:dio/dio.dart';
 
 class ApiErrorHandler {
-  static ApiException handle(DioException error) {
-    switch (error.type) {
-      case DioExceptionType.cancel:
-        return ApiException(message: "Request to API was cancelled");
-      case DioExceptionType.connectionTimeout:
-        return _TimeoutException("Connection timeout with API server");
-      case DioExceptionType.sendTimeout:
-        return _TimeoutException("Send timeout in connection with API server");
-      case DioExceptionType.receiveTimeout:
-        return _TimeoutException(
-            "Receive timeout in connection with API server");
-      case DioExceptionType.badResponse:
-        return _handleHttpResponse(error);
-      case DioExceptionType.unknown:
-        if (error.message?.contains("SocketException") ?? false) {
-          return _NetworkException("No Internet connection");
-        }
-        return ApiException(message: "Unexpected error occurred");
-      default:
-        return ApiException(message: "Unexpected error occurred");
+  static ApiException handle(Exception error) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.cancel:
+          return ApiException(message: "Request to API was cancelled");
+        case DioExceptionType.connectionTimeout:
+          return _TimeoutException("Connection timeout with API server");
+        case DioExceptionType.sendTimeout:
+          return _TimeoutException(
+              "Send timeout in connection with API server");
+        case DioExceptionType.receiveTimeout:
+          return _TimeoutException(
+              "Receive timeout in connection with API server");
+        case DioExceptionType.badResponse:
+          return _handleHttpResponse(error);
+        case DioExceptionType.unknown:
+          if (error.message?.contains("SocketException") ?? false) {
+            return _NetworkException("No Internet connection");
+          }
+          return ApiException(message: "Unexpected error occurred");
+        default:
+          return ApiException(message: "Unexpected error occurred");
+      }
+    } else {
+      return ApiException(message: "[Unknown error] :: ${error.toString()}");
     }
   }
 

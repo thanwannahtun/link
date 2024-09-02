@@ -1,5 +1,6 @@
 class RouteLists {
   static const String routePostList = "/route_list";
+  static const String splashScreen = "/splash_screen";
   static const String app = "/base_app";
   static const String signUp = "/sign_up";
   static const String signIn = "/sign_in";

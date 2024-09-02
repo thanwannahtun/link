@@ -54,6 +54,7 @@ dependencies:
 
   # date time
   date_time_picker: ^2.1.0
+  intl: ^0.17.0
 
 
 dev_dependencies:

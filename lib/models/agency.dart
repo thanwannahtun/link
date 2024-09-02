@@ -64,8 +64,9 @@ class Agency {
           : User.fromJson(json['user_id'] as Map<String, dynamic>),
       name: json['name'],
       description: json['description'],
-      profileImage: json['profile_image'] ??
-          "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
+      profileImage: json['profile_image']
+      // ?? "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg"
+      ,
       contactInfo: json['contactInfo'],
       address: json['address'],
       createdAt:

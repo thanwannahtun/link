@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:link/core/utils/app_date_util.dart';
+import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/models/comment.dart';
-import 'package:link/models/like.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/utils/context.dart';
@@ -62,7 +61,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               title: Text(comment.content ?? ""),
               subtitle: Text(comment.user?.email ?? "user@gmail.com"),
               trailing: Text(comment.createdAt != null
-                  ? AppDateUtil.formatDateTime(comment.createdAt)
+                  ? DateTimeUtil.formatDateTime(comment.createdAt)
                   : ""),
             );
           },

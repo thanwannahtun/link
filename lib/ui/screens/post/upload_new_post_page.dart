@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
-import 'package:link/core/utils/app_date_util.dart';
+import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/domain/bloc_utils/bloc_crud_status.dart';
 import 'package:link/models/agency.dart';
@@ -13,7 +13,6 @@ import 'package:link/models/city.dart';
 import 'package:link/models/midpoint.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/utils/context.dart';
-import 'package:link/ui/utils/widget_util.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/photo_view_gallery_widget.dart';
 
@@ -40,23 +39,23 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   City? _origin;
   City? _destination;
 
+  // Todo: Midpoints section
+  List<Midpoint> _midpoints = [];
+
   // Todo : Controller section
 
   final TextEditingController _titleController =
       TextEditingController(text: "");
   final TextEditingController _descriptionController =
       TextEditingController(text: "");
-  final TextEditingController _originController =
-      TextEditingController(text: "");
-  final TextEditingController _destinationController =
-      TextEditingController(text: "");
-  final TextEditingController _departureTimeController =
-      TextEditingController(text: "");
-  final TextEditingController _arrivalTimeController =
-      TextEditingController(text: "");
-
-  // Todo: Midpoints section
-  List<Midpoint> _midpoints = [];
+  // final TextEditingController _originController =
+  //     TextEditingController(text: "");
+  // final TextEditingController _destinationController =
+  //     TextEditingController(text: "");
+  // final TextEditingController _departureTimeController =
+  //     TextEditingController(text: "");
+  // final TextEditingController _arrivalTimeController =
+  //     TextEditingController(text: "");
 
   final TextEditingController _midpointCityController =
       TextEditingController(text: "");
@@ -73,7 +72,6 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
     double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
@@ -240,7 +238,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                                               ),
                                               Text(
                                                 midpoint.arrivalTime != null
-                                                    ? AppDateUtil
+                                                    ? DateTimeUtil
                                                         .formatDateTime(midpoint
                                                             .arrivalTime)
                                                     : "",
@@ -279,39 +277,11 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
                 /// [Midpoint]
 
-                Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              elevation: 1.0, // Shadow elevation
-                              shape: RoundedRectangleBorder(
-                                side: const BorderSide(color: Colors.white10),
-                                borderRadius:
-                                    BorderRadius.circular(3), // Border radius
-                              ),
-                              textStyle: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold), // Text style
-                            ),
-                            iconAlignment: IconAlignment.end,
-                            onPressed: () async {
-                              await _showRouteCityBottomSheet(context);
-                            },
-                            label:
-                                const Text("Add middle Cities ( midpoints )"),
-                            icon: const Icon(Icons.add)),
-                      ),
-                    ]),
+                _addMidpointField(context),
 
                 const Divider(
                   thickness: 0.3,
                 ),
-
-                // midpointAdding ?   : Container(),
               ],
             ),
           ),
@@ -416,6 +386,33 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     );
   }
 
+  Row _addMidpointField(BuildContext context) {
+    return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  elevation: 1.0, // Shadow elevation
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(color: Colors.white10),
+                    borderRadius: BorderRadius.circular(3), // Border radius
+                  ),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold), // Text style
+                ),
+                iconAlignment: IconAlignment.end,
+                onPressed: () async {
+                  await _showRouteCityBottomSheet(context);
+                },
+                label: const Text("Add middle Cities ( midpoints )"),
+                icon: const Icon(Icons.add)),
+          ),
+        ]);
+  }
+
   Future<dynamic> _showRouteCityBottomSheet(BuildContext context) {
     return Context.showBottomSheet(context,
         useSafeArea: true,
@@ -517,9 +514,10 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         );
 
         if (time != null) {
-          _midpointArrivalTimeController.text = time.toString();
+          _midpointArrivalTimeController.text = time.format(context);
         }
       },
+      readOnly: true,
       controller: _midpointArrivalTimeController,
       decoration: InputDecoration(
           fillColor: Colors.white70,
@@ -543,6 +541,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
               DateTime.parse(date.toIso8601String()).toString();
         }
       },
+      readOnly: true,
       controller: _midpointArrivalDateController,
       decoration: InputDecoration(
           fillColor: Colors.white70,
@@ -598,6 +597,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           _midpointCityController.text = city.name ?? "HELLo";
         }
       },
+      readOnly: true,
       controller: _midpointCityController,
       decoration: const InputDecoration(
           fillColor: Colors.white70,
