@@ -34,17 +34,13 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
     return BottomNavigationBar(
       items: items,
       currentIndex: context.read<BottomSelectCubit>().state.index,
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
-      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
       type: BottomNavigationBarType.fixed,
       onTap: (index) {
         context
             .read<BottomSelectCubit>()
             .navigateTo(state: NavigationStates.values[index]);
-        // setState(() {});
+        setState(() {});
       },
     );
   }

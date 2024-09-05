@@ -1,3 +1,4 @@
+import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -46,6 +47,46 @@ class DateTimeUtil {
       hour: int.parse(timeParts[0]),
       minute: int.parse(timeParts[1]),
     );
+  }
+
+  // Date & Time picker Dialogs
+
+  static Future<DateTime?> showDateTimePickerDialog(BuildContext context,
+      {DateTime? initialDate}) async {
+    DateTime? selectedDateTime = await showDialog<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        DateTime? dateTime;
+        return AlertDialog(
+          title: const Text('Choose Date & Time'),
+          content: DateTimePicker(
+            type: DateTimePickerType.dateTimeSeparate,
+            dateMask: 'd MMM, yyyy',
+            initialDate: initialDate,
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2100),
+            onChanged: (val) => dateTime = DateTime.parse(val),
+            onSaved: (val) =>
+                dateTime = val != null ? DateTime.parse(val) : null,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(dateTime);
+              },
+              child: const Text('OK'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+    return selectedDateTime;
   }
 }
 

@@ -1,16 +1,21 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:link/domain/api_utils/api_service.dart';
 import 'package:link/models/post.dart';
+import 'package:path/path.dart';
 
-class PostRouteRepo {
+class PostRouteRepo extends ApiService {
   static final PostRouteRepo _instance = PostRouteRepo._();
+
   PostRouteRepo._();
   factory PostRouteRepo() => _instance;
 
   FutureOr<List<Post>> fetchRoutes() async {
-    Response response = await ApiService().getRequest('/routes');
+    Response response = await getRequest('/routes');
     List<Post> routes = [];
     if (response.statusCode == 200) {
       for (var route in response.data) {
@@ -52,16 +57,36 @@ class PostRouteRepo {
 }
 
  */
-  FutureOr<Post> uploadNewPost({required Post post}) async {
-    print("post json :::::::: \n${post.toJson()}");
-    Response response =
-        await ApiService().postRequest('/routes', post.toJson());
+  FutureOr<Post> uploadNewPost(
+      {required Post post, List<File?> files = const []}) async {
+    try {
+      debugPrint("files___ : $files");
+      late List<MultipartFile> multipartFiles = [];
 
-    if (response.statusCode == 201) {
-      print("response ::: ${response.data['data']} ");
-      return Post.fromJson(response.data['data'].first);
-    } else {
-      throw Exception("Failed to upload a new postS ");
+      for (var file in files) {
+        if (file != null) {
+          multipartFiles.add(
+            await MultipartFile.fromFile(file.path,
+                filename: basename(file.path)),
+          );
+        }
+      }
+
+      final data = post.toJson();
+      data['files'] = multipartFiles;
+
+      FormData formData = FormData.fromMap(data);
+
+      // Response response = await postRequest('/routes', post.toJson());
+      Response response = await postRequest('/routes', formData);
+      if (response.statusCode == 201) {
+        return Post.fromJson(response.data['data'].first);
+      } else {
+        throw Exception("Failed to upload a new post");
+      }
+    } catch (e, s) {
+      debugPrint("error ::::-> $e  , stackTrace :::-> $s");
+      rethrow;
     }
   }
 }

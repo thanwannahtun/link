@@ -23,9 +23,11 @@ class CityCubit extends Cubit<CityState> {
       List<City> cities = [];
       if (App.cities.isEmpty) {
         cities = await _cityRepo.fetchCities();
+        App.cities = cities;
       } else {
         cities = App.cities;
       }
+
       emit(state.copyWith(
         status: BlocStatus.fetched,
         cities: cities,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/domain/bloc_utils/bloc_crud_status.dart';
 import 'package:link/models/post.dart';
@@ -20,6 +21,7 @@ class _RouteListScreenState extends State<RouteListScreen> {
   @override
   void initState() {
     super.initState();
+    context.read<CityCubit>().fetchCities();
     context.read<PostRouteCubit>().fetchRoutes();
   }
 

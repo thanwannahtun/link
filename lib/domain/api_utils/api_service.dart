@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:link/core/utils/env.dart';
 import 'package:link/data/share_preference.dart';
 import 'package:link/domain/api_utils/api_error_handler.dart';
@@ -86,7 +87,9 @@ class ApiService {
             return handler.next(e);
           }
         } else {
-          ApiErrorHandler.handle(e); // I think Inprovement here
+          // I think Inprovement here
+          // ApiErrorHandler.handle(e);
+          return handler.next(e);
         }
 
         /// <------ Error Here
@@ -126,55 +129,31 @@ class ApiService {
 
   Future<Response> getRequest(String path,
       {Map<String, dynamic>? queryParameters}) async {
-    try {
-      final response = await _dio.get(path, queryParameters: queryParameters);
-      return response;
-    } on DioException catch (e) {
-      // Handle DioException
-      throw ApiErrorHandler.handle(e);
-    }
+    return await _dio.get(path, queryParameters: queryParameters);
   }
 
-  Future<Response> postRequest(String path, Map<String, dynamic> data) async {
-    try {
-      final response = await _dio.post(path, data: data);
-      return response;
-    } on DioException catch (e) {
-      // Handle DioException
-      throw ApiErrorHandler.handle(e);
-    }
+  Future<Response> postRequest(String path, Object? data) async {
+    // return await _dio.post(path, data: data);
+    return await _dio.post(
+      path,
+      data: data,
+      options: Options(
+        contentType: Headers.multipartFormDataContentType,
+      ),
+    );
   }
 
   Future<Response> putRequest(String path, Map<String, dynamic> data) async {
-    try {
-      final response = await _dio.put(path, data: data);
-      return response;
-    } on DioException catch (e) {
-      // Handle DioException
-      throw ApiErrorHandler.handle(e);
-    }
+    return await _dio.put(path, data: data);
   }
 
   Future<Response> deleteRequest(String path,
       {Map<String, dynamic>? queryParameters}) async {
-    try {
-      final response =
-          await _dio.delete(path, queryParameters: queryParameters);
-      return response;
-    } on DioException catch (e) {
-      // Handle DioException
-      throw ApiErrorHandler.handle(e);
-    }
+    return await _dio.delete(path, queryParameters: queryParameters);
   }
 
   Future<Response> patchRequest(String path, Map<String, dynamic> data) async {
-    try {
-      final response = await _dio.patch(path, data: data);
-      return response;
-    } on DioException catch (e) {
-      // Handle DioException
-      throw ApiErrorHandler.handle(e);
-    }
+    return await _dio.patch(path, data: data);
   }
 
   bool _shouldRetry(DioException err) {

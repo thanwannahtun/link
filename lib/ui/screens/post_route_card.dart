@@ -49,6 +49,7 @@ class PostRouteCard extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   // crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -114,10 +115,9 @@ class PostRouteCard extends StatelessWidget {
                       ],
                     )
                   ],
-                ).sizedBox(),
+                ),
               ), // profile section
               Expanded(
-                flex: 1,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: SizedBox(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
@@ -10,13 +12,14 @@ import 'package:link/repositories/post_route.dart';
 part 'post_route_state.dart';
 
 class PostRouteCubit extends Cubit<PostRouteState> {
+  final _postApiRepo = PostRouteRepo();
   PostRouteCubit()
       : super(const PostRouteState(status: BlocStatus.initial, routes: []));
 
   fetchRoutes() async {
     emit(state.copyWith(status: BlocStatus.doing));
     try {
-      List<Post> posts = await PostRouteRepo().fetchRoutes();
+      List<Post> posts = await _postApiRepo.fetchRoutes();
       emit(state.copyWith(status: BlocStatus.done, routes: posts));
     } on DioException catch (e) {
       debugPrint("DioException ::  $e");
@@ -29,25 +32,18 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     }
   }
 
-  uploadNewPost({required Post post}) async {
+  uploadNewPost({required Post post, List<File?> files = const []}) async {
     emit(state.copyWith(status: BlocStatus.doing));
     try {
-      print("ttt ${post.toJson()}");
-      print("ttt ${post.toJson()}");
-      Post response = await PostRouteRepo().uploadNewPost(post: post);
-
-      print("created Post ::: $response");
-
+      Post response =
+          await _postApiRepo.uploadNewPost(post: post, files: files);
       emit(state.copyWith(
           status: BlocStatus.done, routes: [...state.routes, response]));
-    } on DioException catch (e) {
-      debugPrint("DioException ::  $e");
+    } on Exception catch (e, s) {
+      debugPrint("[[[  Exception :: $e ^ stackTrace :: $s :::: ]]]");
 
       emit(state.copyWith(
           status: BlocStatus.doNot, error: ApiErrorHandler.handle(e).message));
-    } catch (e, stackTrace) {
-      debugPrint("Error ::  $e  :: staceTrace [[ $stackTrace ]] ");
-      emit(state.copyWith(status: BlocStatus.doNot, error: e.toString()));
     }
   }
 }

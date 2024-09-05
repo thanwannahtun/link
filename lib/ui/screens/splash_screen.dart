@@ -13,8 +13,16 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
+  }
+
   void delayAndNavigateHomeScreen() {
-    Timer.periodic(
+    _timer = Timer.periodic(
       const Duration(milliseconds: 1500),
       (timer) => context.pushReplacementNamed(RouteLists.app),
     );

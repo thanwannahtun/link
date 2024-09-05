@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/city/city_cubit.dart';
+import 'package:link/bloc/theme/theme_cubit.dart';
+import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/platform.dart';
-import 'package:link/ui/sections/date_time.dart';
+import 'package:link/models/app.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
@@ -36,6 +40,23 @@ class _CState extends State<C> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            CustomButton(
+                text: "Custom Button",
+                onPressed: () {
+                  context.read<ThemeCubit>().toggleTheme();
+                }),
+            ElevatedButton(
+              onPressed: () {
+                print(App.cities.map((c) => c.toJson()));
+              },
+              child: const Text("Get Cities from Hive"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CityCubit>().fetchCities();
+              },
+              child: const Text("Fetch Cities"),
+            ),
             ElevatedButton(
               onPressed: () {
                 Platform platform = Platform.currentPlatform(context);
@@ -72,6 +93,25 @@ class D extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: const Text("D").center(),
+    );
+  }
+}
+
+class CustomButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+
+  const CustomButton({super.key, required this.text, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          backgroundColor: context.primaryColor,
+          foregroundColor: context.titleColor,
+          textStyle: context.titleLargeStyle),
+      onPressed: onPressed,
+      child: Text(text),
     );
   }
 }

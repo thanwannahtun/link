@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -5,10 +7,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
+import 'package:link/core/styles/app_colors.dart';
+import 'package:link/core/styles/app_style.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/domain/bloc_utils/bloc_crud_status.dart';
 import 'package:link/models/agency.dart';
+import 'package:link/models/app.dart';
 import 'package:link/models/city.dart';
 import 'package:link/models/midpoint.dart';
 import 'package:link/models/post.dart';
@@ -26,6 +31,11 @@ class UploadNewPostPage extends StatefulWidget {
 class _UploadNewPostPageState extends State<UploadNewPostPage> {
   late PostCreateUtilCubit _postCreateUtilCubit;
   late PostRouteCubit _postRouteCubit;
+
+  City? selectedCity;
+
+  DateTime? _seletedDepartureDate;
+  DateTime? _seletedArrivalDate;
 
   @override
   void initState() {
@@ -59,7 +69,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   final TextEditingController _midpointCityController =
       TextEditingController(text: "");
-  final TextEditingController _midpointArrivalTimeController =
+  final TextEditingController _midpointDepartureTimeController =
       TextEditingController();
   final TextEditingController _midpointArrivalDateController =
       TextEditingController();
@@ -192,92 +202,22 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 */
                 /// [Midpoint]
 
-                BlocBuilder<PostCreateUtilCubit, PostCreateUtilState>(
-                  builder: (context, state) {
-                    if (state.status == BlocStatus.doing) {
-                      return Container();
-                    } else if (state.status == BlocStatus.done) {
-                      _midpoints = state.midpoints;
-                      return Container(
-                        color: Colors.white54,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _midpoints.length,
-                            itemBuilder: (context, index) {
-                              Midpoint midpoint = _midpoints[index];
-                              return Card.filled(
-                                color: Colors.white70,
-                                margin: const EdgeInsets.all(0.0),
-                                child: ListTile(
-                                  onTap: () {},
-                                  leading: Text((index + 1).toString()),
-                                  title: Text(midpoint.city?.name ?? ""),
-
-                                  isThreeLine: midpoint.description != null
-                                      ? true
-                                      : false,
-                                  subtitle: midpoint.description != null
-                                      ? Opacity(
-                                          opacity: 0.8,
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                softWrap: true,
-                                                maxLines: 2,
-                                                midpoint.description ?? "",
-                                                style: const TextStyle(
-                                                    fontSize: 13,
-                                                    overflow:
-                                                        TextOverflow.ellipsis),
-                                              ),
-                                              Text(
-                                                midpoint.arrivalTime != null
-                                                    ? DateTimeUtil
-                                                        .formatDateTime(midpoint
-                                                            .arrivalTime)
-                                                    : "",
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: AppInsets.font10,
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        )
-                                      : null,
-                                  // trailing: ,
-                                ),
-                              ).padding(
-                                  padding: const EdgeInsets.only(bottom: 5));
-                            },
-                            // separatorBuilder: (BuildContext context, int index) =>
-                            //     const Divider(
-                            //   thickness: 0.3,
-                            // ),
-                          ),
-                        ),
-                      );
-                    }
-                    return Container();
-                  },
+                Card.filled(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: AppInsets.inset10,
+                      vertical: AppInsets.inset8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppInsets.inset10,
+                        vertical: AppInsets.inset8),
+                    child: Column(
+                      children: [
+                        _showMidpointTiles(),
+                        _addMidpointField(context)
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(
-                  height: 5,
-                ),
-
-                // const Divider(
-                //   thickness: 0.5,
-                // ),
-
-                /// [Midpoint]
-
-                _addMidpointField(context),
 
                 const Divider(
                   thickness: 0.3,
@@ -299,14 +239,6 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                     Row(
                       children: [
                         IconButton(
-                          // onPressed: () async {
-                          //   await _picker.pickMultiImage().then(
-                          //     (value) async {
-                          //       await _postCreateUtilCubit.selectImages(
-                          //           xfiles: value);
-                          //     },
-                          //   );
-                          // },
                           onPressed: () {
                             Context.showBottomSheet(context,
                                 constraints:
@@ -369,7 +301,11 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            print(_xfiles.map((f) {
+                              print("${f.mimeType} : ${f.path}: ${f.name}");
+                            }));
+                          },
                           style: const ButtonStyle(
                               elevation: WidgetStatePropertyAll(0.3)),
                           child: const Text("Preview"),
@@ -386,23 +322,103 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     );
   }
 
-  Row _addMidpointField(BuildContext context) {
+  BlocBuilder<PostCreateUtilCubit, PostCreateUtilState> _showMidpointTiles() {
+    return BlocBuilder<PostCreateUtilCubit, PostCreateUtilState>(
+      builder: (context, state) {
+        if (state.status == BlocStatus.doing) {
+          return Container();
+        } else if (state.status == BlocStatus.done) {
+          _midpoints = state.midpoints;
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _midpoints.length,
+            itemBuilder: (context, index) {
+              Midpoint midpoint = _midpoints[index];
+              return Card.filled(
+                color: Colors.white70,
+                margin: const EdgeInsets.all(0.0),
+                child: ListTile(
+                  onTap: () {},
+                  leading: Text((index + 1).toString()),
+                  title: Text(midpoint.city?.name ?? ""),
+
+                  isThreeLine: midpoint.description != null ? true : false,
+                  subtitle: midpoint.description != null
+                      ? Opacity(
+                          opacity: 0.8,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                softWrap: true,
+                                maxLines: 2,
+                                midpoint.description ?? "",
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              // Row(
+                              // children: [
+                              // const Icon(
+                              //   Icons.date_range,
+                              //   size: AppInsets.inset15,
+                              // ),
+                              Row(
+                                children: [
+                                  Text(
+                                    midpoint.departureTime != null
+                                        ? DateTimeUtil.formatDateTime(
+                                            midpoint.departureTime)
+                                        : "",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppInsets.font10,
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_right_alt_rounded),
+                                  Text(
+                                    midpoint.arrivalTime != null
+                                        ? DateTimeUtil.formatDateTime(
+                                            midpoint.arrivalTime)
+                                        : "",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppInsets.font10,
+                                    ),
+                                  )
+                                ],
+                              ),
+                              // ],
+                              // )
+                            ],
+                          ),
+                        )
+                      : null,
+                  // trailing: ,
+                ),
+              ).padding(padding: const EdgeInsets.only(bottom: 5));
+            },
+            // separatorBuilder: (BuildContext context, int index) =>
+            //     const Divider(
+            //   thickness: 0.3,
+            // ),
+          );
+        }
+        return Container();
+      },
+    );
+  }
+
+  Widget _addMidpointField(BuildContext context) {
     return Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
             child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  elevation: 1.0, // Shadow elevation
-                  shape: RoundedRectangleBorder(
-                    side: const BorderSide(color: Colors.white10),
-                    borderRadius: BorderRadius.circular(3), // Border radius
-                  ),
-                  textStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold), // Text style
-                ),
+                style: AppStyle.buttonDark(context),
                 iconAlignment: IconAlignment.end,
                 onPressed: () async {
                   await _showRouteCityBottomSheet(context);
@@ -419,6 +435,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         isScrollControlled: true,
         setViewInset: true,
         showDragHandle: false,
+        backgroundColor: AppColors.white,
         body: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -430,10 +447,11 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
             _chooseCityName(),
             const SizedBox(height: AppInsets.inset15),
             const Text("Date*").bold(textAlign: TextAlign.start),
-            _chooseDateChoiceDialog(),
+            _chooseDepartureDateChoiceDialog(),
             const SizedBox(height: AppInsets.inset15),
             const Text("Time*").bold(textAlign: TextAlign.start),
-            _showTimePickerDialog(context),
+            // _showTimePickerDialog(context),
+            _chooseArrivalDateChoiceDialog(),
             const SizedBox(height: AppInsets.inset15),
             const Text("Description(optional)")
                 .bold(textAlign: TextAlign.start),
@@ -448,30 +466,35 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         persistentFooterButtons: [_addRoutePersistentButton(context)]);
   }
 
-  SizedBox _addRoutePersistentButton(BuildContext context) {
-    return SizedBox.expand(
-        child: OutlinedButton(
-      style: const ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(Colors.black)),
-      onPressed: () {
-        Midpoint midpoint = Midpoint(
-            city: City(name: _midpointCityController.text, id: "city_a"),
-            arrivalTime: DateTime.parse(
-              _midpointArrivalTimeController.text,
-            ),
-            description: _midpointDescriptionController.text);
+  Widget _addRoutePersistentButton(BuildContext context) {
+    return StatefulBuilder(builder:
+        (BuildContext context, void Function(void Function()) setState) {
+      return SizedBox.expand(
+          child: OutlinedButton(
+        style: const ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(Colors.black)),
+        onPressed: () {
+          Midpoint midpoint = Midpoint(
+              city: selectedCity,
+              departureTime: _seletedDepartureDate,
+              arrivalTime: _seletedArrivalDate,
+              description: _midpointDescriptionController.text);
 
-        _midpointArrivalTimeController.clear();
-        _midpointCityController.clear();
-        _midpointDescriptionController.clear();
-        _postCreateUtilCubit.addMidpoint(midpoint: midpoint);
-        Navigator.pop(context);
-      },
-      child: const Text(
-        "Add Route",
-        style: TextStyle(color: Colors.white),
-      ),
-    ));
+          _seletedArrivalDate = null;
+          _seletedDepartureDate = null;
+
+          _midpointCityController.clear();
+          _midpointDescriptionController.clear();
+          _postCreateUtilCubit.addMidpoint(midpoint: midpoint);
+          Navigator.pop(context);
+          setState(() {});
+        },
+        child: const Text(
+          "Add Route",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+    });
   }
 
   Row _chowPrivacyInfo() {
@@ -495,70 +518,82 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       maxLengthEnforcement: MaxLengthEnforcement.none,
       // expands: true,
       controller: _midpointDescriptionController,
-      decoration: const InputDecoration(
-        fillColor: Colors.white70,
-        filled: true,
-        hintText: "Dercription",
-        labelStyle: TextStyle(fontStyle: FontStyle.italic),
-        border: OutlineInputBorder(),
+      decoration: AppStyle.inputDecoration.copyWith(hintText: "Description"),
+    );
+  }
+
+  // TextField _showTimePickerDialog(BuildContext context) {
+  //   return TextField(
+  //     onTap: () async {
+  //       TimeOfDay? time = await showTimePicker(
+  //         context: context,
+  //         initialTime: TimeOfDay.now(),
+  //       );
+
+  //       if (time != null) {
+  //         if (context.mounted) {
+  //           _midpointArrivalTimeController.text = time.format(context);
+  //         }
+  //       }
+  //     },
+  //     readOnly: true,
+  //     controller: _midpointArrivalTimeController,
+  //     decoration: AppStyle.inputDecoration.copyWith(
+  //       hintText: TimeOfDay.now().format(context),
+  //       suffixIcon: const Icon(Icons.access_time),
+  //     ),
+  //   );
+  // }
+
+  TextField _chooseDepartureDateChoiceDialog() {
+    return TextField(
+      onTap: () async {
+        // DateTime? date = await showDatePicker(
+        //     context: context,
+        //     firstDate: DateTime.now(),
+        //     lastDate: DateTime(2025));
+        DateTime? date = await DateTimeUtil.showDateTimePickerDialog(context);
+
+        if (date != null) {
+          _seletedDepartureDate = date;
+          _midpointDepartureTimeController.text =
+              DateTimeUtil.formatDateTime(date);
+          // DateTime.parse(date.toIso8601String()).toString();
+        }
+      },
+      readOnly: true,
+      controller: _midpointDepartureTimeController,
+      decoration: AppStyle.inputDecoration.copyWith(
+        suffixIcon: const Icon(Icons.date_range_rounded),
+        hintText:
+            " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
       ),
     );
   }
 
-  TextField _showTimePickerDialog(BuildContext context) {
+  TextField _chooseArrivalDateChoiceDialog() {
     return TextField(
       onTap: () async {
-        TimeOfDay? time = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay.now(),
-        );
-
-        if (time != null) {
-          _midpointArrivalTimeController.text = time.format(context);
-        }
-      },
-      readOnly: true,
-      controller: _midpointArrivalTimeController,
-      decoration: InputDecoration(
-          fillColor: Colors.white70,
-          filled: true,
-          suffixIcon: const Icon(Icons.watch_later_outlined),
-          hintText: TimeOfDay.now().format(context),
-          border: const OutlineInputBorder()),
-    );
-  }
-
-  TextField _chooseDateChoiceDialog() {
-    return TextField(
-      onTap: () async {
-        DateTime? date = await showDatePicker(
-            context: context,
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2025));
+        DateTime? date = await DateTimeUtil.showDateTimePickerDialog(context);
 
         if (date != null) {
+          _seletedArrivalDate = date;
           _midpointArrivalDateController.text =
-              DateTime.parse(date.toIso8601String()).toString();
+              DateTimeUtil.formatDateTime(date);
+          // DateTime.parse(date.toIso8601String()).toString();
         }
       },
       readOnly: true,
       controller: _midpointArrivalDateController,
-      decoration: InputDecoration(
-          fillColor: Colors.white70,
-          filled: true,
-          suffixIcon: const Icon(Icons.date_range),
-          hintText:
-              " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
-          border: const OutlineInputBorder()),
+      decoration: AppStyle.inputDecoration.copyWith(
+        suffixIcon: const Icon(Icons.date_range_rounded),
+        hintText:
+            " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
+      ),
     );
   }
 
   TextField _chooseCityName() {
-    List<City> temCities = List<City>.generate(
-      25,
-      (index) => City(id: "${index + 1}", name: "city ${index + 1}"),
-    );
-
     return TextField(
       onTap: () async {
         City? city = await Context.showAlertDialog<City>(
@@ -568,25 +603,18 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
             title: const Text("Choose Cities").bold(),
           ).padding(
               padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
-          itemList: temCities,
+          itemList: App.cities,
           itemBuilder: (ctx, index) {
-            bool clicked = false;
-
             return StatefulBuilder(
               builder:
                   (BuildContext ctx, void Function(void Function()) setState) {
-                IconData icon = clicked
-                    ? Icons.add_circle_outlined
-                    : Icons.add_circle_outline_sharp;
-
                 return ListTile(
                   onTap: () {
-                    clicked = true;
                     setState(() {});
-                    Navigator.pop(context, temCities[index]);
+                    Navigator.pop(context, App.cities[index]);
                   },
-                  leading: Icon(icon),
-                  title: Expanded(child: Text(temCities[index].name ?? "")),
+                  leading: const Icon(Icons.add_circle_outlined),
+                  title: Expanded(child: Text(App.cities[index].name ?? "")),
                 );
               },
             );
@@ -594,17 +622,16 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         );
 
         if (city != null) {
+          selectedCity = city;
           _midpointCityController.text = city.name ?? "HELLo";
         }
       },
       readOnly: true,
       controller: _midpointCityController,
-      decoration: const InputDecoration(
-          fillColor: Colors.white70,
-          filled: true,
-          suffixIcon: Icon(Icons.location_on_outlined),
-          hintText: "City Name",
-          border: OutlineInputBorder()),
+      decoration: AppStyle.inputDecoration.copyWith(
+        hintText: "City Name",
+        suffixIcon: const Icon(Icons.location_on_outlined),
+      ),
     );
   }
 
@@ -821,18 +848,40 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       actions: [
         ElevatedButton(
             onPressed: () {
+              _origin = _midpoints.firstOrNull?.city;
+              _destination = _midpoints.lastOrNull?.city;
+
               Post post = Post(
-                  agency:
-                      Agency(id: "66b8d35d3e1a9b47a2c0e6a2", name: "Flyaway"),
+                  agency: Agency(
+                      id: "66b8d2ff3e1a9b47a2c0e69f",
+                      name: "Asia World",
+                      profileImage: "profile_image"),
                   title: _titleController.text,
                   description: _descriptionController.text,
-                  origin: _origin?.copyWith(id: '66b613cd6c17b0be8b372dc5'),
+                  origin: _origin,
                   midpoints: _midpoints,
-                  destination:
-                      _destination?.copyWith(id: '66b613cd6c17b0be8b372dc8'),
-                  images: _xfiles.map((f) => f.path).toList());
+                  destination: _destination,
+                  // images: _xfiles.map((f) => f.path).toList(),
+                  scheduleDate: DateTime(2025, 9, 7, 17, 30),
+                  pricePerTraveler: 50000);
 
-              _postRouteCubit.uploadNewPost(post: post);
+              /*
+                  {
+  "agency": "66b8d28d3e1a9b47a2c0e69c",
+  "origin": "66b613cd6c17b0be8b372dc7",
+  "destination": "66b613cd6c17b0be8b372dce",
+  "scheduleDate": "2024-09-01T09:00:00.000Z",
+  "pricePerTraveler": 38000,
+  "title": "Travel around the world with us!",
+  "description": "Happy Travelling!😎😎."
+}
+
+                   */
+
+              _postRouteCubit.uploadNewPost(
+                post: post,
+                files: _xfiles.map((xfile) => File(xfile.path)).toList(),
+              );
             },
             child: const Text("Post"))
       ],
@@ -857,6 +906,7 @@ class PostUploadFormFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("rebuild==========================");
     return Row(
       children: [
         Expanded(

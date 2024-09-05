@@ -44,6 +44,8 @@ class Post {
   final List<String>? images;
 
   Map<String, dynamic> toJson() {
+    print("agency  -----------${agency?.toJson()}--------");
+
     return {
       "_id": id,
       // "agency": agency?.toJson(),
@@ -54,9 +56,9 @@ class Post {
       "destination": destination?.id,
       "scheduleDate": scheduleDate?.toIso8601String(),
       "pricePerTraveler": pricePerTraveler,
-      "seats": seats?.map((e) => e.toJson()).toList(),
-      "createdAt": createdAt?.toIso8601String(),
-      "midpoints": midpoints?.map((e) => e.toJson()),
+      // "seats": seats?.map((e) => e.toJson()).toList(),
+      // "createdAt": createdAt?.toIso8601String(),
+      // "midpoints": midpoints?.map((e) => e.toJson()),
       "commentCounts": commentCounts,
       "likeCounts": likeCounts,
       "shareCounts": shareCounts,
