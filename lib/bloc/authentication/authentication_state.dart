@@ -1,16 +1,32 @@
 part of 'authentication_cubit.dart';
 
+enum AutnenticationStatus {
+  initial,
+  singingUp,
+  signUpSuccess,
+  signUpFailed,
+  signIning,
+  signInSuccess,
+  signInFailed,
+  singingOut,
+  signingOutFailed,
+  signingOutSuccess
+}
+
 class AuthenticationState extends Equatable {
   const AuthenticationState(
       {required this.status, this.error, this.message, this.user});
 
-  final BlocStatus status;
+  final AutnenticationStatus status;
   final String? error;
   final String? message;
   final User? user;
 
   AuthenticationState copyWith(
-      {BlocStatus? status, String? error, String? message, User? user}) {
+      {AutnenticationStatus? status,
+      String? error,
+      String? message,
+      User? user}) {
     return AuthenticationState(
         status: status ?? this.status,
         error: error ?? error,

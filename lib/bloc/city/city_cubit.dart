@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:link/domain/api_utils/api_error_handler.dart';
-import 'package:link/domain/bloc_utils/bloc_crud_status.dart';
+import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/city.dart';
 import 'package:link/repositories/city_repo.dart';

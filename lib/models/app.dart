@@ -5,6 +5,7 @@ import 'package:link/models/user.dart';
 import 'package:image/image.dart' as img;
 
 class App {
+  static const baseImgUrl = 'http://192.168.99.217:3000';
   static User user = User();
 
   static List<City> cities = [];

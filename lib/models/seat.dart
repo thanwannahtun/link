@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 enum SeatStatus { available, booked }
 
 class Seat {
@@ -24,7 +22,7 @@ class Seat {
     return Seat(
       id: id ?? this.id,
       number: number ?? this.number,
-      type:type ?? this.type,
+      type: type ?? this.type,
       status: status ?? this.status,
     );
   }
@@ -33,7 +31,7 @@ class Seat {
     return {
       "_id": id,
       "number": number,
-      "type":type,
+      "type": type,
       "status": status?.name,
     };
   }
@@ -43,7 +41,7 @@ class Seat {
     return Seat(
       id: json['_id'],
       number: json['number'],
-        type: json['type'] as String?,
+      type: json['type'] as String?,
 
       // status: json['status'] != null ? SeatStatus.values[status] : null,
       status: json['status'] != null

@@ -1,9 +1,5 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:link/domain/api_utils/api_service.dart';
-import 'package:link/models/app.dart';
 import 'package:link/models/user.dart';
 import 'package:link/repositories/user.dart';
 

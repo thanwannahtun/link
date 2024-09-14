@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:link/core/theme_extension.dart';
 
 class Context {
   static showSnackBar(BuildContext context, SnackBar snackBar) {
@@ -93,33 +92,34 @@ class Context {
           content: SizedBox(
             // color: Colors.amber,
             height: MediaQuery.of(context).size.height * 0.5,
-            width: MediaQuery.of(context).size.height * 0.7,
-            child: Expanded(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [Expanded(child: headerWidget)],
+            width: MediaQuery.of(context).size.height * 0.8,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [Expanded(child: headerWidget)],
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border(
+                            top: BorderSide(
+                                color: context.tertiaryColor.withOpacity(0.7)),
+                            bottom: BorderSide(
+                                color:
+                                    context.tertiaryColor.withOpacity(0.7)))),
+                    child: ListView.separated(
+                        shrinkWrap: true,
+                        itemBuilder: itemBuilder,
+                        physics: const ClampingScrollPhysics(),
+                        separatorBuilder: (context, index) => const Divider(
+                              height: 1,
+                              thickness: 0.2,
+                            ),
+                        itemCount: itemList.length),
                   ),
-                  Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                          border: Border(
-                              top: BorderSide(color: Colors.black87),
-                              bottom: BorderSide(color: Colors.black87))),
-                      child: ListView.separated(
-                          shrinkWrap: true,
-                          itemBuilder: itemBuilder,
-                          physics: const ClampingScrollPhysics(),
-                          separatorBuilder: (context, index) => const Divider(
-                                height: 1,
-                                thickness: 0.2,
-                              ),
-                          itemCount: itemList.length),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

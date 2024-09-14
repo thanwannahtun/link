@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:link/domain/api_utils/api_service.dart';
+import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
 import 'package:path/path.dart';
 
@@ -18,7 +18,7 @@ class PostRouteRepo extends ApiService {
     Response response = await getRequest('/routes');
     List<Post> routes = [];
     if (response.statusCode == 200) {
-      for (var route in response.data) {
+      for (var route in response.data['data']) {
         routes.add(Post.fromJson(route as Map<String, dynamic>));
       }
 
@@ -61,23 +61,27 @@ class PostRouteRepo extends ApiService {
       {required Post post, List<File?> files = const []}) async {
     try {
       debugPrint("files___ : $files");
-      late List<MultipartFile> multipartFiles = [];
-
+      List<File> compressedFiles = [];
       for (var file in files) {
         if (file != null) {
-          multipartFiles.add(
-            await MultipartFile.fromFile(file.path,
-                filename: basename(file.path)),
-          );
+          compressedFiles.add(await App.compressAndResizeImageAdvance(file));
         }
       }
 
+      List<MultipartFile> multipartFiles = [];
+
+      for (var file in compressedFiles) {
+        multipartFiles.add(
+          await MultipartFile.fromFile(file.path,
+              filename: basename(file.path)),
+        );
+      }
       final data = post.toJson();
-      data['files'] = multipartFiles;
-
       FormData formData = FormData.fromMap(data);
-
-      // Response response = await postRequest('/routes', post.toJson());
+      formData.files
+          .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
+      debugPrint(
+          "formData :::::::::: ${formData.files.map((f) => f.value.filename)} ::::: |||||||||");
       Response response = await postRequest('/routes', formData);
       if (response.statusCode == 201) {
         return Post.fromJson(response.data['data'].first);

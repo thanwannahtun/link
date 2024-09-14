@@ -1,16 +1,56 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color black = Colors.black;
-  static const Color green50 = Color(0xFFC1F2B0);
-  static const Color green = Color(0xFF1EFA01);
-  static const Color white = Color(0xFFFBF6EE);
-  static const Color blue = Color(0xFF2192FF);
-
-  // Additional colors for the theme
-  static const Color grey = Color(0xFF8A8A8A);
-  static const Color darkGrey = Color(0xFF2C2C2C);
-  static const Color lightGrey = Color(0xFFEFEFEF);
-  static const Color lightBlue = Color(0xFFBBDEFB);
-  static const Color darkBlue = Color(0xFF0D47A1);
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color green = Color(0xFF05F819);
 }
+
+class DarkTheme {
+  static const Color primaryBg = Color(0xff5E5E5E); // bg
+  static const Color secondaryBg = Color(0xff1E1E1E); // material widget , icon
+  static const Color tertiaryBg = Color(0xff000000); // card , list , etc ,
+  static const Color onPrimary = Color(0xFFFFFFFF);
+
+  static const Color primaryText = Color(0xffFFFFFF); // text
+  // static const Color secondaryText = Color(0xff01070A); // text
+  // static const Color tertiaryText = Color(0xff01070A); // text
+
+  static const Color primaryAsset = Color(0xffFFFFFF); // divider , border
+}
+
+class LightTheme {
+  static const Color primaryBg = Color(0xffC7C7C7); // bg
+  static const Color secondaryBg = Color(0xff46656F); // material widget , icon
+  static const Color tertiaryBg = Color(0xff8FABB7); // card , list , etc ,
+  static const Color onPrimary = Color(0xFFFFFFFF);
+  static const Color primaryText = Color(0xff01070A);
+  static const Color secondaryText = Color(0xff01070A);
+  static const Color tertiaryText = Color(0xff01070A);
+
+  static const Color primaryAsset = Color(0xffD8DFE5); // divider , border
+}
+
+/*
+for light theme 
+
+primaryBg , C7C7C7 ( white dark )
+secondaryBg , ECECEC ( white pale )
+tertiaryBg , FFFFFF ( white bright )
+primaryAsset , 1E1E1E ( black -> icon , material utilities )
+
+primaryText , 1E1E1E ( black )
+secondaryText , FFFFFF  ( white )
+tertiaryText , for 80 % pale primary
+ */
+/*
+for dark theme 
+
+primaryBg , 5E5E5E ( dark nav )
+secondaryBg , 1E1E1E ( dark body )
+tertiaryBg , 000000 ( dark util )
+primaryAsset , FFFFFF ( white -> icon , material utilities )
+
+primaryText , FFFFFF ( white )
+secondaryText , FFFFFF  ( white )
+tertiaryText , for 80 % pale primary
+ */

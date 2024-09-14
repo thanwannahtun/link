@@ -10,14 +10,24 @@ class AppStyle {
   static ButtonStyle buttonDark(BuildContext context) {
     return ButtonStyle(
       backgroundColor: WidgetStatePropertyAll(context.primaryColor),
-      foregroundColor: const WidgetStatePropertyAll(AppColors.white),
+      foregroundColor: WidgetStatePropertyAll(context.onPrimaryColor),
     );
   }
 
-  static InputDecoration inputDecoration = const InputDecoration(
-      fillColor: Color.fromRGBO(255, 255, 255, 0.702),
-      filled: true,
-      border: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.all(Radius.circular(AppInsets.inset5))));
+  static ButtonStyle buttonExpanded(BuildContext context) {
+    return ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(context.secondaryColor),
+        foregroundColor: WidgetStatePropertyAll(context.onPrimaryColor),
+        minimumSize: const WidgetStatePropertyAll(Size(double.infinity, 40)));
+  }
+
+  static InputDecoration inputDecoration(BuildContext context) {
+    return InputDecoration(
+        fillColor: context.secondaryColor,
+        filled: true,
+        labelStyle: TextStyle(color: context.onPrimaryColor),
+        border: const OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.all(Radius.circular(AppInsets.inset5))));
+  }
 }

@@ -8,6 +8,7 @@ import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/styles/app_theme.dart';
+import 'package:link/domain/bloc_utils/app_bloc_observer.dart';
 import 'package:link/models/city.dart';
 import 'package:link/ui/utils/route_generator.dart';
 import 'package:link/ui/utils/route_list.dart';
@@ -22,6 +23,8 @@ void main() async {
 
   // Register Adapter
   Hive.registerAdapter(CityAdapter());
+
+  Bloc.observer = AppBlocObserver();
 
   runApp(MultiBlocProvider(providers: [
     BlocProvider<ThemeCubit>(
@@ -80,6 +83,7 @@ class _LinkApplicationState extends State<LinkApplication>
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, state) {
+          debugPrint(state.toString());
           final brightness = MediaQuery.of(context).platformBrightness;
           ThemeMode themeMode;
 

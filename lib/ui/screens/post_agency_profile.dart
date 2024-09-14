@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/styles/app_style.dart';
+import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/utils/app_insets.dart';
+import 'package:link/models/app.dart';
 import 'package:link/models/comment.dart';
 import 'package:link/models/post.dart';
 import 'package:link/models/seat.dart';
@@ -109,19 +111,19 @@ class _AgencyProfileState extends State<AgencyProfile> {
             /// PhotoViewGalleryWidget
             (post?.images ?? []).isEmpty
                 ? Container()
-                : PhotoViewZoomableWidget(post: post).sizedBox(
-                    height: 350,
-                    width: double.infinity,
-                  ),
+                : PhotoViewZoomableWidget(post: post).expanded().sizedBox(
+                      height: 350,
+                      width: double.infinity,
+                    ),
             const SizedBox(height: 15),
             _buildInfoSection(
               "From",
-              post?.origin?.name ?? "Unknown",
+              post?.origin?.name ?? "",
             ),
             const SizedBox(height: 5),
             _buildInfoSection(
               "To",
-              post?.destination?.name ?? "Unknown",
+              post?.destination?.name ?? "",
             ),
             const SizedBox(height: 5),
             _buildInfoSection(
@@ -134,7 +136,7 @@ class _AgencyProfileState extends State<AgencyProfile> {
               "Price per Traveler",
               post?.pricePerTraveler != null
                   ? "\$${post!.pricePerTraveler}"
-                  : "Unknown",
+                  : "",
             ),
             const SizedBox(height: 20),
             const Text(
@@ -174,7 +176,8 @@ class _AgencyProfileState extends State<AgencyProfile> {
   }
 
   Widget _buildInfoSection(String label, String value) {
-    return Card(
+    return Card.filled(
+      shadowColor: context.onPrimaryColor,
       elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -184,17 +187,13 @@ class _AgencyProfileState extends State<AgencyProfile> {
               Expanded(
                 child: Text(
                   "$label: ",
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black54),
                 ),
               ),
               Expanded(
                 flex: 2,
                 child: Text(
                   value,
-                  style: const TextStyle(fontSize: 18, color: Colors.black87),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ],
@@ -219,13 +218,16 @@ class PhotoViewZoomableWidget extends StatelessWidget {
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PhotoViewGalleryWidget(
           backgroundDecoration: const BoxDecoration(color: Colors.black45),
-          images: post?.images ?? [],
+          images:
+              post?.images?.map((img) => '${App.baseImgUrl}$img').toList() ??
+                  [],
         ),
       )),
       child: PhotoViewGalleryWidget(
-              backgroundDecoration: const BoxDecoration(color: Colors.black12),
-              images: post?.images ?? [])
-          .expanded(),
+          backgroundDecoration: const BoxDecoration(color: Colors.black12),
+          images:
+              post?.images?.map((img) => '${App.baseImgUrl}$img').toList() ??
+                  []),
     );
   }
 }

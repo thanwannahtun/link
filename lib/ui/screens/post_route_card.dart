@@ -4,6 +4,9 @@ import 'package:link/models/post.dart';
 import 'package:link/ui/utils/expandable_text.dart';
 import 'package:link/ui/widget_extension.dart';
 
+import '../../models/app.dart';
+import '../widgets/photo_view_gallery_widget.dart';
+
 // ignore: must_be_immutable
 class PostRouteCard extends StatelessWidget {
   PostRouteCard({
@@ -42,93 +45,7 @@ class PostRouteCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         // mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                flex: 3,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  // crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: paddingLeft ?? const EdgeInsets.only(),
-                      child: InkWell(
-                        onTap: loading ? null : onAgencyPressed,
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          color: Colors.black38,
-                          child: loading
-                              ? null
-                              : Image.network(
-                                  post.agency?.profileImage ??
-                                      "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
-                                  fit: BoxFit.cover,
-                                ),
-                        ).clipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 5,
-                    ),
-                    if (loading)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            color: Colors.white24,
-                            height: 15,
-                            width: 70,
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          Container(
-                            color: Colors.white24,
-                            height: 10,
-                            width: 130,
-                          ),
-                        ],
-                      ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          onTap: loading ? null : onAgencyPressed,
-                          child: Text(post.agency?.name ?? "",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                        Text(
-                          // post.scheduleDate?.toIso8601String() ?? "",
-                          DateTimeUtil.formatDateTime(post.scheduleDate),
-                          style:
-                              const TextStyle(fontSize: 10, color: Colors.red),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ), // profile section
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: SizedBox(
-                    child: InkWell(
-                        onTap: loading ? null : onMenuPressed,
-                        child: const Icon(Icons.more_vert_outlined)),
-                  ),
-                ),
-              ), // option section
-            ],
-          ), // head
+          _cardHeader(), // head
           const SizedBox(
             height: 5,
           ),
@@ -136,14 +53,24 @@ class PostRouteCard extends StatelessWidget {
           /// Title & Description
           _buildPostTitleDescription(),
 
+          /// Images Section
+          PhotoViewGalleryWidget(
+                  backgroundDecoration:
+                      const BoxDecoration(color: Colors.black12),
+                  images: post.images
+                          ?.map((img) => '${App.baseImgUrl}$img')
+                          .toList() ??
+                      [])
+              .sizedBox(height: 200, width: double.infinity),
+
           /// Images
-          Container(
-            height: 200,
-            width: double.infinity,
-            color: Colors.blueAccent,
-            child: Image.network(
-                "https://images.stockcake.com/public/8/4/f/84f518cc-4f5c-4bd4-95fd-7432ac50086d_large/doctors-in-meeting-stockcake.jpg"),
-          ),
+          // Container(
+          //   height: 200,
+          //   width: double.infinity,
+          //   color: Colors.blueAccent,
+          //   child: Image.network(
+          //       "https://images.stockcake.com/public/8/4/f/84f518cc-4f5c-4bd4-95fd-7432ac50086d_large/doctors-in-meeting-stockcake.jpg"),
+          // ),
 
           /// Midpoints
           _buildMidpoints(),
@@ -178,6 +105,94 @@ class PostRouteCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Row _cardHeader() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: paddingLeft ?? const EdgeInsets.only(),
+                child: InkWell(
+                  onTap: loading ? null : onAgencyPressed,
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    color: Colors.black38,
+                    child: loading
+                        ? null
+                        : Image.network(
+                            post.agency?.profileImage ??
+                                "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
+                            fit: BoxFit.cover,
+                          ),
+                  ).clipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: 5,
+              ),
+              if (loading)
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      color: Colors.white24,
+                      height: 15,
+                      width: 70,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      color: Colors.white24,
+                      height: 10,
+                      width: 130,
+                    ),
+                  ],
+                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: loading ? null : onAgencyPressed,
+                    child: Text(post.agency?.name ?? "",
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  Text(
+                    // post.scheduleDate?.toIso8601String() ?? "",
+                    DateTimeUtil.formatDateTime(post.scheduleDate),
+                    style: const TextStyle(fontSize: 10, color: Colors.red),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ), // profile section
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(
+              child: InkWell(
+                  onTap: loading ? null : onMenuPressed,
+                  child: const Icon(Icons.more_vert_outlined)),
+            ),
+          ),
+        ), // option section
+      ],
     );
   }
 

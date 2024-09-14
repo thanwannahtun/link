@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
-import 'package:link/domain/bloc_utils/bloc_crud_status.dart';
+import 'package:link/core/theme_extension.dart';
+import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/utils/route_list.dart';
@@ -36,9 +37,9 @@ class _RouteListScreenState extends State<RouteListScreen> {
       body: BlocConsumer<PostRouteCubit, PostRouteState>(
         builder: (context, state) {
           debugPrint("::::::::::::: ${state.status}");
-          if (state.status == BlocStatus.doNot) {
+          if (state.status == BlocStatus.fetchFailed) {
             return _buildShimmer(context);
-          } else if (state.status == BlocStatus.doing) {
+          } else if (state.status == BlocStatus.fetching) {
             return _buildShimmer(context);
           }
           posts = state.routes;
@@ -91,8 +92,8 @@ class _RouteListScreenState extends State<RouteListScreen> {
       itemCount: 10,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.black12,
-          highlightColor: Colors.black45,
+          baseColor: context.primaryColor,
+          highlightColor: context.onPrimaryColor,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: PostRouteCard(

@@ -10,14 +10,13 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-             InkWell(
+            InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => const ShowCustomAppBarBody(),
                 ));
               },
-              child:
-                  const ListTile(title: Text("Create a new post => ")),
+              child: const ListTile(title: Text("Create a new post => ")),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 2),
             InkWell(
@@ -119,6 +118,7 @@ class ShowCustomAppBarBody extends StatelessWidget {
   }
 }
 
+// ignore: must_be_immutable
 class StateLessWidgetWithAppBar extends StatelessWidget {
   StateLessWidgetWithAppBar(
       {super.key,

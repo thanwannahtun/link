@@ -100,7 +100,7 @@ class ApiService {
   }
 
   Future<void> _refreshToken() async {
-    print('called refreshToken');
+    debugPrint('called refreshToken');
     // Implement your token refresh logic here.
     // This typically involves making a POST request to the refresh token endpoint
     // and updating the stored tokens.

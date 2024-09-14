@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class CommentPersistentFooterButton extends StatelessWidget {
   CommentPersistentFooterButton(
       {super.key,

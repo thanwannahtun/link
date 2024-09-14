@@ -77,7 +77,7 @@ extension StyleExtension on Text {
     return Text(
       data ?? "",
       textAlign: textAlign,
-      style: const TextStyle(fontWeight: FontWeight.bold),
+      style: style?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 }

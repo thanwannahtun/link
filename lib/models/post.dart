@@ -44,10 +44,8 @@ class Post {
   final List<String>? images;
 
   Map<String, dynamic> toJson() {
-    print("agency  -----------${agency?.toJson()}--------");
-
     return {
-      "_id": id,
+      // "_id": id,
       // "agency": agency?.toJson(),
       "agency": agency?.id,
       // "origin": origin?.toJson(),
@@ -63,7 +61,8 @@ class Post {
       "likeCounts": likeCounts,
       "shareCounts": shareCounts,
       "title": title,
-      "images": images,
+      // "images": images,
+      "images": [],
       "description": description,
     };
   }

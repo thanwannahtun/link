@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:link/domain/bloc_utils/bloc_crud_status.dart';
+import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/midpoint.dart';
 
 part 'post_create_util_state.dart';
@@ -20,17 +20,30 @@ class PostCreateUtilCubit extends Cubit<PostCreateUtilState> {
     if (state.midpoints.length >= 10) {
       emit(
         state.copyWith(
-            status: BlocStatus.doNot,
+            status: BlocStatus.addFailed,
             midpoints: [...state.midpoints],
             error: "You've Got Maximum Midpoint Limit !"),
       );
     } else {
       emit(
         state.copyWith(
-            status: BlocStatus.done, midpoints: [...state.midpoints, midpoint]),
+            status: BlocStatus.added,
+            midpoints: [...state.midpoints, midpoint]),
       );
     }
   }
+
+  removeMidpoint({required int index}) {
+    final midpoints = state.midpoints;
+    midpoints.removeAt(index);
+    emit(
+      state.copyWith(midpoints: midpoints),
+    );
+  }
+
+  resetMidpoints() => emit(
+        state.copyWith(midpoints: []),
+      );
 
   selectImages({required List<XFile> xfiles}) async {
     if (state.xfiles.length >= 11) {
@@ -39,7 +52,7 @@ class PostCreateUtilCubit extends Cubit<PostCreateUtilState> {
           error: "You've Got Maximum Image Limit !"));
       emit(
         state.copyWith(
-          status: BlocStatus.done,
+          status: BlocStatus.added,
           xfiles: [...state.xfiles],
           // error: "You've Got Maximum Image Limit !",
         ),
@@ -47,7 +60,7 @@ class PostCreateUtilCubit extends Cubit<PostCreateUtilState> {
     } else {
       emit(
         state.copyWith(
-            status: BlocStatus.done, xfiles: [...state.xfiles, ...xfiles]),
+            status: BlocStatus.added, xfiles: [...state.xfiles, ...xfiles]),
       );
     }
   }
