@@ -33,12 +33,12 @@ class Midpoint extends Equatable {
       );
 
   Map<String, dynamic> toJson() => {
-        'city': city?.toJson(),
-        'arrivalTime': arrivalTime?.toIso8601String(),
-        'departureTime': departureTime?.toIso8601String(),
-        'order': order,
-        '_id': id,
-        'description': description,
+        "city": city?.id,
+        "arrivalTime": arrivalTime?.toIso8601String(),
+        "departureTime": departureTime?.toIso8601String(),
+        // 'order': order,
+        // '_id': id,
+        "description": description,
       };
 
   Midpoint copyWith({
@@ -60,9 +60,11 @@ class Midpoint extends Equatable {
   }
 
   @override
-  bool get stringify => true;
-
-  @override
   List<Object?> get props =>
       [city, departureTime, arrivalTime, order, id, description];
+
+  @override
+  String toString() {
+    return 'Midpoint{city=$city, arrivalTime=$arrivalTime, departureTime=$departureTime, order=$order, id=$id, description=$description}';
+  }
 }

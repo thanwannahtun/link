@@ -60,13 +60,12 @@ class PostRouteRepo extends ApiService {
   FutureOr<Post> uploadNewPost(
       {required Post post, List<File?> files = const []}) async {
     try {
-      debugPrint("files___ : $files");
-      List<File> compressedFiles = [];
-      for (var file in files) {
-        if (file != null) {
-          compressedFiles.add(await App.compressAndResizeImageAdvance(file));
-        }
-      }
+      debugPrint("-------------------------------------Start Compressing");
+      List<File> compressedFiles =
+          await Future.wait(files.whereType<File>().map((file) async {
+        return await App.compressImage(file);
+      }));
+      debugPrint("-------------------------------------End Compressing");
 
       List<MultipartFile> multipartFiles = [];
 
@@ -80,8 +79,7 @@ class PostRouteRepo extends ApiService {
       FormData formData = FormData.fromMap(data);
       formData.files
           .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
-      debugPrint(
-          "formData :::::::::: ${formData.files.map((f) => f.value.filename)} ::::: |||||||||");
+
       Response response = await postRequest('/routes', formData);
       if (response.statusCode == 201) {
         return Post.fromJson(response.data['data'].first);

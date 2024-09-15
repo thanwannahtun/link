@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/theme_extension.dart';
 
+extension DialogExt on BuildContext {
+  showSnackBar(SnackBar snackBar, {AnimationStyle? snackBarAnimationStyle}) {
+    ScaffoldMessenger.of(this).hideCurrentSnackBar();
+    ScaffoldMessenger.of(this)
+        .showSnackBar(snackBar, snackBarAnimationStyle: snackBarAnimationStyle);
+  }
+}
+
 class Context {
-  static showSnackBar(BuildContext context, SnackBar snackBar) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  static SnackBar snackBar(Widget content,
+      {Icon? icon, SnackBarAction? action}) {
+    return SnackBar(
+        content: Row(
+          children: [
+            icon ?? Container(),
+            content,
+          ],
+        ),
+        action: action);
   }
 
   static Future<T?> showBottomSheet<T>(

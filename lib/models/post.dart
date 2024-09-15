@@ -56,7 +56,7 @@ class Post {
       "pricePerTraveler": pricePerTraveler,
       // "seats": seats?.map((e) => e.toJson()).toList(),
       // "createdAt": createdAt?.toIso8601String(),
-      // "midpoints": midpoints?.map((e) => e.toJson()),
+      "midpoints": midpoints?.map((e) => e.toJson()).toList(),
       "commentCounts": commentCounts,
       "likeCounts": likeCounts,
       "shareCounts": shareCounts,

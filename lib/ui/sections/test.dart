@@ -59,10 +59,9 @@ class _CState extends State<C> {
             ElevatedButton(
               onPressed: () {
                 Platform platform = Platform.currentPlatform(context);
-                SnackBar snackBar = SnackBar(
-                    content: Text(
-                        "${platform.name} : ${platform.width} : actural width : ${context.size?.width}"));
-                Context.showSnackBar(context, snackBar);
+
+                context.showSnackBar(Context.snackBar(Text(
+                    "${platform.name} : ${platform.width} : actural width : ${context.size?.width}")));
               },
               child: const Text("Get Current Platform"),
             ),

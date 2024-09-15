@@ -9,7 +9,6 @@ import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
-import 'package:link/core/styles/app_colors.dart';
 import 'package:link/core/styles/app_style.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
@@ -535,18 +534,18 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   void _hideMidpointCard(BuildContext context) {
     _showMidpointCard.value = false;
-    SnackBar snackBar = SnackBar(
-      content: Container(),
+    context.showSnackBar(Context.snackBar(
+      const Text("Restore Changes").bold(),
       action: SnackBarAction(
           label: "Undo",
           textColor: context.tertiaryColor,
           onPressed: () {
             _showMidpointCard.value = true;
           }),
-    );
-    Context.showSnackBar(context, snackBar);
+    ));
   }
 
+  // ignore: unused_element
   Card _buildMidpointCard(BuildContext context) {
     return Card.filled(
       margin: const EdgeInsets.symmetric(
@@ -596,28 +595,43 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           return Container();
         } else if (state.status == BlocStatus.added) {
           _midpoints = state.midpoints;
+
           return ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _midpoints.length,
             itemBuilder: (context, index) {
               Midpoint midpoint = _midpoints[index];
-              return Card.filled(
-                margin: const EdgeInsets.all(0.0),
-                child: Dismissible(
-                  key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-                  direction: DismissDirection.endToStart,
-                  resizeDuration: Durations.long1,
-                  onDismissed: (direction) {
-                    _postCreateUtilCubit.removeMidpoint(index: index);
-                  },
+
+              return Dismissible(
+                // key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+                key: Key(midpoint.runtimeType.toString()),
+                direction: DismissDirection.endToStart,
+                resizeDuration: Durations.long1,
+                background: _midpointTileOnDismissedBackground(context),
+                onDismissed: (direction) {
+                  Midpoint temp = midpoint;
+                  _postCreateUtilCubit.removeMidpoint(index: index);
+                  context.showSnackBar(
+                    Context.snackBar(const Text("Restore Changes"),
+                        action: SnackBarAction(
+                            label: "Undo",
+                            textColor: context.tertiaryColor,
+                            onPressed: () {
+                              _postCreateUtilCubit.addMidpoint(midpoint: temp);
+                            })),
+                  );
+                },
+                child: Card.filled(
+                  margin: const EdgeInsets.all(0.0),
                   child: ListTile(
                     onTap: () {},
                     dense: true,
                     // leading: Text((index + 1).toString()),
-                    enableFeedback: true,
-
-                    title: Text(midpoint.city?.name ?? ""),
+                    title: Text(
+                      midpoint.city?.name ?? "",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     isThreeLine: midpoint.description != null ? true : false,
                     subtitle: midpoint.description != null
                         ? Opacity(
@@ -634,12 +648,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                                       fontSize: 13,
                                       overflow: TextOverflow.ellipsis),
                                 ),
-                                // Row(
-                                // children: [
-                                // const Icon(
-                                //   Icons.date_range,
-                                //   size: AppInsets.inset15,
-                                // ),
+
                                 Row(
                                   children: [
                                     Text(
@@ -684,6 +693,38 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         }
         return Container();
       },
+    );
+  }
+
+  Container _midpointTileOnDismissedBackground(BuildContext context) {
+    return Container(
+      color: context.secondaryColor,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Padding(
+          padding: const EdgeInsets.only(right: AppInsets.inset15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: context.onPrimaryColor),
+                    borderRadius: BorderRadius.circular(AppInsets.inset30)),
+                child: const Icon(Icons.delete, color: Colors.red)
+                    .padding(padding: const EdgeInsets.all(AppInsets.inset5)),
+              ),
+              const SizedBox(
+                width: AppInsets.inset15,
+              ),
+              Icon(
+                Icons.keyboard_double_arrow_left,
+                color: context.onPrimaryColor,
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -976,9 +1017,11 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       },
       listener: (BuildContext context, PostCreateUtilState state) {
         if (state.status == BlocStatus.limited) {
-          SnackBar snackBar =
-              SnackBar(content: Text(state.error ?? "Exceed Maximum limit!"));
-          Context.showSnackBar(context, snackBar);
+          context.showSnackBar(
+            Context.snackBar(
+              Text(state.error ?? "Exceed Maximum limit!"),
+            ),
+          );
         }
       },
     );
@@ -1089,29 +1132,23 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           listener: (BuildContext context, state) {
             SnackBar showSnackBar(String text, Icon icon) {
               return SnackBar(
-                  content: Row(children: [
-                icon,
-                const SizedBox(width: 10),
-                const Text("Successfully Uploaded")
-              ]));
+                  content: Row(
+                      children: [icon, const SizedBox(width: 10), Text(text)]));
             }
 
             if (state.status == BlocStatus.uploadFailed) {
-              Context.showSnackBar(
-                  context,
-                  showSnackBar(
-                    "Something went wrong!",
-                    Icon(Icons.warning_rounded, color: context.tertiaryColor),
-                  ));
+              context.showSnackBar(
+                Context.snackBar(const Text("Something went wrong!"),
+                    icon: Icon(Icons.warning_rounded,
+                        color: context.tertiaryColor)),
+              );
             }
             if (state.status == BlocStatus.uploaded) {
-              Context.showSnackBar(
-                  context,
-                  showSnackBar(
-                    "Successfully Uploaded",
-                    Icon(Icons.panorama_fish_eye_outlined,
-                        color: context.tertiaryColor),
-                  ));
+              context.showSnackBar(
+                Context.snackBar(const Text("Successfully Uploaded"),
+                    icon: Icon(Icons.panorama_fish_eye_outlined,
+                        color: context.tertiaryColor)),
+              );
             }
           },
           child: OutlinedButton(
