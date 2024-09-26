@@ -25,6 +25,11 @@ class _SplashScreenState extends State<SplashScreen> {
     _timer = Timer.periodic(
       const Duration(milliseconds: 1500),
       (timer) => context.pushReplacementNamed(RouteLists.app),
+      // (timer) => Navigator.pushNamedAndRemoveUntil(
+      //   context,
+      //   RouteLists.app,
+      //   (route) => false,
+      // ),
     );
   }
 

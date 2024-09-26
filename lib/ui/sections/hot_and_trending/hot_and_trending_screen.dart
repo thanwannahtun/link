@@ -3,62 +3,58 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/core/utils/app_insets.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/utils/route_list.dart';
-import 'package:link/ui/widgets/photo_view_gallery_widget.dart';
+import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
-class RouteListScreen extends StatefulWidget {
-  const RouteListScreen({super.key});
+class HotAndTrendingScreen extends StatefulWidget {
+  const HotAndTrendingScreen({super.key});
 
   @override
-  State<RouteListScreen> createState() => _RouteListScreenState();
+  State<HotAndTrendingScreen> createState() => _HotAndTrendingScreenState();
 }
 
-class _RouteListScreenState extends State<RouteListScreen> {
+class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   List<Post> posts = [];
   @override
   void initState() {
     super.initState();
     context.read<CityCubit>().fetchCities();
-    context.read<PostRouteCubit>().fetchRoutes();
+    // context.read<PostRouteCubit>().fetchRoutes();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   leading: Container(),
-      //   title: const Text("Link"),
-      // ),
-      body: BlocConsumer<PostRouteCubit, PostRouteState>(
-        builder: (context, state) {
-          debugPrint("::::::::::::: ${state.status}");
-          if (state.status == BlocStatus.fetchFailed) {
-            return _buildShimmer(context);
-          } else if (state.status == BlocStatus.fetching) {
-            return _buildShimmer(context);
-          }
-          posts = state.routes;
-          return _showPosts();
-        },
-        listener: (context, state) {},
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // context.read<PostRouteCubit>().fetchRoutes();
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => PhotoViewGalleryWidget(
-              backgroundDecoration: const BoxDecoration(color: Colors.black45),
-              images: images,
-            ),
-          ));
-        },
-        child: const Icon(Icons.add),
-      ),
+    return CustomScaffoldBody(
+      body: _body(),
+      title: "Trending Packages",
+      action: IconButton(
+          onPressed: () {},
+          icon: Icon(
+            Icons.search,
+            color: context.onPrimaryColor,
+            size: AppInsets.inset30,
+          )),
+    );
+  }
+
+  BlocConsumer<PostRouteCubit, PostRouteState> _body() {
+    return BlocConsumer<PostRouteCubit, PostRouteState>(
+      builder: (context, state) {
+        debugPrint("::::::::::::: ${state.status}");
+        if (state.status == BlocStatus.fetchFailed) {
+          return _buildShimmer(context);
+        } else if (state.status == BlocStatus.fetching) {
+          return _buildShimmer(context);
+        }
+        posts = state.routes;
+        return _showPosts();
+      },
+      listener: (context, state) {},
     );
   }
 
@@ -73,7 +69,7 @@ class _RouteListScreenState extends State<RouteListScreen> {
             onStarPressed: () => goPageDetail(post),
             onCommentPressed: () => goPageDetail(post),
             onAgencyPressed: () => Navigator.of(context)
-                .pushNamed(RouteLists.agencyProfile, arguments: post),
+                .pushNamed(RouteLists.postAgencyProfile, arguments: post),
           );
         },
         itemCount: posts.length,

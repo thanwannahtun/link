@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/utils/expandable_text.dart';
@@ -54,14 +55,7 @@ class PostRouteCard extends StatelessWidget {
           _buildPostTitleDescription(),
 
           /// Images Section
-          PhotoViewGalleryWidget(
-                  backgroundDecoration:
-                      const BoxDecoration(color: Colors.black12),
-                  images: post.images
-                          ?.map((img) => '${App.baseImgUrl}$img')
-                          .toList() ??
-                      [])
-              .sizedBox(height: 200, width: double.infinity),
+          _buildImageWidget(post.images),
 
           /// Images
           // Container(
@@ -79,7 +73,7 @@ class PostRouteCard extends StatelessWidget {
             height: 0.3,
           ),
 
-          //// for counts
+          /// for counts
           // Row(
           //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
           //   crossAxisAlignment: CrossAxisAlignment.center,
@@ -108,6 +102,18 @@ class PostRouteCard extends StatelessWidget {
     );
   }
 
+  Widget _buildImageWidget(List<String>? images) {
+    if ((images ?? []).isEmpty) {
+      return Container();
+    } else {
+      return PhotoViewGalleryWidget(
+        backgroundDecoration: const BoxDecoration(color: Colors.black12),
+        images:
+            post.images?.map((img) => '${App.baseImgUrl}$img').toList() ?? [],
+      ).sizedBox(height: 200, width: double.infinity);
+    }
+  }
+
   Row _cardHeader() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -134,6 +140,8 @@ class PostRouteCard extends StatelessWidget {
                             post.agency?.profileImage ??
                                 "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(),
                           ),
                   ).clipRRect(
                     borderRadius: BorderRadius.circular(50),
@@ -252,12 +260,12 @@ class PostRouteCard extends StatelessWidget {
               itemBuilder: (context, index) {
                 if (index < post.midpoints!.length) {
                   TextStyle textStyle =
-                      const TextStyle(fontSize: 12, color: Colors.black54);
+                      TextStyle(fontSize: 12, color: context.tertiaryColor);
                   if (index == 0 || index == (post.midpoints!.length - 1)) {
                     textStyle = textStyle.copyWith(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black);
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    );
                   }
                   return Row(
                     mainAxisSize: MainAxisSize.min,
@@ -273,8 +281,9 @@ class PostRouteCard extends StatelessWidget {
                             style: textStyle,
                           )),
                       if (index < post.midpoints!.length - 1)
-                        const Text(
-                            ' -> '), // Add separator if not the last item
+                        const Icon(
+                          Icons.swap_horiz_rounded,
+                        ),
                     ],
                   );
                 } else {

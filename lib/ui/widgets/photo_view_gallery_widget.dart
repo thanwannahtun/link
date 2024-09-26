@@ -89,6 +89,11 @@ class _FileViewGalleryWidgetState extends State<FileViewGalleryWidget> {
   int? currentIndex;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     print("rebuild Gallery");
     return Builder(builder: (context) {

@@ -21,14 +21,13 @@ class PostCreateUtilCubit extends Cubit<PostCreateUtilState> {
       emit(
         state.copyWith(
             status: BlocStatus.addFailed,
-            midpoints: [...state.midpoints],
             error: "You've Got Maximum Midpoint Limit !"),
       );
     } else {
+      List<Midpoint> midpoints = state.midpoints;
+      midpoints.add(midpoint);
       emit(
-        state.copyWith(
-            status: BlocStatus.added,
-            midpoints: [...state.midpoints, midpoint]),
+        state.copyWith(status: BlocStatus.added, midpoints: midpoints),
       );
     }
   }
@@ -41,9 +40,7 @@ class PostCreateUtilCubit extends Cubit<PostCreateUtilState> {
     );
   }
 
-  resetMidpoints() => emit(
-        state.copyWith(midpoints: []),
-      );
+  resetMidpoints() => emit(state.copyWith(midpoints: []));
 
   selectImages({required List<XFile> xfiles}) async {
     if (state.xfiles.length >= 11) {

@@ -149,7 +149,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _xFiledDisplayer(),
+                _xFilesDisplayer(),
                 const SizedBox(height: 5),
                 _titleField().padding(
                     padding: const EdgeInsets.symmetric(
@@ -952,7 +952,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     );
   }
 
-  BlocConsumer<PostCreateUtilCubit, PostCreateUtilState> _xFiledDisplayer() {
+  BlocConsumer<PostCreateUtilCubit, PostCreateUtilState> _xFilesDisplayer() {
     return BlocConsumer<PostCreateUtilCubit, PostCreateUtilState>(
       builder: (context, state) {
         if (state.status == BlocStatus.initial) {
@@ -963,7 +963,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           } else {
             ///
 
-            _xfiles = [...state.xfiles];
+            _xfiles = state.xfiles;
 
             ///
             return SizedBox(
@@ -975,7 +975,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => FileViewGalleryWidget(
                           backgroundDecoration:
-                              const BoxDecoration(color: Colors.black45),
+                              BoxDecoration(color: context.tertiaryColor),
                           xfiles: _xfiles,
                           onPhotoDeleted: (value) =>
                               state.xfiles.removeAt(value),

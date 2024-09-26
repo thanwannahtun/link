@@ -13,7 +13,7 @@ class AgencyRepo {
 
   ///
   ///
-  FutureOr<List<Agency>> fetchAgencies({int? id}) async {
+  FutureOr<List<Agency>> fetchAgencies({String? id}) async {
     Response response =
         await ApiService().getRequest("/agencies", queryParameters: {"id": id});
     List<Agency> agencies = [];

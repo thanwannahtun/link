@@ -1,69 +1,108 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
+import 'package:link/core/theme_extension.dart';
+import 'package:link/ui/utils/route_list.dart';
+import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
+    return CustomScaffoldBody(
+      body: _body(context),
+      title: "Profile",
+      action: Row(
+        children: [
+          IconButton(
+              onPressed: () {
+                context.pushNamed(RouteLists.settingScreen);
+              },
+              icon: Icon(
+                Icons.settings,
+                color: context.onPrimaryColor,
+              ))
+        ],
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context) {
+    // return _examplePages(context);
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const ShowCustomAppBarBody(),
-                ));
-              },
-              child: const ListTile(title: Text("Create a new post => ")),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height * 2),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const ShowCustomAppBarBody(),
-                ));
-              },
-              child:
-                  const ListTile(title: Text("Intro Search Screen by Stack")),
-            ),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const CustomSliverBody(),
-                ));
-              },
-              child: const ListTile(
-                  title: Text("Intro Search Screen by CustomSliver")),
-            ),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const ScrollBarExample(),
-                ));
-              },
-              child: const ListTile(title: Text("ScrollBar Widget")),
-            ),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const DraggableScrollableSheetExample(),
-                ));
-              },
-              child: const ListTile(
-                  title: Text("DraggableScrollableSheet Widget")),
-            ),
-            InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const FlexibleExample(),
-                ));
-              },
-              child: const ListTile(title: Text("Flexible Widget")),
-            ),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamed(RouteLists.postCreatePage);
+                },
+                child: const Text("Create New Post")),
           ],
         ),
+      ),
+    );
+  }
+
+  SingleChildScrollView _examplePages(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const ShowCustomAppBarBody(),
+              ));
+            },
+            child: const ListTile(title: Text("Create a new post => ")),
+          ),
+          SizedBox(height: MediaQuery.of(context).size.height * 2),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const ShowCustomAppBarBody(),
+              ));
+            },
+            child: const ListTile(title: Text("Intro Search Screen by Stack")),
+          ),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const CustomSliverBody(),
+              ));
+            },
+            child: const ListTile(
+                title: Text("Intro Search Screen by CustomSliver")),
+          ),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const ScrollBarExample(),
+              ));
+            },
+            child: const ListTile(title: Text("ScrollBar Widget")),
+          ),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const DraggableScrollableSheetExample(),
+              ));
+            },
+            child:
+                const ListTile(title: Text("DraggableScrollableSheet Widget")),
+          ),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const FlexibleExample(),
+              ));
+            },
+            child: const ListTile(title: Text("Flexible Widget")),
+          ),
+        ],
       ),
     );
   }

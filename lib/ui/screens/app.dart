@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/ui/screens/app_bottom_navigation_bar.dart';
-import 'package:link/ui/screens/profile/profile_screen.dart';
-import 'package:link/ui/screens/route_list_screen.dart';
-import 'package:link/ui/sections/test.dart';
+import 'package:link/ui/sections/profile/profile_screen.dart';
+import 'package:link/ui/sections/hot_and_trending/hot_and_trending_screen.dart';
+
+import '../sections/hero_home/hero_home_screen.dart';
+import '../sections/user_activity/user_activity_screen.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -17,9 +19,9 @@ class App extends StatelessWidget {
           return IndexedStack(
             index: toggleIndexedScreen(state),
             children: const [
-              RouteListScreen(),
-              B(),
-              C(),
+              HeroHomeScreen(),
+              HotAndTrendingScreen(),
+              UserActivityScreen(),
               ProfileScreen(),
             ],
           );

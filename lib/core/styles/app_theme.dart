@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:link/core/styles/app_colors.dart';
+import 'package:link/core/utils/app_insets.dart';
 
 /*
       textTheme: GoogleFonts.robotoTextTheme(), // header , body
@@ -77,8 +78,11 @@ class AppTheme {
     return ThemeData(
       appBarTheme: const AppBarTheme(
         backgroundColor: LightTheme.tertiaryBg,
+        titleTextStyle: TextStyle(
+            color: LightTheme.onPrimary,
+            fontSize: AppInsets.font25,
+            fontWeight: FontWeight.bold),
       ),
-
       brightness: Brightness.light,
       primaryColor: LightTheme.primaryBg,
       // textTheme: lightTextTheme, //
@@ -119,6 +123,10 @@ class AppTheme {
     return ThemeData(
       appBarTheme: const AppBarTheme(
         backgroundColor: DarkTheme.tertiaryBg,
+        titleTextStyle: TextStyle(
+            color: LightTheme.onPrimary,
+            fontSize: AppInsets.font25,
+            fontWeight: FontWeight.bold),
       ),
 
       brightness: Brightness.dark,

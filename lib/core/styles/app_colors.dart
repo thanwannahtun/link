@@ -7,8 +7,10 @@ class AppColors {
 
 class DarkTheme {
   static const Color primaryBg = Color(0xff5E5E5E); // bg
-  static const Color secondaryBg = Color(0xff1E1E1E); // material widget , icon
-  static const Color tertiaryBg = Color(0xff000000); // card , list , etc ,
+  static const Color tertiaryBg = Color(0xff1E1E1E); // material widget , icon
+  static const Color secondaryBg = Color(0xff000000); // card , list , etc ,
+  // static const Color secondaryBg = Color(0xff1E1E1E); // material widget , icon
+  // static const Color tertiaryBg = Color(0xff000000); // card , list , etc ,
   static const Color onPrimary = Color(0xFFFFFFFF);
 
   static const Color primaryText = Color(0xffFFFFFF); // text

@@ -90,9 +90,9 @@ class Post {
       midpoints: (json['midpoints'] as List<dynamic>?)
           ?.map((e) => Midpoint.fromJson(e))
           .toList(),
-      commentCounts: json['commentCounts'],
-      likeCounts: json['likeCounts'],
-      shareCounts: json['shareCounts'],
+      commentCounts: json['commentCounts'] ?? 0,
+      likeCounts: json['likeCounts'] ?? 0,
+      shareCounts: json['shareCounts'] ?? 0,
       likes: (json['likes'] as List<dynamic>?)
           ?.map((e) => Like.fromJson(e))
           .toList(),

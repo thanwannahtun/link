@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/styles/app_style.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
@@ -8,18 +9,21 @@ import 'package:link/models/comment.dart';
 import 'package:link/models/post.dart';
 import 'package:link/models/seat.dart';
 import 'package:link/ui/utils/context.dart';
+import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/comment_persistent_footer_button.dart';
 import 'package:link/ui/widgets/photo_view_gallery_widget.dart';
 
-class AgencyProfile extends StatefulWidget {
-  const AgencyProfile({super.key});
+import 'profile/public_profile_screen.dart';
+
+class PostAgencyProfile extends StatefulWidget {
+  const PostAgencyProfile({super.key});
 
   @override
-  State<AgencyProfile> createState() => _AgencyProfileState();
+  State<PostAgencyProfile> createState() => _PostAgencyProfileState();
 }
 
-class _AgencyProfileState extends State<AgencyProfile> {
+class _PostAgencyProfileState extends State<PostAgencyProfile> {
   Post? post;
 
   bool _initial = true;
@@ -57,7 +61,10 @@ class _AgencyProfileState extends State<AgencyProfile> {
       title: Row(
         children: [
           InkWell(
-            onTap: () {},
+            onTap: () {
+              context.pushNamed(RouteLists.publicAgencyProfile,
+                  arguments: post?.agency);
+            },
             child: Container(
               width: 40,
               height: 40,
@@ -66,6 +73,9 @@ class _AgencyProfileState extends State<AgencyProfile> {
                 post?.agency?.profileImage ??
                     "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container();
+                },
               ),
             ).clipRRect(
               borderRadius: BorderRadius.circular(50),

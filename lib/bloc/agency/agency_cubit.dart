@@ -12,19 +12,17 @@ class AgencyCubit extends Cubit<AgencyState> {
   AgencyCubit()
       : super(const AgencyState(status: BlocStatus.initial, agencies: []));
 
-  fetAgencies({int? agencyId}) async {
+  fetAgencies({String? agencyId}) async {
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
       List<Agency> agencies = await AgencyRepo().fetchAgencies(id: agencyId);
       // if (agencyId != null) {
       emit(state.copyWith(status: BlocStatus.fetched, agencies: agencies));
       // }
-    } on DioException catch (e) {
+    } on Exception catch (e) {
       emit(state.copyWith(
           status: BlocStatus.fetchFailed,
           error: ApiErrorHandler.handle(e).message));
-    } catch (e) {
-      emit(state.copyWith(status: BlocStatus.fetchFailed, error: e.toString()));
     }
   }
 }
