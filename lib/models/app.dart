@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:flutter/foundation.dart';
 import 'package:link/models/city.dart';
 import 'package:link/models/user.dart';
 

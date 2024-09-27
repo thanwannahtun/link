@@ -8,6 +8,7 @@ import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
+import 'package:link/models/app.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -179,8 +180,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       decoration: BoxDecoration(
                           image: DecorationImage(
                         image: NetworkImage((post.images?.isNotEmpty == true)
-                            ? post.images?.first ??
-                                "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                            ? "${App.baseImgUrl}${post.images?.first}"
                             : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
                         fit: BoxFit.cover,
                         opacity: 0.5,
@@ -308,6 +308,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   Card _dateChoiceActionCard() {
     return Card.filled(
       elevation: 0.5,
+      // color: context.secondaryColor,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -416,6 +417,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   Card _originDestinationCard(BuildContext context) {
     return Card.filled(
+      // color: context.secondaryColor,
       elevation: 0.5,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -433,6 +435,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     ),
                     Expanded(
                       child: TextField(
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
                         ),
@@ -471,6 +476,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     ),
                     Expanded(
                       child: TextField(
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
                         ),

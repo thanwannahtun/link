@@ -16,6 +16,14 @@ class ProfileScreen extends StatelessWidget {
         children: [
           IconButton(
               onPressed: () {
+                Navigator.of(context).pushNamed(RouteLists.postCreatePage);
+              },
+              icon: Icon(
+                Icons.add_box_rounded,
+                color: context.onPrimaryColor,
+              )),
+          IconButton(
+              onPressed: () {
                 context.pushNamed(RouteLists.settingScreen);
               },
               icon: Icon(
@@ -29,18 +37,12 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _body(BuildContext context) {
     // return _examplePages(context);
-    return SingleChildScrollView(
+    return const SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(RouteLists.postCreatePage);
-                },
-                child: const Text("Create New Post")),
-          ],
+          children: [],
         ),
       ),
     );

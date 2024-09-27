@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:link/domain/api_utils/api_error_handler.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';

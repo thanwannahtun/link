@@ -20,17 +20,58 @@ class HotAndTrendingScreen extends StatefulWidget {
 
 class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   List<Post> posts = [];
+
+  late final ScrollController _scrollController;
   @override
   void initState() {
     super.initState();
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
+    _listenRefresh();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _listenRefresh() async {
+    _scrollController = ScrollController()
+      ..addListener(() {
+        if (_scrollController.position.pixels ==
+                _scrollController.position.maxScrollExtent
+            // && !_isLoadingMore
+            ) {
+          // If the end of the list is reached, trigger the refresh at the end
+          _refreshAtEnd();
+        }
+      });
+  }
+
+  // Function to refresh when reaching the end
+  Future<void> _refreshAtEnd() async {
+    // setState(() {
+    //   _isLoadingMore = true; // Indicate loading
+    // });
+
+    // Simulating network request delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    // setState(() {
+    //   items.addAll(List.generate(10, (index) => "New Item ${items.length + index}"));
+    //   _isLoadingMore = false; // Reset the loading state
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
-      body: _body(),
+      body: RefreshIndicator.adaptive(
+          onRefresh: () async {
+            context.read<PostRouteCubit>().fetchRoutes();
+          },
+          child: _body()),
       title: "Trending Packages",
       action: IconButton(
           onPressed: () {},
@@ -62,6 +103,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ListView.separated(
+        controller: _scrollController,
         itemBuilder: (context, index) {
           Post post = posts[index];
           return PostRouteCard(

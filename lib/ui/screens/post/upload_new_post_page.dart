@@ -127,6 +127,8 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   @override
   Widget build(BuildContext context) {
+    // CustomScaffoldBody(body: _body(context), title: "title");
+
     print("rebuild");
 
     double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
@@ -143,45 +145,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: _buildAppBar(),
-          body: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _xFilesDisplayer(),
-                const SizedBox(height: 5),
-                _titleField().padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppInsets.inset8)),
-                const SizedBox(height: 5),
-                _descriptionField(context).padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppInsets.inset10, vertical: 5),
-                ),
-
-                /// [Midpoint]
-                /// <Midpoint Card start>
-                ValueListenableBuilder<bool>(
-                  valueListenable: _showMidpointCard,
-                  builder: (context, value, child) {
-                    return value
-                        ? InkWell(
-                            // child: _buildMidpointCard(context),
-                            child: _buildRouteInfoCard(context),
-                          )
-                        : Container();
-                  },
-                ),
-
-                /// <Midpoint Card End>
-
-                const Divider(
-                  thickness: 0.3,
-                ),
-              ],
-            ),
-          ),
+          body: _body(context),
           persistentFooterButtons: [
             Container(
               padding: EdgeInsets.only(
@@ -250,6 +214,48 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  SingleChildScrollView _body(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _xFilesDisplayer(),
+          const SizedBox(height: 5),
+          _titleField().padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppInsets.inset8)),
+          const SizedBox(height: 5),
+          _descriptionField(context).padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppInsets.inset10, vertical: 5),
+          ),
+
+          /// [Midpoint]
+          /// <Midpoint Card start>
+          ValueListenableBuilder<bool>(
+            valueListenable: _showMidpointCard,
+            builder: (context, value, child) {
+              return value
+                  ? InkWell(
+                      // child: _buildMidpointCard(context),
+                      child: _buildRouteInfoCard(context),
+                    )
+                  : Container();
+            },
+          ),
+
+          /// <Midpoint Card End>
+
+          const Divider(
+            thickness: 0.3,
+          ),
+        ],
       ),
     );
   }
