@@ -6,7 +6,6 @@ class RouteLists {
   static const String signIn = "/sign_in";
   static const String signOut = "/sign_out";
 
-  static const String postAgencyProfile = "/post_agency_profile";
   static const String publicAgencyProfile = "/public_agency_profile";
 
   static const String postDetailPage = "/post_detail";
@@ -23,5 +22,6 @@ class RouteLists {
   /// sections > Hot_Trending
   static const String trendingRouteCards = "/trending_routes_cards";
   static const String trendingRouteCardDetail = "/trending_routes_card_detail";
+
   static const String searchQueryRoutes = "/search_query_routes";
 }

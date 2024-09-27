@@ -10,17 +10,20 @@ class CustomScaffoldBody extends StatelessWidget {
       required this.body,
       required this.title,
       this.backButton,
-      this.action});
+      this.action,
+      this.persistentFooterButtons});
 
   final Widget body;
-  final String title;
+  final Widget title;
   Widget? action;
   Widget? backButton;
+  List<Widget>? persistentFooterButtons;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        persistentFooterButtons: persistentFooterButtons,
         body: SafeArea(
           child: Stack(
             children: [
@@ -39,16 +42,7 @@ class CustomScaffoldBody extends StatelessWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            backButton ?? Container(),
-                            Text(
-                              title,
-                              style: TextStyle(
-                                  color: context.onPrimaryColor,
-                                  fontSize: AppInsets.font25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                          children: [backButton ?? Container(), title],
                         ),
                         action ?? Container()
                       ],

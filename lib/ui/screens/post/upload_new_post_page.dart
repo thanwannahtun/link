@@ -610,13 +610,13 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
               Midpoint midpoint = _midpoints[index];
 
               return Dismissible(
-                // key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-                key: Key(midpoint.runtimeType.toString()),
+                key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+                // key: Key(midpoint.runtimeType.toString()),
                 direction: DismissDirection.endToStart,
                 resizeDuration: Durations.long1,
                 background: _midpointTileOnDismissedBackground(context),
                 onDismissed: (direction) {
-                  Midpoint temp = midpoint;
+                  // Midpoint temp = midpoint;
                   _postCreateUtilCubit.removeMidpoint(index: index);
                   context.showSnackBar(
                     Context.snackBar(const Text("Restore Changes"),
@@ -624,7 +624,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                             label: "Undo",
                             textColor: context.tertiaryColor,
                             onPressed: () {
-                              _postCreateUtilCubit.addMidpoint(midpoint: temp);
+                              // _postCreateUtilCubit.addMidpoint(midpoint: temp);
                             })),
                   );
                 },

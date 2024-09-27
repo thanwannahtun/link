@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
@@ -20,11 +21,14 @@ class HotAndTrendingScreen extends StatefulWidget {
 
 class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   List<Post> posts = [];
+  late PostRouteCubit _postRouteCubit;
 
   late final ScrollController _scrollController;
   @override
   void initState() {
+    print("initStteCalled  :Hot_Trending");
     super.initState();
+    _postRouteCubit = PostRouteCubit()..fetchRoutes();
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
     _listenRefresh();
@@ -69,10 +73,18 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
           onRefresh: () async {
-            context.read<PostRouteCubit>().fetchRoutes();
+            Future.delayed(const Duration(milliseconds: 500)).then(
+              (value) => _postRouteCubit.fetchRoutes(),
+            );
           },
           child: _body()),
-      title: "Trending Packages",
+      title: Text(
+        "Trending Packages",
+        style: TextStyle(
+            color: context.onPrimaryColor,
+            fontSize: AppInsets.font25,
+            fontWeight: FontWeight.bold),
+      ),
       action: IconButton(
           onPressed: () {},
           icon: Icon(
@@ -85,6 +97,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
   BlocConsumer<PostRouteCubit, PostRouteState> _body() {
     return BlocConsumer<PostRouteCubit, PostRouteState>(
+      bloc: _postRouteCubit,
       builder: (context, state) {
         debugPrint("::::::::::::: ${state.status}");
         if (state.status == BlocStatus.fetchFailed) {
@@ -110,8 +123,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
             post: post,
             onStarPressed: () => goPageDetail(post),
             onCommentPressed: () => goPageDetail(post),
-            onAgencyPressed: () => Navigator.of(context)
-                .pushNamed(RouteLists.postAgencyProfile, arguments: post),
+            onAgencyPressed: () => context
+                .pushNamed(RouteLists.trendingRouteCardDetail, arguments: post),
           );
         },
         itemCount: posts.length,

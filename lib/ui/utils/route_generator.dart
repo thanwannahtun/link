@@ -4,7 +4,7 @@ import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/ui/screens/app.dart';
 import 'package:link/ui/screens/post/upload_new_post_page.dart';
-import 'package:link/ui/screens/post_agency_profile.dart';
+import 'package:link/ui/sections/hot_and_trending/trending_route_card_detail.dart';
 import 'package:link/ui/screens/post_detail.dart';
 import 'package:link/ui/sections/hot_and_trending/hot_and_trending_screen.dart';
 import 'package:link/ui/screens/splash_screen.dart';
@@ -15,10 +15,10 @@ import 'package:link/ui/utils/route_list.dart';
 
 import '../screens/profile/public_profile_screen.dart';
 import '../sections/hero_home/hero_home_screen.dart';
-import '../sections/hot_and_trending/trending_route_card_detail.dart';
 
 class RouteGenerator {
   static Route<T>? onGenerateRoute<T>(RouteSettings settings) {
+    debugPrint("-> ${settings.name}");
     switch (settings.name) {
       case RouteLists.splashScreen:
         return _navigateRoute(
@@ -70,13 +70,7 @@ class RouteGenerator {
             return const HeroHomeScreen();
           },
         );
-      case RouteLists.postAgencyProfile:
-        return _navigateRoute(
-          settings: settings,
-          builder: (context) {
-            return const PostAgencyProfile();
-          },
-        );
+
       case RouteLists.publicAgencyProfile:
         return _navigateRoute(
           settings: settings,

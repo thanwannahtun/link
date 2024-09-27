@@ -4,6 +4,8 @@ import 'package:link/core/theme_extension.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
+import '../../../core/utils/app_insets.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -11,7 +13,13 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
       body: _body(context),
-      title: "Profile",
+      title: Text(
+        "Profile",
+        style: TextStyle(
+            color: context.onPrimaryColor,
+            fontSize: AppInsets.font25,
+            fontWeight: FontWeight.bold),
+      ),
       action: Row(
         children: [
           IconButton(

@@ -83,6 +83,7 @@ class AppTheme {
             fontSize: AppInsets.font25,
             fontWeight: FontWeight.bold),
       ),
+
       brightness: Brightness.light,
       primaryColor: LightTheme.primaryBg,
       // textTheme: lightTextTheme, //

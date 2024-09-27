@@ -24,8 +24,11 @@ class PostCreateUtilCubit extends Cubit<PostCreateUtilState> {
             error: "You've Got Maximum Midpoint Limit !"),
       );
     } else {
-      List<Midpoint> midpoints = state.midpoints;
+      List<Midpoint> midpoints =
+          List.from(state.midpoints); // Assuming state holds the list
       midpoints.add(midpoint);
+      // final midpoints = state.midpoints;
+      // midpoints.add(midpoint);
       emit(
         state.copyWith(status: BlocStatus.added, midpoints: midpoints),
       );

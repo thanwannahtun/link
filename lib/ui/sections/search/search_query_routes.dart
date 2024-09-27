@@ -3,6 +3,8 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
+import '../../../core/utils/app_insets.dart';
+
 class SearchQueryRoutes extends StatefulWidget {
   const SearchQueryRoutes({super.key});
 
@@ -15,7 +17,13 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
       body: Container(),
-      title: "ReSulTS",
+      title: Text(
+        "ReSuLtS",
+        style: TextStyle(
+            color: context.onPrimaryColor,
+            fontSize: AppInsets.font25,
+            fontWeight: FontWeight.bold),
+      ),
       action: Row(
         children: [
           IconButton.filled(

@@ -30,6 +30,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   @override
   void initState() {
     super.initState();
+    print("initStteCalled  :Hero_home");
     _selectedDateNotifier = ValueNotifier(DateTime.now());
   }
 
@@ -45,7 +46,13 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
     return CustomScaffoldBody(
       body: _heroBody(context),
-      title: "Home",
+      title: Text(
+        "Home",
+        style: TextStyle(
+            color: context.onPrimaryColor,
+            fontSize: AppInsets.font25,
+            fontWeight: FontWeight.bold),
+      ),
       action: Row(
         children: [
           IconButton(
@@ -57,37 +64,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         ],
       ),
     );
-
-    //   return Scaffold(
-    //     appBar: AppBar(
-    //       title: const Text(
-    //         "Home",
-    //       ),
-    //       centerTitle: false,
-    //       actions: [
-    //         IconButton(
-    //             onPressed: () => context.read<ThemeCubit>().toggleTheme(),
-    //             icon: Icon(
-    //               Icons.notifications_rounded,
-    //               color: context.onPrimaryColor,
-    //             ))
-    //       ],
-    //     ),
-    //     body: SafeArea(
-    //       child: Stack(
-    //         children: [
-    //           Container(
-    //             height: 100,
-    //             width: double.infinity,
-    //             decoration: BoxDecoration(
-    //               color: context.secondaryColor,
-    //             ),
-    //           ),
-    //           _heroBody(context),
-    //         ],
-    //       ),
-    //     ),
-    //   );
   }
 
   SingleChildScrollView _heroBody(BuildContext context) {
@@ -171,8 +147,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             child: Column(
               children: [
                 InkWell(
-                  onTap: () =>
-                      context.pushNamed(RouteLists.trendingRouteCardDetail),
+                  onTap: () => context.pushNamed(
+                      RouteLists.trendingRouteCardDetail,
+                      arguments: post),
                   child: Card.filled(
                     shape: Border.all(width: 0.01),
                     margin: const EdgeInsets.all(0.0),
@@ -258,7 +235,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                           horizontal: AppInsets.inset10)),
                     ),
                     onPressed: () {
-                      context.pushNamed(RouteLists.trendingRouteCardDetail);
+                      context.pushNamed(RouteLists.trendingRouteCardDetail,
+                          arguments: post);
+                      // context.pushNamed(RouteLists.trendingRouteCardDetail,
+                      //     arguments: post);
                     },
                     child: const Text("Book Now")),
               ],

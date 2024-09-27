@@ -38,10 +38,10 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       Post response =
           await _postApiRepo.uploadNewPost(post: post, files: files);
 
-      final posts = state.routes;
-      posts.add(response);
+      List<Post> updatedPosts = List.from(state.routes);
+      updatedPosts.add(response);
 
-      emit(state.copyWith(status: BlocStatus.uploaded, routes: posts));
+      emit(state.copyWith(status: BlocStatus.uploaded, routes: updatedPosts));
     } on Exception catch (e, s) {
       debugPrint("[[[  Exception :: $e ^ stackTrace :: $s :::: ]]]");
 

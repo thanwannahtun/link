@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/theme_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
-import '../../../core/utils/platform.dart';
-import '../../utils/context.dart';
+import '../../../core/utils/app_insets.dart';
 
 class UserActivityScreen extends StatefulWidget {
   const UserActivityScreen({super.key});
@@ -18,26 +18,29 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return CustomScaffoldBody(body: _body(context), title: "Activity");
+  Widget build(BuildContext ctx) {
+    return CustomScaffoldBody(
+      body: _body(context),
+      title: Text(
+        "Activity",
+        style: TextStyle(
+            color: context.onPrimaryColor,
+            fontSize: AppInsets.font25,
+            fontWeight: FontWeight.bold),
+      ),
+    );
   }
 
-  Center _body(BuildContext context) {
-              Platform platform = Platform.currentPlatform(context);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-         if(Platform.laptop || Platform.desktop) ElevatedButton(
-            onPressed: () {
-              context.showSnackBar(Context.snackBar(Text(
-                  "${platform.name} : ${platform.width} : actural width : ${context.size?.width}")));
-            },
-            child: const Text("Current Platform"),
+  Widget _body(BuildContext ctx) {
+    return Builder(
+      builder: (BuildContext context) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
