@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
@@ -85,9 +84,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               height: AppInsets.inset8,
             ),
             _trendingRoutesList(),
-            const SizedBox(
-              height: 300,
-            ),
           ],
         ),
       ),
