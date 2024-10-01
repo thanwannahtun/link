@@ -22,4 +22,5 @@ class App {
   }
 
   ///
+  static List<String> currencies = ["Ks", "EU", "Pound", "Dollar"];
 }

@@ -10,6 +10,8 @@ extension DialogExt on BuildContext {
 }
 
 class Context {
+  const Context();
+
   static SnackBar snackBar(Widget content,
       {Icon? icon, SnackBarAction? action}) {
     return SnackBar(

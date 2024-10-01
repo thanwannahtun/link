@@ -73,9 +73,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
           onRefresh: () async {
-            Future.delayed(const Duration(milliseconds: 500)).then(
-              (value) => _postRouteCubit.fetchRoutes(),
-            );
+            _postRouteCubit.fetchRoutes();
           },
           child: _body()),
       title: Text(

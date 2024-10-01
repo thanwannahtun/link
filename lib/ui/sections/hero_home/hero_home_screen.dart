@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
@@ -9,6 +10,7 @@ import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/ui/utils/route_list.dart';
+import 'package:link/ui/widget_extension.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../models/post.dart';
@@ -25,10 +27,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   late final ValueNotifier<DateTime?> _selectedDateNotifier;
 
   List<Post> _trendingRoutes = [];
+  late final PostRouteCubit _trendingRouteBloc;
 
   @override
   void initState() {
     super.initState();
+    _trendingRouteBloc = PostRouteCubit()..fetchRoutes();
     print("initStteCalled  :Hero_home");
     _selectedDateNotifier = ValueNotifier(DateTime.now());
   }
@@ -44,7 +48,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     print("rebuild");
 
     return CustomScaffoldBody(
-      body: _heroBody(context),
+      body: RefreshIndicator.adaptive(
+          onRefresh: () async {
+            _trendingRouteBloc.fetchRoutes();
+          },
+          child: _heroBody(context)),
       title: Text(
         "Home",
         style: TextStyle(
@@ -52,20 +60,24 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             fontSize: AppInsets.font25,
             fontWeight: FontWeight.bold),
       ),
-      action: Row(
-        children: [
-          IconButton(
-              onPressed: () => context.read<ThemeCubit>().toggleTheme(),
-              icon: Icon(
-                Icons.notifications_rounded,
-                color: context.onPrimaryColor,
-              ))
-        ],
-      ),
+      action: _actionWidgets(context),
     );
   }
 
-  SingleChildScrollView _heroBody(BuildContext context) {
+  Row _actionWidgets(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+            onPressed: () => context.read<ThemeCubit>().toggleTheme(),
+            icon: Icon(
+              Icons.notifications_rounded,
+              color: context.onPrimaryColor,
+            ))
+      ],
+    );
+  }
+
+  Widget _heroBody(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(5.0),
@@ -84,16 +96,205 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               height: AppInsets.inset8,
             ),
             _trendingRoutesList(),
+            const SizedBox(
+              height: 5,
+            ),
+            Card.filled(
+              color: Theme.of(context).cardColor.withOpacity(0.8),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    width: 0.01,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    /// header
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Opacity(
+                                opacity: 0.7,
+                                child: Text(
+                                  "sponsered",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                "38,000 Ks",
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(50)),
+                                child: SizedBox(
+                                  width: 30,
+                                  height: 30,
+                                  child: CachedNetworkImage(
+                                    imageUrl: "",
+                                    errorWidget: (context, url, error) =>
+                                        Image.asset(
+                                      "assets/icon/app_logo.jpg",
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: AppInsets.inset8,
+                              ),
+                              const Icon(Icons.more_vert_rounded)
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppInsets.inset20),
+                      child: Card.filled(
+                        child: Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: Column(
+                            children: [
+                              /// Images
+                              SizedBox.fromSize(
+                                size: const Size(double.infinity, 80),
+                                child: CachedNetworkImage(
+                                  imageUrl: "",
+                                  fit: BoxFit.contain,
+                                  // placeholder: (context, url) => const Image(
+                                  //   image: AssetImage('assets/icon/loading_placeholder.jpg'),
+                                  //   fit: BoxFit.cover,
+                                  // ),
+
+                                  errorWidget: (context, url, error) =>
+                                      const Image(
+                                          fit: BoxFit.cover,
+                                          image: AssetImage(
+                                            'assets/icon/app_logo.jpg',
+                                          )),
+                                  fadeInDuration: const Duration(
+                                      milliseconds:
+                                          500), // Smooth fade-in effect
+                                  fadeOutDuration: const Duration(
+                                      milliseconds:
+                                          300), // Smooth fade-out effect
+                                ),
+                              ),
+
+                              const SizedBox(
+                                height: AppInsets.inset8,
+                              ),
+
+                              /// Route Info
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.pin_drop_outlined,
+                                    size: 20,
+                                  ),
+                                  SizedBox(
+                                    width: AppInsets.inset10,
+                                  ),
+                                  Text("Yangon to Mandalay"),
+                                ],
+                              ),
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.date_range_rounded,
+                                    size: 20,
+                                  ),
+                                  SizedBox(
+                                    width: AppInsets.inset10,
+                                  ),
+                                  Text("12 June 2024 07:15 AM"),
+                                ],
+                              ),
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.business,
+                                    size: 20,
+                                  ),
+                                  SizedBox(
+                                    width: AppInsets.inset10,
+                                  ),
+                                  Text("Magway - Taunggyo - Aunglan - Pyi"),
+                                ],
+                              ),
+
+                              /// Action Button
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                    backgroundColor: WidgetStatePropertyAll(
+                                        context.successColor),
+                                    minimumSize: const WidgetStatePropertyAll(
+                                        Size(double.infinity, 35))),
+                                onPressed: () {},
+                                child: Text(
+                                  "Action Button",
+                                  style:
+                                      TextStyle(color: context.onPrimaryColor),
+                                ),
+                              ).padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: AppInsets.inset8)),
+
+                              /// short description
+                              const Text(
+                                "Great for best Travelling for those who want to go vacation with private family happily! Great for best Travelling for those who want to go vacation",
+                                style: TextStyle(fontSize: 12),
+                                textAlign: TextAlign.start,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                softWrap: true,
+                              ).padding(
+                                  padding:
+                                      const EdgeInsets.all(AppInsets.inset5)),
+                              const SizedBox(
+                                height: AppInsets.inset5,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: AppInsets.inset25,
+                    )
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 5,
+            )
           ],
         ),
       ),
     );
   }
 
-  SingleChildScrollView _trendingRoutesList() {
+  Widget _trendingRoutesList() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: BlocConsumer<PostRouteCubit, PostRouteState>(
+          bloc: _trendingRouteBloc,
           listener: (BuildContext context, Object? state) {},
           builder: (BuildContext context, state) {
             if (state.status == BlocStatus.fetchFailed ||
@@ -285,113 +486,110 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     return Card.filled(
       elevation: 0.5,
       // color: context.secondaryColor,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppInsets.inset15, vertical: AppInsets.inset8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "When you want to go?",
-                        ),
-                        const SizedBox(
-                          height: AppInsets.inset15,
-                        ),
-                        InkWell(
-                          onTap: () async {
-                            DateTime? value = await showDatePicker(
-                                context: context,
-                                initialDate: _selectedDateNotifier.value,
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime(DateTime.now().year + 10));
-                            if (value != null) {
-                              _selectedDateNotifier.value = value;
-                            }
-                          },
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.date_range_sharp,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppInsets.inset15, vertical: AppInsets.inset8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "When you want to go?",
+                      ),
+                      const SizedBox(
+                        height: AppInsets.inset15,
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          DateTime? value = await showDatePicker(
+                              context: context,
+                              initialDate: _selectedDateNotifier.value,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime(DateTime.now().year + 10));
+                          if (value != null) {
+                            _selectedDateNotifier.value = value;
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.date_range_sharp,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppInsets.inset15),
+                              child: ValueListenableBuilder<DateTime?>(
+                                valueListenable: _selectedDateNotifier,
+                                builder: (context, value, child) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                        border: Border(
+                                            bottom: BorderSide(
+                                                color: context.primaryColor,
+                                                style: BorderStyle.solid))),
+                                    child: Text(DateTimeUtil.formatDate(
+                                        value ?? DateTime.now())),
+                                  );
+                                },
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: AppInsets.inset15),
-                                child: ValueListenableBuilder<DateTime?>(
-                                  valueListenable: _selectedDateNotifier,
-                                  builder: (context, value, child) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                          border: Border(
-                                              bottom: BorderSide(
-                                                  color: context.primaryColor,
-                                                  style: BorderStyle.solid))),
-                                      child: Text(DateTimeUtil.formatDate(
-                                          value ?? DateTime.now())),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
 
-                    /// How many people
-                    // const Column(
-                    //   children: [
-                    //     Icon(Icons.arrow_drop_up_rounded),
-                    //     Text('5'),
-                    //     Icon(Icons.arrow_drop_down_rounded),
-                    //   ],
-                    // )
+                  /// How many people
+                  // const Column(
+                  //   children: [
+                  //     Icon(Icons.arrow_drop_up_rounded),
+                  //     Text('5'),
+                  //     Icon(Icons.arrow_drop_down_rounded),
+                  //   ],
+                  // )
+                ],
+              ),
+            ),
+          ),
+
+          /// search Icon
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                  color: context.secondaryColor,
+                  borderRadius: BorderRadius.circular(AppInsets.inset5)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: AppInsets.inset25),
+                child: Column(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        context.pushNamed(RouteLists.searchQueryRoutes);
+                      },
+                      icon: Icon(
+                        color: context.onPrimaryColor,
+                        size: AppInsets.inset35,
+                        Icons.search_rounded,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-
-            /// search Icon
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                    color: context.secondaryColor,
-                    borderRadius: BorderRadius.circular(AppInsets.inset5)),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: AppInsets.inset25),
-                  child: Column(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          context.pushNamed(RouteLists.searchQueryRoutes);
-                        },
-                        icon: Icon(
-                          color: context.onPrimaryColor,
-                          size: AppInsets.inset35,
-                          Icons.search_rounded,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          ],
-        ),
+          )
+        ],
       ),
     );
   }
 
-  Card _originDestinationCard(BuildContext context) {
+  Widget _originDestinationCard(BuildContext context) {
     return Card.filled(
       // color: context.secondaryColor,
       elevation: 0.5,

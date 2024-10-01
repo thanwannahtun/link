@@ -30,10 +30,11 @@ class RouteGenerator {
         return _navigateRoute(
             settings: settings,
             builder: (context) {
-              return BlocProvider(
-                  create: (BuildContext context) =>
-                      PostRouteCubit()..fetchRoutes(),
-                  child: const App());
+              return const App();
+              // return BlocProvider(
+              //     create: (BuildContext context) =>
+              //         PostRouteCubit()..fetchRoutes(),
+              //     child: const App());
             });
       case RouteLists.hotAndTrendingScreen:
         return _navigateRoute(

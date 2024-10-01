@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
@@ -23,8 +22,6 @@ import 'package:link/models/post.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/photo_view_gallery_widget.dart';
-
-import '../../widgets/custom_scaffold_body.dart';
 
 class UploadNewPostPage extends StatefulWidget {
   const UploadNewPostPage({super.key});
@@ -57,6 +54,8 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   final ValueNotifier<bool> _validScheduleDate = ValueNotifier(false);
 
   final ValueNotifier<bool> _validPostNotifier = ValueNotifier(false);
+
+  String _selectedCurrency = App.currencies.first;
 
   @override
   void initState() {
@@ -611,7 +610,9 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                       //   ),
                       // ).center().expanded(),
                       Text(
-                        value == null ? "Price Per Seat" : value.toString(),
+                        value == null
+                            ? "Price Per Seat"
+                            : "$value $_selectedCurrency",
                         style: textStyle,
                       ).expanded(),
                     ],
@@ -1385,16 +1386,6 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   }
 
   _showPriceChooseSheet(BuildContext context) async {
-    validatePrice(String value) {
-      if (int.tryParse(value) != null) {
-        _validPrice.value = true;
-        _priceNotifier.value = int.tryParse(value);
-        context.pop();
-      }
-    }
-
-    List<String> currencies = ["Ks", "EU", "Pound", "Dollar"];
-    String _selectedCurrency = currencies.first;
     List<int> priceRanges = [
       10000,
       12000,
@@ -1411,122 +1402,140 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       40000,
       45000
     ];
-    return Context.showBottomSheet(context,
-        constraints: const BoxConstraints.expand(height: 400),
-        showDragHandle: false,
-        padding: const EdgeInsets.all(8),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return showModalBottomSheet(
+        context: context,
+        // constraints: const BoxConstraints.expand(height: 400),
+        builder: (context) => Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _priceChooseWidget(context, priceRanges),
+            ));
+    // return Context.showBottomSheet(context,
+    //     constraints: const BoxConstraints.expand(height: 400),
+    //     showDragHandle: false,
+    //     padding: const EdgeInsets.all(8),
+    //     body: _priceChooseWidget(context, priceRanges));
+  }
+
+  Widget _priceChooseWidget(BuildContext context, List<int> priceRanges) {
+    validatePrice(String value) {
+      if (int.tryParse(value) != null) {
+        _validPrice.value = true;
+        _priceNotifier.value = int.tryParse(value);
+        context.pop();
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Price Per Traveller ( per seat )",
+                style: TextStyle(fontWeight: FontWeight.bold))
+            .padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: AppInsets.inset10)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Price Per Traveller ( per seat )",
-                    style: TextStyle(fontWeight: FontWeight.bold))
-                .padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: AppInsets.inset10)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextField(
-                  onSubmitted: (value) {
-                    validatePrice(value);
-                  },
-                  keyboardType: TextInputType.number,
-                  focusNode: _priceFocusNode,
-                  onTapOutside: (event) => _unfoucsNode(_priceFocusNode),
-                  controller: _priceController,
-                  style: const TextStyle(),
-                  decoration: const InputDecoration(
-                    hintText: "Enter Price in",
-                    border: OutlineInputBorder(
-                        gapPadding: 2,
-                        borderRadius: BorderRadius.all(Radius.circular(50))),
-                  ),
-                ).expanded(flex: 2),
-                const SizedBox(
-                  width: 15,
-                ),
-                StatefulBuilder(
-                  builder: (BuildContext context, void Function(void Function()) rebuild) { 
-                  return DropdownButton(
-                    items: currencies
-                        .map((item) => DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(item),
-                            ))
-                        .toList(),
-                    // selectedItemBuilder: (context) => Text(data),
-                    value: _selectedCurrency,
-                    onChanged: (value) {
-                          rebuild((){
-                      _selectedCurrency = value!;
-
-                          });
-                    },
-                  );
-                   },
-                ),
-
-                /// currency choice scollable
-                const SizedBox(
-                  width: 15,
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    validatePrice(_priceController.text);
-                  },
-                  style: ButtonStyle(
-                      foregroundColor:
-                          WidgetStatePropertyAll(context.onPrimaryColor),
-                      backgroundColor:
-                          WidgetStatePropertyAll(context.tertiaryColor),
-                      side: const WidgetStatePropertyAll(
-                        BorderSide(
-                          style: BorderStyle.solid,
-                        ),
-                      )),
-                  child: const Text("Comfirm").fittedBox(),
-                ).expanded()
-              ],
-            ),
+            TextField(
+              onSubmitted: (value) {
+                validatePrice(value);
+              },
+              keyboardType: TextInputType.number,
+              focusNode: _priceFocusNode,
+              onTapOutside: (event) => _unfoucsNode(_priceFocusNode),
+              controller: _priceController,
+              style: const TextStyle(),
+              decoration: const InputDecoration(
+                hintText: "Enter Price in",
+                border: OutlineInputBorder(
+                    gapPadding: 2,
+                    borderRadius: BorderRadius.all(Radius.circular(50))),
+              ),
+            ).expanded(flex: 2),
             const SizedBox(
-              height: AppInsets.inset8,
+              width: 15,
             ),
-            const Text("Suggesstion",
-                    style: TextStyle(fontWeight: FontWeight.bold))
-                .padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: AppInsets.inset10)),
-            Wrap(
-              children: priceRanges
-                  .map((price) => InkWell(
-                        onTap: () {
-                          _validPrice.value = true;
-                          _priceNotifier.value = price;
-                          context.pop();
-                        },
+            StatefulBuilder(
+              builder: (BuildContext context,
+                  void Function(void Function()) rebuild) {
+                return DropdownButton(
+                  items: App.currencies
+                      .map((item) => DropdownMenuItem<String>(
+                            value: item,
+                            child: Text(item),
+                          ))
+                      .toList(),
+                  // selectedItemBuilder: (context) => Text(data),
+                  value: _selectedCurrency,
+                  onChanged: (value) {
+                    rebuild(() {
+                      _selectedCurrency = value!;
+                    });
+                  },
+                );
+              },
+            ),
+
+            /// currency choice scollable
+            const SizedBox(
+              width: 15,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                validatePrice(_priceController.text);
+              },
+              style: ButtonStyle(
+                  foregroundColor:
+                      WidgetStatePropertyAll(context.onPrimaryColor),
+                  backgroundColor:
+                      WidgetStatePropertyAll(context.tertiaryColor),
+                  side: const WidgetStatePropertyAll(
+                    BorderSide(
+                      style: BorderStyle.solid,
+                    ),
+                  )),
+              child: const Text("Comfirm").fittedBox(),
+            ).expanded()
+          ],
+        ),
+        const SizedBox(
+          height: AppInsets.inset8,
+        ),
+        const Text("Suggesstion", style: TextStyle(fontWeight: FontWeight.bold))
+            .padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: AppInsets.inset10)),
+        Wrap(
+          children: priceRanges
+              .map((price) => InkWell(
+                    onTap: () {
+                      _validPrice.value = true;
+                      _priceNotifier.value = price;
+                      context.pop();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: AppInsets.inset8,
+                          horizontal: AppInsets.inset10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(),
+                            color: context.successColor,
+                            borderRadius: BorderRadius.circular(3)),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: AppInsets.inset8,
-                              horizontal: AppInsets.inset10),
-                          child: Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(),
-                                color: context.successColor,
-                                borderRadius: BorderRadius.circular(3)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Text(
-                                price.toString(),
-                                style: TextStyle(color: context.onPrimaryColor),
-                              ),
-                            ),
+                          padding: const EdgeInsets.all(10.0),
+                          child: Text(
+                            price.toString(),
+                            style: TextStyle(color: context.onPrimaryColor),
                           ),
                         ),
-                      ))
-                  .toList(),
-            ),
-          ],
-        ));
+                      ),
+                    ),
+                  ))
+              .toList(),
+        ),
+      ],
+    );
   }
 }
 
