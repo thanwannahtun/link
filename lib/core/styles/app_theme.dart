@@ -9,51 +9,6 @@ import 'package:link/core/utils/app_insets.dart';
  */
 class AppTheme {
   static ThemeData get lightTheme {
-    var textButtonThemeData = TextButtonThemeData(
-      style: ButtonStyle(
-        surfaceTintColor: const WidgetStatePropertyAll(LightTheme.primaryAsset),
-        foregroundColor: WidgetStateProperty.all(LightTheme.secondaryText),
-        backgroundColor: WidgetStateProperty.all(LightTheme.tertiaryBg),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0), side: BorderSide.none),
-        ),
-        padding: WidgetStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0)),
-      ),
-    );
-    var outlinedButtonThemeData = OutlinedButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: WidgetStateProperty.all(LightTheme.secondaryText),
-        backgroundColor: WidgetStateProperty.all(LightTheme.secondaryBg),
-        side: WidgetStateProperty.all(
-            const BorderSide(color: LightTheme.primaryAsset)),
-        padding: WidgetStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0)),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-        ),
-      ),
-    );
-    var elevatedButtonThemeData = ElevatedButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: const WidgetStatePropertyAll(LightTheme.secondaryText),
-        backgroundColor: WidgetStateProperty.all(LightTheme.secondaryBg),
-        padding: WidgetStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0)),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0), side: BorderSide.none),
-        ),
-      ),
-    );
-    TextTheme lightTextTheme = GoogleFonts.robotoTextTheme(const TextTheme(
-      titleLarge: TextStyle(
-        color: LightTheme.primaryText,
-      ),
-    ));
     const bottomNavigationBarThemeData = BottomNavigationBarThemeData(
       backgroundColor: LightTheme.tertiaryBg,
       selectedItemColor: LightTheme.onPrimary,

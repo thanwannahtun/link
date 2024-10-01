@@ -121,7 +121,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               Opacity(
                                 opacity: 0.7,
                                 child: Text(
-                                  "sponsered",
+                                  "sponsored",
                                   style: TextStyle(
                                     fontSize: 10,
                                   ),
@@ -241,6 +241,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               /// Action Button
                               ElevatedButton(
                                 style: ButtonStyle(
+                                    shape: WidgetStatePropertyAll(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          side: BorderSide.none),
+                                    ),
                                     backgroundColor: WidgetStatePropertyAll(
                                         context.successColor),
                                     minimumSize: const WidgetStatePropertyAll(

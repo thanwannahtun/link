@@ -6,7 +6,6 @@ import 'package:link/models/app.dart';
 import 'package:link/models/comment.dart';
 import 'package:link/models/post.dart';
 import 'package:link/models/seat.dart';
-import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/comment_persistent_footer_button.dart';

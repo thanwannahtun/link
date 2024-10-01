@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 
 import '../../../core/utils/app_insets.dart';
