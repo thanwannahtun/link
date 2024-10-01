@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
@@ -23,6 +24,8 @@ import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/photo_view_gallery_widget.dart';
 
+import '../../widgets/custom_scaffold_body.dart';
+
 class UploadNewPostPage extends StatefulWidget {
   const UploadNewPostPage({super.key});
 
@@ -38,6 +41,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   final ValueNotifier<City?> _fromCityNotifier = ValueNotifier(null);
   final ValueNotifier<City?> _toCityNotifier = ValueNotifier(null);
+  final ValueNotifier<int?> _priceNotifier = ValueNotifier(null);
   final ValueNotifier<DateTime?> _scheduleDateNotifier = ValueNotifier(null);
 
   DateTime? _seletedDepartureDate;
@@ -45,12 +49,14 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   late FocusNode _descriptionFocusNode;
   late FocusNode _titleFocusNode;
-
-  final ValueNotifier<bool> _showMidpointCard = ValueNotifier(false);
+  late FocusNode _priceFocusNode;
 
   final ValueNotifier<bool> _validFromCity = ValueNotifier(false);
   final ValueNotifier<bool> _validToCity = ValueNotifier(false);
+  final ValueNotifier<bool> _validPrice = ValueNotifier(false);
   final ValueNotifier<bool> _validScheduleDate = ValueNotifier(false);
+
+  final ValueNotifier<bool> _validPostNotifier = ValueNotifier(false);
 
   @override
   void initState() {
@@ -69,15 +75,18 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   _initFocusNodes() {
     _descriptionFocusNode = FocusNode();
     _titleFocusNode = FocusNode();
+    _priceFocusNode = FocusNode();
   }
 
   _disposeNotifiers() {
-    _showMidpointCard.dispose();
     _fromCityNotifier.dispose();
     _toCityNotifier.dispose();
     _scheduleDateNotifier.dispose();
     _validFromCity.dispose();
     _validToCity.dispose();
+    _validPrice.dispose();
+    _validPostNotifier.dispose();
+    _priceNotifier.dispose();
   }
 
   @override
@@ -95,6 +104,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   _disposeFocusNodes() {
     _descriptionFocusNode.dispose();
     _titleFocusNode.dispose();
+    _priceFocusNode.dispose();
   }
 
   // Todo : Post Field section
@@ -121,18 +131,16 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   final TextEditingController _midpointDescriptionController =
       TextEditingController(text: "");
 
+  final TextEditingController _priceController = TextEditingController();
+
   List<XFile> _xfiles = [];
 
   final ImagePicker _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
-    // CustomScaffoldBody(body: _body(context), title: "title");
-
     print("rebuild");
-
     double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
 
     return Padding(
@@ -147,71 +155,74 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           appBar: _buildAppBar(),
           body: _body(context),
           persistentFooterButtons: [
-            Container(
-              padding: EdgeInsets.only(
-                bottom:
-                    keyboardVisible ? MediaQuery.of(context).viewInsets.top : 0,
-              ),
-              child: SizedBox.expand(
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            _showBottomSheetTiles(context);
-                          },
-                          icon: const Icon(
-                            Icons.add_box_outlined,
-                          ),
-                        ),
+            _persistentFooterButtons(keyboardVisible, context),
+          ],
+        ),
+      ),
+    );
+  }
 
-                        /// [Background Color]
-                        IconButton(
-                          onPressed: () async {
-                            Context.showBottomSheet(context,
-                                constraints:
-                                    const BoxConstraints.expand(height: 250),
-                                showDragHandle: false,
-                                padding: const EdgeInsets.all(8),
-                                body: const Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      children: [],
-                                    ),
-                                    Row(),
-                                  ],
-                                ));
-                          },
-                          icon: const Icon(
-                            Icons.color_lens_outlined,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        OutlinedButton(
-                          onPressed: () {
-                            // print(_xfiles.map((f) {
-                            //   print("${f.mimeType} : ${f.path}: ${f.name}");
-                            // }));
-                            context.read<ThemeCubit>().toggleTheme();
-                          },
-                          style: const ButtonStyle(
-                              elevation: WidgetStatePropertyAll(0.3)),
-                          child: const Text("Preview"),
-                        )
-                      ],
-                    )
-                  ],
+  Container _persistentFooterButtons(
+      bool keyboardVisible, BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: keyboardVisible ? MediaQuery.of(context).viewInsets.top : 0,
+      ),
+      child: SizedBox.expand(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    _showBottomSheetTiles(context);
+                  },
+                  icon: const Icon(
+                    Icons.add_box_outlined,
+                  ),
                 ),
-              ),
+
+                /// [Background Color]
+                IconButton(
+                  onPressed: () async {
+                    Context.showBottomSheet(context,
+                        constraints: const BoxConstraints.expand(height: 250),
+                        showDragHandle: false,
+                        padding: const EdgeInsets.all(8),
+                        body: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [],
+                            ),
+                            Row(),
+                          ],
+                        ));
+                  },
+                  icon: const Icon(
+                    Icons.color_lens_outlined,
+                  ),
+                ),
+              ],
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                OutlinedButton(
+                  onPressed: () {
+                    // print(_xfiles.map((f) {
+                    //   print("${f.mimeType} : ${f.path}: ${f.name}");
+                    // }));
+                    context.read<ThemeCubit>().toggleTheme();
+                  },
+                  style:
+                      const ButtonStyle(elevation: WidgetStatePropertyAll(0.3)),
+                  child: const Text("Preview"),
+                )
+              ],
+            )
           ],
         ),
       ),
@@ -238,17 +249,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
           /// [Midpoint]
           /// <Midpoint Card start>
-          ValueListenableBuilder<bool>(
-            valueListenable: _showMidpointCard,
-            builder: (context, value, child) {
-              return value
-                  ? InkWell(
-                      // child: _buildMidpointCard(context),
-                      child: _buildRouteInfoCard(context),
-                    )
-                  : Container();
-            },
-          ),
+          _buildRouteInfoCard(context),
 
           /// <Midpoint Card End>
 
@@ -279,15 +280,8 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
               onTap: () async {
                 await _pickFromGallery(context);
               },
-              leading: const Icon(Icons.photo_camera_back_outlined),
+              leading: const Icon(Icons.photo_camera_back_rounded),
               title: const Text("Add Images"),
-            ),
-            ListTile(
-              onTap: () {
-                showMidpointCard();
-              },
-              leading: const Icon(Icons.photo_camera_back_outlined),
-              title: const Text("Add Routes Info"),
             ),
           ],
         ));
@@ -295,106 +289,126 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   Widget _buildRouteInfoCard(BuildContext context) {
     return Card.filled(
-      color: context.tertiaryColor,
-      margin: const EdgeInsets.symmetric(
-          horizontal: AppInsets.inset10, vertical: AppInsets.inset8),
-      child: Column(children: [
-        // date time
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
+      // color: context.tertiaryColor,
+      margin: const EdgeInsets.all(0.0),
+
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(width: 0.01),
+          color: context.tertiaryColor.withOpacity(0.2),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8),
+          child: Column(children: [
+            // date time
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.calendar_month,
-                  color: context.onPrimaryColor,
-                ),
-                const SizedBox(
-                  width: 5,
-                ),
-                InkWell(
-                  onTap: () async {
-                    DateTime? date =
-                        await DateTimeUtil.showDateTimePickerDialog(context);
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon(
+                    //   Icons.calendar_month,
+                    //   color: context.onPrimaryColor,
+                    // ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    /*
+                    InkWell(
+                      onTap: () async {
+                        DateTime? date =
+                            await DateTimeUtil.showDateTimePickerDialog(
+                                context);
 
-                    if (date != null) {
-                      _scheduleDateNotifier.value = date;
-                      _validScheduleDate.value = true;
-                    }
-                  },
-                  child: ValueListenableBuilder(
-                    valueListenable: _validScheduleDate,
-                    builder: (BuildContext context, value, Widget? child) {
-                      TextStyle textStyle = value
-                          ? TextStyle(color: context.onPrimaryColor)
-                          : const TextStyle(color: Colors.red);
+                        if (date != null) {
+                          _scheduleDateNotifier.value = date;
+                          _validScheduleDate.value = true;
+                        }
+                      },
+                      child: ValueListenableBuilder(
+                        valueListenable: _validScheduleDate,
+                        builder: (BuildContext context, value, Widget? child) {
+                          TextStyle textStyle = value
+                              ? TextStyle(color: context.onPrimaryColor)
+                              : const TextStyle(color: Colors.blue);
 
-                      return ValueListenableBuilder(
-                        valueListenable: _scheduleDateNotifier,
-                        builder: (BuildContext context, DateTime? value,
-                            Widget? child) {
-                          return Text(
-                            value == null
-                                ? "Add Schedule Date"
-                                : DateTimeUtil.formatDateTime(value),
-                            style: textStyle,
-                          ).center();
+                          return ValueListenableBuilder(
+                            valueListenable: _scheduleDateNotifier,
+                            builder: (BuildContext context, DateTime? value,
+                                Widget? child) {
+                              return Text(
+                                value == null
+                                    ? "Add Schedule Date"
+                                    : DateTimeUtil.formatDateTime(value),
+                                style: textStyle,
+                              ).center();
+                            },
+                          );
                         },
-                      );
-                    },
-                  ),
-                )
+                      ),
+                    )
+                  */
+                  ],
+                ),
               ],
             ),
-            IconButton(
-                onPressed: () {
-                  _hideMidpointCard(context);
-                },
-                icon: Icon(
-                  Icons.clear,
-                  color: context.onPrimaryColor,
-                ))
-          ],
-        ),
-        // from & to
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _fromCityField(context).expanded(),
-            SizedBox(
-              width: 25,
-              child: Icon(
-                Icons.compare_arrows,
-                color: context.onPrimaryColor,
-              ),
+
+            /// From & To citiy Fields
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _fromCityField(context).expanded(),
+                SizedBox(
+                  width: 25,
+                  child: Icon(
+                    Icons.compare_arrows,
+                    color: context.secondaryColor,
+                  ),
+                ),
+                _toCityField().expanded(),
+              ],
+            ).padding(padding: const EdgeInsets.all(AppInsets.inset10)),
+            // Date and Price
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _scheduleDateField(context).expanded(),
+                const SizedBox(
+                  width: 25,
+                  // child: Icon(
+                  //   Icons.compare_arrows,
+                  //   color: context.onPrimaryColor,
+                  // ),
+                ),
+                _priceField().expanded(),
+              ],
+            ).padding(padding: const EdgeInsets.all(AppInsets.inset10)),
+
+            // midpoint lines
+            _showMidpointTiles(),
+            // _midpointListTiles(),
+            const SizedBox(
+              height: 10,
             ),
-            _toCityField().expanded(),
-          ],
-        ).padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15)),
-        // midpoint lines
-        _showMidpointTiles(),
-        // _midpointListTiles(),
-        const SizedBox(
-          height: 10,
+            // Button
+            ElevatedButton.icon(
+              style: AppStyle.buttonExpanded(context),
+              onPressed: () {
+                _showRouteCityBottomSheet(context);
+              },
+              label: const Text("Add Middle Routes"),
+              icon: const Icon(Icons.add),
+              iconAlignment: IconAlignment.start,
+            ),
+            const SizedBox(
+              height: AppInsets.inset5,
+            ),
+            // mini info
+            // _showMidpointDescription(context)
+          ]).padding(padding: const EdgeInsets.all(10)),
         ),
-        // Button
-        ElevatedButton.icon(
-          style: AppStyle.buttonExpanded(context),
-          onPressed: () {
-            _showRouteCityBottomSheet(context);
-          },
-          label: const Text("Add Middle Routes"),
-          icon: const Icon(Icons.add),
-          iconAlignment: IconAlignment.start,
-        ),
-        const SizedBox(
-          height: AppInsets.inset5,
-        ),
-        // mini info
-        // _showMidpointDescription(context)
-      ]).padding(padding: const EdgeInsets.all(10)),
+      ),
     );
   }
 
@@ -438,38 +452,174 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
             ));
   }
 
+  Container _scheduleDateField(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          color: context.secondaryColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: context.onPrimaryColor)),
+      height: 55,
+      child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: InkWell(
+            onTap: () async {
+              DateTime? date =
+                  await DateTimeUtil.showDateTimePickerDialog(context);
+
+              if (date != null) {
+                _scheduleDateNotifier.value = date;
+                _validScheduleDate.value = true;
+              }
+            },
+            child: ValueListenableBuilder(
+              valueListenable: _validScheduleDate,
+              builder: (BuildContext context, value, Widget? child) {
+                TextStyle textStyle = value
+                    ? TextStyle(color: context.onPrimaryColor)
+                    : const TextStyle(color: Colors.red);
+
+                return ValueListenableBuilder(
+                  valueListenable: _scheduleDateNotifier,
+                  builder:
+                      (BuildContext context, DateTime? value, Widget? child) {
+                    return Row(
+                      children: [
+                        Icon(
+                          Icons.date_range_rounded,
+                          color: context.onPrimaryColor,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          value == null
+                              ? "Schedule Date"
+                              : DateTimeUtil.formatDateTime(value),
+                          style: textStyle,
+                        ).expanded(),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          )),
+    );
+  }
+
   Container _fromCityField(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+          color: context.secondaryColor,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: context.onPrimaryColor)),
-      height: 70,
-      child: InkWell(
-        onTap: () async {
-          City? city = await _chooseCity();
+      height: 55,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: InkWell(
+          onTap: () async {
+            City? city = await _chooseCity();
 
-          if (city != null) {
-            _fromCityNotifier.value = city;
-            _validFromCity.value = true;
-          }
-        },
-        child: ValueListenableBuilder(
-          valueListenable: _validFromCity,
-          builder: (BuildContext context, value, Widget? child) {
-            TextStyle textStyle = value
-                ? TextStyle(color: context.onPrimaryColor)
-                : const TextStyle(color: Colors.red);
-
-            return ValueListenableBuilder(
-              valueListenable: _fromCityNotifier,
-              builder: (BuildContext context, City? value, Widget? child) {
-                return Text(
-                  value == null ? "From" : value.name ?? "",
-                  style: textStyle,
-                ).center();
-              },
-            );
+            if (city != null) {
+              _fromCityNotifier.value = city;
+              _validFromCity.value = true;
+            }
           },
+          child: ValueListenableBuilder(
+            valueListenable: _validFromCity,
+            builder: (BuildContext context, value, Widget? child) {
+              TextStyle textStyle = value
+                  ? TextStyle(color: context.onPrimaryColor)
+                  : const TextStyle(color: Colors.red);
+
+              return ValueListenableBuilder(
+                valueListenable: _fromCityNotifier,
+                builder: (BuildContext context, City? value, Widget? child) {
+                  return Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        color: context.onPrimaryColor,
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        value == null ? "Origin" : value.name ?? "",
+                        // textAlign: TextAlign.start,
+                        style: textStyle,
+                      ).expanded(),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Container _priceField() {
+    return Container(
+      decoration: BoxDecoration(
+          color: context.secondaryColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white)),
+      height: 55,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: InkWell(
+          onTap: () async {
+            await _showPriceChooseSheet(context);
+            // City? city = await _chooseCity();
+
+            // if (city != null) {
+            //   _toCityNotifier.value = city;
+            //   _validToCity.value = true;
+            // }
+          },
+          child: ValueListenableBuilder(
+            valueListenable: _validPrice,
+            builder: (BuildContext context, value, Widget? child) {
+              TextStyle textStyle = value
+                  ? TextStyle(color: context.onPrimaryColor)
+                  : const TextStyle(color: Colors.red);
+
+              return ValueListenableBuilder(
+                valueListenable: _priceNotifier,
+                builder: (BuildContext context, value, Widget? child) {
+                  return Row(
+                    children: [
+                      Icon(
+                        Icons.attach_money_rounded,
+                        color: context.onPrimaryColor,
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      // TextField(
+                      //   keyboardType: TextInputType.number,
+                      //   focusNode: _priceFocusNode,
+                      //   onTapOutside: (event) => _unfoucsNode(_priceFocusNode),
+                      //   controller: _priceController,
+                      //   style: TextStyle(
+                      //     color: context.onPrimaryColor,
+                      //   ),
+                      //   decoration: const InputDecoration(
+                      //     border: InputBorder.none,
+                      //   ),
+                      // ).center().expanded(),
+                      Text(
+                        value == null ? "Price Per Seat" : value.toString(),
+                        style: textStyle,
+                      ).expanded(),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -478,35 +628,50 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   Container _toCityField() {
     return Container(
       decoration: BoxDecoration(
+          color: context.secondaryColor,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.white)),
-      height: 70,
-      child: InkWell(
-        onTap: () async {
-          City? city = await _chooseCity();
+      height: 55,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: InkWell(
+          onTap: () async {
+            City? city = await _chooseCity();
 
-          if (city != null) {
-            _toCityNotifier.value = city;
-            _validToCity.value = true;
-          }
-        },
-        child: ValueListenableBuilder(
-          valueListenable: _validToCity,
-          builder: (BuildContext context, value, Widget? child) {
-            TextStyle textStyle = value
-                ? TextStyle(color: context.onPrimaryColor)
-                : const TextStyle(color: Colors.red);
-
-            return ValueListenableBuilder(
-              valueListenable: _toCityNotifier,
-              builder: (BuildContext context, City? value, Widget? child) {
-                return Text(
-                  value == null ? "To" : value.name ?? "",
-                  style: textStyle,
-                ).center();
-              },
-            );
+            if (city != null) {
+              _toCityNotifier.value = city;
+              _validToCity.value = true;
+            }
           },
+          child: ValueListenableBuilder(
+            valueListenable: _validToCity,
+            builder: (BuildContext context, value, Widget? child) {
+              TextStyle textStyle = value
+                  ? TextStyle(color: context.onPrimaryColor)
+                  : const TextStyle(color: Colors.red);
+
+              return ValueListenableBuilder(
+                valueListenable: _toCityNotifier,
+                builder: (BuildContext context, City? value, Widget? child) {
+                  return Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        color: context.onPrimaryColor,
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        value == null ? "Destination" : value.name ?? "",
+                        style: textStyle,
+                      ).expanded(),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -538,18 +703,18 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     );
   }
 
-  void _hideMidpointCard(BuildContext context) {
-    _showMidpointCard.value = false;
-    context.showSnackBar(Context.snackBar(
-      const Text("Restore Changes").bold(),
-      action: SnackBarAction(
-          label: "Undo",
-          textColor: context.tertiaryColor,
-          onPressed: () {
-            _showMidpointCard.value = true;
-          }),
-    ));
-  }
+  // void _hideMidpointCard(BuildContext context) {
+  //   _showMidpointCard.value = false;
+  //   context.showSnackBar(Context.snackBar(
+  //     const Text("Restore Changes").bold(),
+  //     action: SnackBarAction(
+  //         label: "Undo",
+  //         textColor: context.tertiaryColor,
+  //         onPressed: () {
+  //           _showMidpointCard.value = true;
+  //         }),
+  //   ));
+  // }
 
   // ignore: unused_element
   Card _buildMidpointCard(BuildContext context) {
@@ -589,7 +754,6 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   }
 
   void showMidpointCard() {
-    _showMidpointCard.value = true;
     _postCreateUtilCubit.resetMidpoints();
     context.pop();
   }
@@ -628,65 +792,70 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                             })),
                   );
                 },
-                child: Card.filled(
-                  margin: const EdgeInsets.all(0.0),
-                  child: ListTile(
-                    onTap: () {},
-                    dense: true,
-                    // leading: Text((index + 1).toString()),
-                    title: Text(
-                      midpoint.city?.name ?? "",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    isThreeLine: midpoint.description != null ? true : false,
-                    subtitle: midpoint.description != null
-                        ? Opacity(
-                            opacity: 0.8,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  softWrap: true,
-                                  maxLines: 2,
-                                  midpoint.description ?? "",
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      overflow: TextOverflow.ellipsis),
-                                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                      border: Border.all(width: 0.01),
+                      color: Theme.of(context).cardColor),
+                  child: Card.filled(
+                    margin: const EdgeInsets.all(0.0),
+                    child: ListTile(
+                      onTap: () {},
+                      dense: true,
+                      // leading: Text((index + 1).toString()),
+                      title: Text(
+                        midpoint.city?.name ?? "",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      isThreeLine: midpoint.description != null ? true : false,
+                      subtitle: midpoint.description != null
+                          ? Opacity(
+                              opacity: 0.8,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    softWrap: true,
+                                    maxLines: 2,
+                                    midpoint.description ?? "",
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
 
-                                Row(
-                                  children: [
-                                    Text(
-                                      midpoint.departureTime != null
-                                          ? DateTimeUtil.formatDateTime(
-                                              midpoint.departureTime)
-                                          : "",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: AppInsets.font10,
+                                  Row(
+                                    children: [
+                                      Text(
+                                        midpoint.departureTime != null
+                                            ? DateTimeUtil.formatDateTime(
+                                                midpoint.departureTime)
+                                            : "",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: AppInsets.font10,
+                                        ),
                                       ),
-                                    ),
-                                    const Icon(Icons.arrow_right_alt_rounded),
-                                    Text(
-                                      midpoint.arrivalTime != null
-                                          ? DateTimeUtil.formatDateTime(
-                                              midpoint.arrivalTime)
-                                          : "",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: AppInsets.font10,
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                // ],
-                                // )
-                              ],
-                            ),
-                          )
-                        : null,
-                    // trailing: ,
+                                      const Icon(Icons.arrow_right_alt_rounded),
+                                      Text(
+                                        midpoint.arrivalTime != null
+                                            ? DateTimeUtil.formatDateTime(
+                                                midpoint.arrivalTime)
+                                            : "",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: AppInsets.font10,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  // ],
+                                  // )
+                                ],
+                              ),
+                            )
+                          : null,
+                      // trailing: ,
+                    ),
                   ),
                 ),
               ).padding(padding: const EdgeInsets.only(bottom: 5));
@@ -994,7 +1163,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                   ),
                   Positioned(
                     width: 50,
-                    height: 50,
+                    height: 55,
                     right: 0,
                     top: 0,
                     child: Container(
@@ -1038,9 +1207,9 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         focusNode: _descriptionFocusNode,
         autocorrect: true,
         maxLines: null,
-        minLines: 5,
+        minLines: 2,
         onTapOutside: (event) => _unfoucsNode(_descriptionFocusNode),
-        maxLength: 7000,
+        // maxLength: 7000,
         controller: _descriptionController,
         decoration: const InputDecoration(
           hintText: "Dercription",
@@ -1133,41 +1302,64 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       elevation: 0.0,
       title: const Text("Create Post"),
-      actions: [
-        BlocListener<PostRouteCubit, PostRouteState>(
-          listener: (BuildContext context, state) {
-            SnackBar showSnackBar(String text, Icon icon) {
-              return SnackBar(
-                  content: Row(
-                      children: [icon, const SizedBox(width: 10), Text(text)]));
-            }
+      actions: [_actionPostButton()],
+    );
+  }
 
-            if (state.status == BlocStatus.uploadFailed) {
-              context.showSnackBar(
-                Context.snackBar(const Text("Something went wrong!"),
-                    icon: Icon(Icons.warning_rounded,
-                        color: context.tertiaryColor)),
-              );
-            }
-            if (state.status == BlocStatus.uploaded) {
-              context.showSnackBar(
-                Context.snackBar(const Text("Successfully Uploaded"),
-                    icon: Icon(Icons.panorama_fish_eye_outlined,
-                        color: context.tertiaryColor)),
-              );
-            }
-          },
-          child: OutlinedButton(
-                  style: AppStyle.buttonDark(context),
+  BlocListener<PostRouteCubit, PostRouteState> _actionPostButton() {
+    return BlocListener<PostRouteCubit, PostRouteState>(
+      listener: (BuildContext context, state) {
+        if (state.status == BlocStatus.uploadFailed) {
+          context.showSnackBar(
+            Context.snackBar(const Text("Something went wrong!"),
+                icon:
+                    Icon(Icons.warning_rounded, color: context.tertiaryColor)),
+          );
+        }
+        if (state.status == BlocStatus.uploaded) {
+          context.showSnackBar(
+            Context.snackBar(const Text("Successfully Uploaded"),
+                icon: Icon(Icons.panorama_fish_eye_outlined,
+                    color: context.tertiaryColor)),
+          );
+        }
+      },
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _validPostNotifier,
+        builder: (BuildContext context, value, Widget? child) {
+          return OutlinedButton(
+                  style: ButtonStyle(
+                      backgroundColor: value
+                          ? WidgetStatePropertyAll(context.successColor)
+                          : WidgetStatePropertyAll(context.primaryColor),
+                      foregroundColor:
+                          WidgetStatePropertyAll(context.onPrimaryColor)),
                   onPressed: () {
-                    _uploadNewPost();
+                    _checkRequiredFields(_uploadNewPost);
+                    // _uploadNewPost();
                   },
                   child: Text("Post",
                       style: TextStyle(color: context.onPrimaryColor)))
-              .padding(padding: const EdgeInsets.symmetric(horizontal: 10)),
-        )
-      ],
+              .padding(padding: const EdgeInsets.symmetric(horizontal: 10));
+        },
+      ),
     );
+  }
+
+  _checkRequiredFields(VoidCallback callBack) {
+    if (_titleController.value.text.isEmpty ||
+        _descriptionController.value.text.isEmpty) {
+      _validPostNotifier.value = false;
+      return;
+    } else if (!_validScheduleDate.value ||
+        !_validFromCity.value ||
+        !_validToCity.value) {
+      _validPostNotifier.value = false;
+      return;
+    } else {
+      _validPostNotifier.value = true;
+      callBack();
+    }
   }
 
   void _uploadNewPost() {
@@ -1183,13 +1375,158 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       destination: _destination,
       midpoints: _midpoints,
       scheduleDate: _scheduleDateNotifier.value,
-      pricePerTraveler: 35000,
+      pricePerTraveler: _priceNotifier.value ?? 0,
     );
 
     _postRouteCubit.uploadNewPost(
       post: post,
       files: _xfiles.map((xfile) => File(xfile.path)).toList(),
     );
+  }
+
+  _showPriceChooseSheet(BuildContext context) async {
+    validatePrice(String value) {
+      if (int.tryParse(value) != null) {
+        _validPrice.value = true;
+        _priceNotifier.value = int.tryParse(value);
+        context.pop();
+      }
+    }
+
+    List<String> currencies = ["Ks", "EU", "Pound", "Dollar"];
+    String _selectedCurrency = currencies.first;
+    List<int> priceRanges = [
+      10000,
+      12000,
+      15000,
+      18000,
+      20000,
+      22000,
+      25000,
+      28000,
+      30000,
+      32000,
+      35000,
+      38000,
+      40000,
+      45000
+    ];
+    return Context.showBottomSheet(context,
+        constraints: const BoxConstraints.expand(height: 400),
+        showDragHandle: false,
+        padding: const EdgeInsets.all(8),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Price Per Traveller ( per seat )",
+                    style: TextStyle(fontWeight: FontWeight.bold))
+                .padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppInsets.inset10)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextField(
+                  onSubmitted: (value) {
+                    validatePrice(value);
+                  },
+                  keyboardType: TextInputType.number,
+                  focusNode: _priceFocusNode,
+                  onTapOutside: (event) => _unfoucsNode(_priceFocusNode),
+                  controller: _priceController,
+                  style: const TextStyle(),
+                  decoration: const InputDecoration(
+                    hintText: "Enter Price in",
+                    border: OutlineInputBorder(
+                        gapPadding: 2,
+                        borderRadius: BorderRadius.all(Radius.circular(50))),
+                  ),
+                ).expanded(flex: 2),
+                const SizedBox(
+                  width: 15,
+                ),
+                StatefulBuilder(
+                  builder: (BuildContext context, void Function(void Function()) rebuild) { 
+                  return DropdownButton(
+                    items: currencies
+                        .map((item) => DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(item),
+                            ))
+                        .toList(),
+                    // selectedItemBuilder: (context) => Text(data),
+                    value: _selectedCurrency,
+                    onChanged: (value) {
+                          rebuild((){
+                      _selectedCurrency = value!;
+
+                          });
+                    },
+                  );
+                   },
+                ),
+
+                /// currency choice scollable
+                const SizedBox(
+                  width: 15,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    validatePrice(_priceController.text);
+                  },
+                  style: ButtonStyle(
+                      foregroundColor:
+                          WidgetStatePropertyAll(context.onPrimaryColor),
+                      backgroundColor:
+                          WidgetStatePropertyAll(context.tertiaryColor),
+                      side: const WidgetStatePropertyAll(
+                        BorderSide(
+                          style: BorderStyle.solid,
+                        ),
+                      )),
+                  child: const Text("Comfirm").fittedBox(),
+                ).expanded()
+              ],
+            ),
+            const SizedBox(
+              height: AppInsets.inset8,
+            ),
+            const Text("Suggesstion",
+                    style: TextStyle(fontWeight: FontWeight.bold))
+                .padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppInsets.inset10)),
+            Wrap(
+              children: priceRanges
+                  .map((price) => InkWell(
+                        onTap: () {
+                          _validPrice.value = true;
+                          _priceNotifier.value = price;
+                          context.pop();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: AppInsets.inset8,
+                              horizontal: AppInsets.inset10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(),
+                                color: context.successColor,
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Text(
+                                price.toString(),
+                                style: TextStyle(color: context.onPrimaryColor),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ],
+        ));
   }
 }
 

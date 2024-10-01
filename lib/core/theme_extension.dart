@@ -13,6 +13,8 @@ extension TextThemeExtensions on BuildContext {
   Color get secondaryColor => Theme.of(this).colorScheme.secondary;
   Color get tertiaryColor => Theme.of(this).colorScheme.tertiary;
 
+  Color get successColor => Colors.blue;
+
   // Accessing Text Colors
 
   Color get titleColor =>

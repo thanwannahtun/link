@@ -405,7 +405,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 /// FROM
                 const Row(
                   children: [
-                    Icon(Icons.filter_tilt_shift_outlined),
+                    Icon(Icons.location_on_rounded),
                     SizedBox(
                       width: AppInsets.inset25,
                     ),
@@ -446,7 +446,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 /// TO
                 const Row(
                   children: [
-                    Icon(Icons.filter_tilt_shift_outlined),
+                    Icon(Icons.location_on_outlined),
                     SizedBox(
                       width: AppInsets.inset25,
                     ),
