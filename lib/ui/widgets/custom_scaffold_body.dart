@@ -60,7 +60,8 @@ class CustomScaffoldBody extends StatelessWidget {
                 builder: (context, scrollController) {
                   return Container(
                     decoration: BoxDecoration(
-                        color: context.tertiaryColor,
+                        // color: context.primaryColor,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10),

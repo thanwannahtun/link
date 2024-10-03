@@ -23,7 +23,7 @@ class CachedImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return CachedNetworkImage(
       imageUrl: imageUrl,
-      fit: placeholderImageFit,
+      fit: fit,
       placeholder: placeholder ??
           (context, url) => const Image(
                 image: AssetImage('assets/icon/app_logo.jpg'),

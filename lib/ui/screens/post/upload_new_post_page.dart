@@ -34,7 +34,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   late PostCreateUtilCubit _postCreateUtilCubit;
   late PostRouteCubit _postRouteCubit;
 
-  City? selectedCity;
+  City? _selectedMidpointCity;
 
   final ValueNotifier<City?> _fromCityNotifier = ValueNotifier(null);
   final ValueNotifier<City?> _toCityNotifier = ValueNotifier(null);
@@ -294,7 +294,8 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(width: 0.01),
-          color: context.tertiaryColor.withOpacity(0.2),
+          // color: context.tertiaryColor.withOpacity(0.2),
+          color: Theme.of(context).cardColor,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8),
@@ -783,15 +784,15 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                 onDismissed: (direction) {
                   // Midpoint temp = midpoint;
                   _postCreateUtilCubit.removeMidpoint(index: index);
-                  context.showSnackBar(
-                    Context.snackBar(const Text("Restore Changes"),
-                        action: SnackBarAction(
-                            label: "Undo",
-                            textColor: context.tertiaryColor,
-                            onPressed: () {
-                              // _postCreateUtilCubit.addMidpoint(midpoint: temp);
-                            })),
-                  );
+                  // context.showSnackBar(
+                  //   Context.snackBar(const Text("Restore Changes"),
+                  //       action: SnackBarAction(
+                  //           label: "Undo",
+                  //           textColor: context.tertiaryColor,
+                  //           onPressed: () {
+                  //             // _postCreateUtilCubit.addMidpoint(midpoint: temp);
+                  //           })),
+                  // );
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -960,18 +961,19 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   Widget _addRoutePersistentButton(BuildContext context) {
     return StatefulBuilder(builder:
-        (BuildContext context, void Function(void Function()) setState) {
+        (BuildContext context, void Function(void Function()) rebuild) {
       return SizedBox.expand(
           child: OutlinedButton(
         style: ButtonStyle(
             backgroundColor: WidgetStatePropertyAll(context.secondaryColor)),
         onPressed: () {
+          _validateMidpoint();
           Midpoint midpoint = Midpoint(
-              city: selectedCity,
+              city: _selectedMidpointCity,
               departureTime: _seletedDepartureDate,
               arrivalTime: _seletedArrivalDate,
               description: _midpointDescriptionController.text);
-
+          _selectedMidpointCity = null;
           _seletedArrivalDate = null;
           _seletedDepartureDate = null;
 
@@ -979,7 +981,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           _midpointDescriptionController.clear();
           _postCreateUtilCubit.addMidpoint(midpoint: midpoint);
           Navigator.pop(context);
-          setState(() {});
+          rebuild(() {});
         },
         child: Text(
           "Add Route",
@@ -1115,7 +1117,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
         );
 
         if (city != null) {
-          selectedCity = city;
+          _selectedMidpointCity = city;
           _midpointCityController.text = city.name ?? "HELLo";
         }
       },
@@ -1400,13 +1402,14 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       35000,
       38000,
       40000,
-      45000
+      45000,
     ];
     return showModalBottomSheet(
         context: context,
         // constraints: const BoxConstraints.expand(height: 400),
         builder: (context) => Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppInsets.inset8, vertical: AppInsets.inset15),
               child: _priceChooseWidget(context, priceRanges),
             ));
     // return Context.showBottomSheet(context,
@@ -1426,6 +1429,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     }
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("Price Per Traveller ( per seat )",
@@ -1520,7 +1524,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                       child: Container(
                         decoration: BoxDecoration(
                             border: Border.all(),
-                            color: context.successColor,
+                            color: context.tertiaryColor,
                             borderRadius: BorderRadius.circular(3)),
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
@@ -1533,9 +1537,18 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                     ),
                   ))
               .toList(),
-        ),
+        ).expanded(),
       ],
-    );
+    ).expanded();
+  }
+
+  void _validateMidpoint() {
+    print("_validateMIdpint");
+    if (_selectedMidpointCity == null ||
+        _seletedDepartureDate == null ||
+        _seletedDepartureDate == null) {
+      return;
+    }
   }
 }
 

@@ -7,8 +7,10 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
+import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
+import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:shimmer/shimmer.dart';
@@ -27,12 +29,15 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   late final ValueNotifier<DateTime?> _selectedDateNotifier;
 
   List<Post> _trendingRoutes = [];
+  List<Post> _sponsoredRoutes = [];
   late final PostRouteCubit _trendingRouteBloc;
+  late final PostRouteCubit _sponsoredRouteBloc;
 
   @override
   void initState() {
     super.initState();
     _trendingRouteBloc = PostRouteCubit()..fetchRoutes();
+    _sponsoredRouteBloc = PostRouteCubit()..fetchRoutes();
     print("initStteCalled  :Hero_home");
     _selectedDateNotifier = ValueNotifier(DateTime.now());
   }
@@ -99,199 +104,41 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             const SizedBox(
               height: 5,
             ),
-            Card.filled(
-              color: Theme.of(context).cardColor.withOpacity(0.8),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 0.01,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    /// header
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Opacity(
-                                opacity: 0.7,
-                                child: Text(
-                                  "sponsored",
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                "38,000 Ks",
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ClipRRect(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(50)),
-                                child: SizedBox(
-                                  width: 30,
-                                  height: 30,
-                                  child: CachedNetworkImage(
-                                    imageUrl: "",
-                                    errorWidget: (context, url, error) =>
-                                        Image.asset(
-                                      "assets/icon/app_logo.jpg",
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(
-                                width: AppInsets.inset8,
-                              ),
-                              const Icon(Icons.more_vert_rounded)
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppInsets.inset20),
-                      child: Card.filled(
-                        child: Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: Column(
-                            children: [
-                              /// Images
-                              SizedBox.fromSize(
-                                size: const Size(double.infinity, 80),
-                                child: CachedNetworkImage(
-                                  imageUrl: "",
-                                  fit: BoxFit.contain,
-                                  // placeholder: (context, url) => const Image(
-                                  //   image: AssetImage('assets/icon/loading_placeholder.jpg'),
-                                  //   fit: BoxFit.cover,
-                                  // ),
-
-                                  errorWidget: (context, url, error) =>
-                                      const Image(
-                                          fit: BoxFit.cover,
-                                          image: AssetImage(
-                                            'assets/icon/app_logo.jpg',
-                                          )),
-                                  fadeInDuration: const Duration(
-                                      milliseconds:
-                                          500), // Smooth fade-in effect
-                                  fadeOutDuration: const Duration(
-                                      milliseconds:
-                                          300), // Smooth fade-out effect
-                                ),
-                              ),
-
-                              const SizedBox(
-                                height: AppInsets.inset8,
-                              ),
-
-                              /// Route Info
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.pin_drop_outlined,
-                                    size: 20,
-                                  ),
-                                  SizedBox(
-                                    width: AppInsets.inset10,
-                                  ),
-                                  Text("Yangon to Mandalay"),
-                                ],
-                              ),
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.date_range_rounded,
-                                    size: 20,
-                                  ),
-                                  SizedBox(
-                                    width: AppInsets.inset10,
-                                  ),
-                                  Text("12 June 2024 07:15 AM"),
-                                ],
-                              ),
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.business,
-                                    size: 20,
-                                  ),
-                                  SizedBox(
-                                    width: AppInsets.inset10,
-                                  ),
-                                  Text("Magway - Taunggyo - Aunglan - Pyi"),
-                                ],
-                              ),
-
-                              /// Action Button
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                    shape: WidgetStatePropertyAll(
-                                      RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          side: BorderSide.none),
-                                    ),
-                                    backgroundColor: WidgetStatePropertyAll(
-                                        context.successColor),
-                                    minimumSize: const WidgetStatePropertyAll(
-                                        Size(double.infinity, 35))),
-                                onPressed: () {},
-                                child: Text(
-                                  "Action Button",
-                                  style:
-                                      TextStyle(color: context.onPrimaryColor),
-                                ),
-                              ).padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: AppInsets.inset8)),
-
-                              /// short description
-                              const Text(
-                                "Great for best Travelling for those who want to go vacation with private family happily! Great for best Travelling for those who want to go vacation",
-                                style: TextStyle(fontSize: 12),
-                                textAlign: TextAlign.start,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                                softWrap: true,
-                              ).padding(
-                                  padding:
-                                      const EdgeInsets.all(AppInsets.inset5)),
-                              const SizedBox(
-                                height: AppInsets.inset5,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: AppInsets.inset25,
-                    )
-                  ],
-                ),
-              ),
-            ),
+            _sponsoredPostsTitleField(context),
             const SizedBox(
-              height: 5,
-            )
+              height: AppInsets.inset8,
+            ),
+            _sponsoredRoutesList(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _sponsoredRoutesList() {
+    return SizedBox(
+      height: 350,
+      child: BlocConsumer<PostRouteCubit, PostRouteState>(
+        bloc: _sponsoredRouteBloc,
+        builder: (context, state) {
+          if (state.status == BlocStatus.fetchFailed ||
+              state.status == BlocStatus.fetching) {
+            return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: _buildTrendingRoutesShimmer(context));
+          }
+          if (state.status == BlocStatus.fetched) {
+            _sponsoredRoutes = state.routes;
+            return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: _buildSponsoredRoutesCard(context));
+          } else {
+            return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: _buildTrendingRoutesShimmer(context));
+          }
+        },
+        listener: (BuildContext context, PostRouteState state) {},
       ),
     );
   }
@@ -337,6 +184,268 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   color: context.onPrimaryColor.withOpacity(0.8)),
             )),
       ],
+    );
+  }
+
+  Row _sponsoredPostsTitleField(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          "Suggested For you",
+          style: TextStyle(
+              fontWeight: FontWeight.bold, color: context.onPrimaryColor),
+        ),
+        TextButton(
+            onPressed: () {
+              // context.pushNamed(RouteLists.trendingRouteCards);
+            },
+            child: Text(
+              "View All",
+              style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: context.onPrimaryColor.withOpacity(0.8)),
+            )),
+      ],
+    );
+  }
+
+  Widget _buildSponsoredRoutesCard(BuildContext context) {
+    // return CarouselView(
+    //   itemExtent: MediaQuery.sizeOf(context).width - 30,
+    //   itemSnapping: true,
+    //   shrinkExtent: MediaQuery.sizeOf(context).width - 30,
+    //   elevation: 2,
+    //   backgroundColor: Theme.of(context).cardColor.withOpacity(0.8),
+    //   padding: const EdgeInsets.all(AppInsets.inset5),
+    //   onTap: (value) {
+    //     print("HI");
+    //   },
+    return Row(
+      children: [
+        ..._sponsoredRoutes.map(
+          (post) => _sponsoredCard(context, post),
+        ),
+      ],
+    );
+  }
+
+  Widget _sponsoredCard(BuildContext context, Post post) {
+    return Card.filled(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppInsets.inset5,
+      ),
+      color: Theme.of(context).cardColor.withOpacity(0.8),
+      child: Container(
+        width: MediaQuery.sizeOf(context).width - 30,
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 0.01,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            /// header
+            Expanded(
+              child: _sponsorHeader(post),
+            ),
+
+            Expanded(
+              flex: 5,
+              child: _sponsorBody(post, context),
+            ),
+            const SizedBox(
+              height: 10,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Padding _sponsorBody(Post post, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset20),
+      child: Card.filled(
+        margin: const EdgeInsets.all(0.0),
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            children: [
+              /// Images
+              SizedBox(
+                width: double.infinity,
+                height: 80,
+                child: CachedNetworkImage(
+                  imageUrl: "${App.baseImgUrl}${post.images?.firstOrNull}",
+                  fit: BoxFit.cover,
+                  // placeholder: (context, url) => const Image(
+                  //   image: AssetImage('assets/icon/loading_placeholder.jpg'),
+                  //   fit: BoxFit.cover,
+                  // ),
+
+                  errorWidget: (context, url, error) => const Image(
+                      fit: BoxFit.cover,
+                      image: AssetImage(
+                        'assets/icon/app_logo.jpg',
+                      )),
+                  fadeInDuration: const Duration(
+                      milliseconds: 500), // Smooth fade-in effect
+                  fadeOutDuration: const Duration(
+                      milliseconds: 300), // Smooth fade-out effect
+                ),
+              ),
+
+              const SizedBox(
+                height: AppInsets.inset8,
+              ),
+
+              /// Route Info
+              Row(
+                children: [
+                  const Icon(
+                    Icons.pin_drop_rounded,
+                    size: 20,
+                  ),
+                  const SizedBox(
+                    width: AppInsets.inset10,
+                  ),
+                  Text("${post.origin?.name ?? ""} to ${post.destination?.name ?? ""}")
+                      .expanded(),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.date_range_rounded,
+                    size: 20,
+                  ),
+                  const SizedBox(
+                    width: AppInsets.inset10,
+                  ),
+                  Text(DateTimeUtil.formatDateTime(post.scheduleDate)),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.business_rounded,
+                    size: 20,
+                  ),
+                  const SizedBox(
+                    width: AppInsets.inset10,
+                  ),
+                  Text(
+                    post.midpoints
+                            ?.map((m) => m.city?.name)
+                            .where((name) => name != null)
+                            .join(' - ') ??
+                        '',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ).expanded(),
+                ],
+              ),
+
+              /// Action Button
+              ElevatedButton(
+                style: ButtonStyle(
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          side: BorderSide.none),
+                    ),
+                    backgroundColor:
+                        WidgetStatePropertyAll(context.successColor),
+                    minimumSize: WidgetStatePropertyAll(
+                        Size(MediaQuery.of(context).size.width * 0.8, 35))),
+                onPressed: () {
+                  print("action pressed");
+                },
+                child: Text(
+                  "Action Button",
+                  style: TextStyle(color: context.onPrimaryColor),
+                ),
+              ).padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
+
+              /// short description
+              const Text(
+                "Great for best Travelling for those who want to go vacation with private family happily! Great for best Travelling for those who want to go vacation",
+                style: TextStyle(fontSize: 12),
+                textAlign: TextAlign.start,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                softWrap: true,
+              )
+                  .padding(padding: const EdgeInsets.all(AppInsets.inset5))
+                  .expanded(),
+              const SizedBox(
+                height: AppInsets.inset5,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding _sponsorHeader(Post post) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Opacity(
+                opacity: 0.7,
+                child: Text(
+                  "sponsored",
+                  style: TextStyle(
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+              Text(
+                "${(post.pricePerTraveler ?? 38000).toString()} Ks",
+                style: const TextStyle(fontSize: 20),
+              ).expanded(),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(50)),
+                child: SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: CachedNetworkImage(
+                    imageUrl: post.agency?.profileImage ?? "",
+                    errorWidget: (context, url, error) => Image.asset(
+                      "assets/icon/app_logo.jpg",
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: AppInsets.inset8,
+              ),
+              IconButton(
+                  onPressed: () {
+                    print("hello");
+                  },
+                  icon: const Icon(Icons.more_vert_rounded)),
+            ],
+          )
+        ],
+      ),
     );
   }
 

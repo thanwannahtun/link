@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:link/core/styles/app_colors.dart';
 import 'package:link/core/utils/app_insets.dart';
 
@@ -31,6 +30,7 @@ class AppTheme {
     );
 
     return ThemeData(
+      scaffoldBackgroundColor: const Color(0xffEBF4F6),
       appBarTheme: const AppBarTheme(
         backgroundColor: LightTheme.tertiaryBg,
         titleTextStyle: TextStyle(
@@ -77,6 +77,7 @@ class AppTheme {
     );
 
     return ThemeData(
+      scaffoldBackgroundColor: const Color(0xFF0E0D0D),
       appBarTheme: const AppBarTheme(
         backgroundColor: DarkTheme.tertiaryBg,
         titleTextStyle: TextStyle(
