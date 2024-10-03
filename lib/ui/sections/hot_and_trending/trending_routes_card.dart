@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/models/post.dart';
@@ -17,6 +18,9 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
       body: _body(context),
+      backButton: BackButton(
+        onPressed: () => context.pop(),
+      ),
       title: Text(
         "Trending Routes",
         style: TextStyle(

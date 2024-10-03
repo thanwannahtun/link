@@ -218,16 +218,20 @@ class PhotoViewZoomableWidget extends StatelessWidget {
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PhotoViewGalleryWidget(
           backgroundDecoration: const BoxDecoration(color: Colors.black45),
-          images:
-              post?.images?.map((img) => '${App.baseImgUrl}$img').toList() ??
-                  [],
+          images: post?.images
+                  ?.whereType<String>()
+                  .map((img) => '${App.baseImgUrl}$img')
+                  .toList() ??
+              [],
         ),
       )),
       child: PhotoViewGalleryWidget(
           backgroundDecoration: const BoxDecoration(color: Colors.black12),
-          images:
-              post?.images?.map((img) => '${App.baseImgUrl}$img').toList() ??
-                  []),
+          images: post?.images
+                  ?.whereType<String>()
+                  .map((img) => '${App.baseImgUrl}$img')
+                  .toList() ??
+              []),
     );
   }
 }

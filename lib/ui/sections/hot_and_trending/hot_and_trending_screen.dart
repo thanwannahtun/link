@@ -112,7 +112,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
   Padding _showPosts() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppInsets.inset5, vertical: AppInsets.inset8),
       child: ListView.separated(
         controller: _scrollController,
         itemBuilder: (context, index) {
@@ -127,7 +128,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         },
         itemCount: posts.length,
         separatorBuilder: (BuildContext context, int index) => const SizedBox(
-          height: 20,
+          height: 5,
         ),
       ),
     );

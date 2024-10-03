@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/utils/expandable_text.dart';
@@ -41,63 +42,78 @@ class PostRouteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        // mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          _cardHeader(), // head
-          const SizedBox(
-            height: 5,
-          ),
+    return Card.filled(
+      margin: const EdgeInsets.all(0.0),
+      child: SizedBox(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          // mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppInsets.inset8,
+                right: AppInsets.inset8,
+                top: AppInsets.inset8,
+              ),
+              child: _cardHeader(),
+            ), // head
+            const SizedBox(
+              height: 5,
+            ),
 
-          /// Title & Description
-          _buildPostTitleDescription(),
+            /// Title & Description
+            Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppInsets.inset8),
+                child: _buildPostTitleDescription()),
 
-          /// Images Section
-          _buildImageWidget(post.images),
+            /// Images Section
+            _buildImageWidget(post.images),
 
-          /// Images
-          // Container(
-          //   height: 200,
-          //   width: double.infinity,
-          //   color: Colors.blueAccent,
-          //   child: Image.network(
-          //       "https://images.stockcake.com/public/8/4/f/84f518cc-4f5c-4bd4-95fd-7432ac50086d_large/doctors-in-meeting-stockcake.jpg"),
-          // ),
+            /// Images
+            // Container(
+            //   height: 200,
+            //   width: double.infinity,
+            //   color: Colors.blueAccent,
+            //   child: Image.network(
+            //       "https://images.stockcake.com/public/8/4/f/84f518cc-4f5c-4bd4-95fd-7432ac50086d_large/doctors-in-meeting-stockcake.jpg"),
+            // ),
 
-          /// Midpoints
-          _buildMidpoints(),
-          // ),
-          const Divider(
-            height: 0.3,
-          ),
+            /// Midpoints
+            _buildMidpoints(),
+            // ),
+            const Divider(
+              height: 0.3,
+              thickness: 0.05,
+            ),
 
-          /// for counts
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   crossAxisAlignment: CrossAxisAlignment.center,
-          //   children: [
-          //     Expanded(child: Text((post.likeCounts ?? 0).toString())),
-          //     Expanded(child: Text((post.commentCounts ?? 0).toString())),
-          //     Expanded(child: Text((post.commentCounts ?? 0).toString())),
-          //   ],
-          // ),
-          // image
-          /// Card Footer
-          BuildCardFooter(
-                  loading: loading,
-                  onStarPressed: onStarPressed,
-                  onCommentPressed: onCommentPressed,
-                  onPhonePressed: onPhonePressed,
-                  onLocationPressed: onLocationPressed,
-                  onSharePressed: onSharePressed)
-              .padding(padding: const EdgeInsets.all(10.0)),
-          // icons
-          const Divider(
-            height: 0.3,
-          ),
-        ],
+            /// for counts
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   crossAxisAlignment: CrossAxisAlignment.center,
+            //   children: [
+            //     Expanded(child: Text((post.likeCounts ?? 0).toString())),
+            //     Expanded(child: Text((post.commentCounts ?? 0).toString())),
+            //     Expanded(child: Text((post.commentCounts ?? 0).toString())),
+            //   ],
+            // ),
+            // image
+            /// Card Footer
+            BuildCardFooter(
+                    loading: loading,
+                    onStarPressed: onStarPressed,
+                    onCommentPressed: onCommentPressed,
+                    onPhonePressed: onPhonePressed,
+                    onLocationPressed: onLocationPressed,
+                    onSharePressed: onSharePressed)
+                .padding(padding: const EdgeInsets.all(10.0)),
+            // icons
+            // const Divider(
+            //   height: 0.3,
+            //   thickness: 0.05,
+            // ),
+          ],
+        ),
       ),
     );
   }

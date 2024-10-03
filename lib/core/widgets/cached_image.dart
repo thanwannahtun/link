@@ -6,9 +6,9 @@ class CachedImage extends StatelessWidget {
   CachedImage({
     super.key,
     required this.imageUrl,
-    BoxFit fit = BoxFit.contain,
-    BoxFit errorImageFit = BoxFit.contain,
-    BoxFit placeholderImageFit = BoxFit.contain,
+    BoxFit this.fit = BoxFit.cover,
+    BoxFit this.errorImageFit = BoxFit.cover,
+    BoxFit this.placeholderImageFit = BoxFit.cover,
     this.placeholder,
   });
 

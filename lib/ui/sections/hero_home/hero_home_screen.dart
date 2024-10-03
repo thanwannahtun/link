@@ -277,23 +277,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 80,
-                child: CachedNetworkImage(
-                  imageUrl: "${App.baseImgUrl}${post.images?.firstOrNull}",
-                  fit: BoxFit.cover,
-                  // placeholder: (context, url) => const Image(
-                  //   image: AssetImage('assets/icon/loading_placeholder.jpg'),
-                  //   fit: BoxFit.cover,
-                  // ),
-
-                  errorWidget: (context, url, error) => const Image(
-                      fit: BoxFit.cover,
-                      image: AssetImage(
-                        'assets/icon/app_logo.jpg',
-                      )),
-                  fadeInDuration: const Duration(
-                      milliseconds: 500), // Smooth fade-in effect
-                  fadeOutDuration: const Duration(
-                      milliseconds: 300), // Smooth fade-out effect
+                child: CachedImage(
+                  imageUrl: (post.images?.firstOrNull == null)
+                      ? ""
+                      : "${App.baseImgUrl}${post.images?.first}",
                 ),
               ),
 
@@ -468,9 +455,15 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                           image: DecorationImage(
-                        image: NetworkImage((post.images?.isNotEmpty == true)
-                            ? "${App.baseImgUrl}${post.images?.first}"
-                            : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
+                        image: (post.images?.isNotEmpty == true)
+                            ? NetworkImage(
+                                "${App.baseImgUrl}${post.images?.first}")
+                            : const AssetImage("assets/icon/app_logo.jpg"),
+                        // image: NetworkImage((post.images?.isNotEmpty == true)
+                        //     ? ((post.images?.firstOrNull != null)
+                        //         ? "${App.baseImgUrl}${post.images?.first}"
+                        //         : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1")
+                        //     : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
                         fit: BoxFit.cover,
                         opacity: 0.5,
                         onError: (exception, stackTrace) => Container(
