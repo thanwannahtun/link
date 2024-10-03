@@ -6,7 +6,6 @@ import 'package:link/models/app.dart';
 import 'package:link/models/comment.dart';
 import 'package:link/models/post.dart';
 import 'package:link/models/seat.dart';
-import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/comment_persistent_footer_button.dart';
@@ -219,16 +218,20 @@ class PhotoViewZoomableWidget extends StatelessWidget {
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PhotoViewGalleryWidget(
           backgroundDecoration: const BoxDecoration(color: Colors.black45),
-          images:
-              post?.images?.map((img) => '${App.baseImgUrl}$img').toList() ??
-                  [],
+          images: post?.images
+                  ?.whereType<String>()
+                  .map((img) => '${App.baseImgUrl}$img')
+                  .toList() ??
+              [],
         ),
       )),
       child: PhotoViewGalleryWidget(
           backgroundDecoration: const BoxDecoration(color: Colors.black12),
-          images:
-              post?.images?.map((img) => '${App.baseImgUrl}$img').toList() ??
-                  []),
+          images: post?.images
+                  ?.whereType<String>()
+                  .map((img) => '${App.baseImgUrl}$img')
+                  .toList() ??
+              []),
     );
   }
 }

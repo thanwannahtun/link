@@ -10,12 +10,14 @@ class CustomScaffoldBody extends StatelessWidget {
       required this.body,
       required this.title,
       this.backButton,
+      this.resizeToAvoidBottomInset,
       this.action,
       this.persistentFooterButtons});
 
   final Widget body;
   final Widget title;
   Widget? action;
+  bool? resizeToAvoidBottomInset;
   Widget? backButton;
   List<Widget>? persistentFooterButtons;
 
@@ -23,6 +25,7 @@ class CustomScaffoldBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
         persistentFooterButtons: persistentFooterButtons,
         body: SafeArea(
           child: Stack(
@@ -57,7 +60,8 @@ class CustomScaffoldBody extends StatelessWidget {
                 builder: (context, scrollController) {
                   return Container(
                     decoration: BoxDecoration(
-                        color: context.tertiaryColor,
+                        // color: context.primaryColor,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10),

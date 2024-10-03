@@ -1,6 +1,22 @@
 import 'package:flutter/material.dart';
 
 extension WidgetExt on Widget {
+
+  Widget fittedBox({
+  Key? key,
+  BoxFit fit = BoxFit.contain,
+  AlignmentGeometry alignment = Alignment.center,
+  Clip clipBehavior = Clip.none,
+}){
+    return FittedBox(
+      key:key,
+      fit:fit,
+      alignment:alignment,
+      clipBehavior:clipBehavior, 
+      child:this,
+    );
+  }
+
   Widget padding({required EdgeInsetsGeometry padding}) {
     return Padding(
       padding: padding,

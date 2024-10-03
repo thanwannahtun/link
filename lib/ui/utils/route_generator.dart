@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
-import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/ui/screens/app.dart';
 import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/sections/hot_and_trending/trending_route_card_detail.dart';
@@ -30,10 +29,11 @@ class RouteGenerator {
         return _navigateRoute(
             settings: settings,
             builder: (context) {
-              return BlocProvider(
-                  create: (BuildContext context) =>
-                      PostRouteCubit()..fetchRoutes(),
-                  child: const App());
+              return const App();
+              // return BlocProvider(
+              //     create: (BuildContext context) =>
+              //         PostRouteCubit()..fetchRoutes(),
+              //     child: const App());
             });
       case RouteLists.hotAndTrendingScreen:
         return _navigateRoute(

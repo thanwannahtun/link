@@ -18,6 +18,9 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
       body: _body(context),
+      backButton: BackButton(
+        onPressed: () => context.pop(),
+      ),
       title: Text(
         "Trending Routes",
         style: TextStyle(

@@ -30,7 +30,7 @@ class Post {
   final City? origin;
   final City? destination;
   final DateTime? scheduleDate;
-  final double? pricePerTraveler;
+  final int? pricePerTraveler;
   final List<Seat>? seats;
   final DateTime? createdAt;
   final List<Midpoint>? midpoints;
@@ -82,7 +82,7 @@ class Post {
           ? City.fromJson(json['destination'] as Map<String, dynamic>)
           : null,
       scheduleDate: DateTime.parse(json['scheduleDate'] ?? ""),
-      pricePerTraveler: (json['pricePerTraveler'] as num).toDouble(),
+      pricePerTraveler: (json['pricePerTraveler'] as num).toInt(),
       seats: (json['seats'] as List<dynamic>?)
           ?.map((e) => Seat.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -114,7 +114,7 @@ class Post {
       City? origin,
       City? destination,
       DateTime? scheduleDate,
-      double? pricePerTraveler,
+      int? pricePerTraveler,
       List<Seat>? seats,
       DateTime? createdAt,
       List<Midpoint>? midpoints,
