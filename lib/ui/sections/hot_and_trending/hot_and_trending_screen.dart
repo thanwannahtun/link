@@ -6,6 +6,7 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
+import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/utils/route_list.dart';
@@ -26,12 +27,17 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   late final ScrollController _scrollController;
   @override
   void initState() {
-    print("initStteCalled  :Hot_Trending");
+    print("initStateCalled  :HotAndTrendingScreen");
     super.initState();
     _postRouteCubit = PostRouteCubit()..fetchRoutes();
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
     _listenRefresh();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -60,7 +66,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     // });
 
     // Simulating network request delay
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
 
     // setState(() {
     //   items.addAll(List.generate(10, (index) => "New Item ${items.length + index}"));
@@ -72,10 +78,12 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
-          onRefresh: () async {
-            _postRouteCubit.fetchRoutes();
-          },
-          child: _body()),
+        onRefresh: () async {
+          _postRouteCubit.fetchRoutes();
+        },
+        // child: _customScrollViewWidget(),
+        child: _body(),
+      ),
       title: Text(
         "Trending Packages",
         style: TextStyle(
@@ -110,26 +118,63 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     );
   }
 
-  Padding _showPosts() {
+  Widget _showPosts() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppInsets.inset5, vertical: AppInsets.inset8),
-      child: ListView.separated(
-        controller: _scrollController,
-        itemBuilder: (context, index) {
-          Post post = posts[index];
-          return PostRouteCard(
-            post: post,
-            onStarPressed: () => goPageDetail(post),
-            onCommentPressed: () => goPageDetail(post),
-            onAgencyPressed: () => context
-                .pushNamed(RouteLists.trendingRouteCardDetail, arguments: post),
-          );
-        },
-        itemCount: posts.length,
-        separatorBuilder: (BuildContext context, int index) => const SizedBox(
-          height: 5,
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 45,
+            child: _buildSuggestionChips(),
+          ),
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+            child: _postViewBuilder(),
+          )),
+        ],
+      ),
+    );
+  }
+
+  ListView _buildSuggestionChips() {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        final city = App.cities[index];
+        return Padding(
+          padding: const EdgeInsets.only(left: 5),
+          child: Chip(
+            label: Text(city.name ?? ""),
+            deleteIcon: const Icon(Icons.search),
+            side: BorderSide.none,
+            onDeleted: () => print("Hello"),
+          ),
+        );
+      },
+      separatorBuilder: (context, index) => const SizedBox(
+        width: 5,
+      ),
+      itemCount: App.cities.length,
+    );
+  }
+
+  ListView _postViewBuilder() {
+    return ListView.separated(
+      controller: _scrollController,
+      itemBuilder: (context, index) {
+        Post post = posts[index];
+        return PostRouteCard(
+          post: post,
+          onStarPressed: () => goPageDetail(post),
+          onCommentPressed: () => goPageDetail(post),
+          onAgencyPressed: () => context
+              .pushNamed(RouteLists.trendingRouteCardDetail, arguments: post),
+        );
+      },
+      itemCount: posts.length,
+      separatorBuilder: (BuildContext context, int index) => const SizedBox(
+        height: 5,
       ),
     );
   }
@@ -138,21 +183,47 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       .pushNamed(RouteLists.postDetailPage, arguments: post);
 
   _buildShimmer(BuildContext context) {
-    return ListView.builder(
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        return Shimmer.fromColors(
-          baseColor: context.primaryColor,
-          highlightColor: context.onPrimaryColor,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: PostRouteCard(
-              post: Post(),
-              loading: true,
-            ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 50,
+          child: ListView.builder(
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Shimmer.fromColors(
+                  baseColor: context.primaryColor,
+                  highlightColor: context.onPrimaryColor,
+                  child: const Chip(
+                    label: Text(" suggesstion "),
+                    deleteIcon: Icon(Icons.search),
+                  ),
+                ),
+              );
+            },
+            scrollDirection: Axis.horizontal,
+            itemCount: 10,
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: 10,
+            itemBuilder: (context, index) {
+              return Shimmer.fromColors(
+                baseColor: context.primaryColor,
+                highlightColor: context.onPrimaryColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: PostRouteCard(
+                    post: Post(),
+                    loading: true,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -276,3 +347,118 @@ class SliverGridWidget extends StatelessWidget {
     );
   }
 }
+
+
+
+/*
+
+
+
+// Custom delegate to create a persistent header with pinned behavior
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _SliverAppBarDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
+}
+
+
+  // ignore: unused_element
+  BlocConsumer<PostRouteCubit, PostRouteState> _customScrollViewWidget() {
+    return BlocConsumer<PostRouteCubit, PostRouteState>(
+      bloc: _postRouteCubit,
+      listener: (BuildContext context, PostRouteState state) {},
+      builder: (BuildContext context, PostRouteState state) {
+        if (state.status == BlocStatus.fetchFailed) {
+          return _buildShimmer(context);
+        } else if (state.status == BlocStatus.fetching) {
+          return _buildShimmer(context);
+        }
+        posts = state.routes;
+
+        return Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  minHeight: 40.0, // Minimum height when collapsed
+                  maxHeight: 40.0, // Maximum height when expanded
+                  child: Container(
+                    color: Colors.white, // Background color
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          final city = App.cities[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 5),
+                            child: Chip(
+                              label: Text(city.name ?? ""),
+                              deleteIcon: const Icon(Icons.search),
+                              onDeleted: () => print("Hello"),
+                            ),
+                          );
+                        },
+                        separatorBuilder: (context, index) => const SizedBox(
+                          width: 5,
+                        ),
+                        itemCount: App.cities.length,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    Post post = posts[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppInsets.inset5),
+                      child: PostRouteCard(
+                        post: post,
+                        onStarPressed: () => goPageDetail(post),
+                        onCommentPressed: () => goPageDetail(post),
+                        onAgencyPressed: () => context.pushNamed(
+                            RouteLists.trendingRouteCardDetail,
+                            arguments: post),
+                      ),
+                    );
+                  },
+                  childCount: App.cities.length, // Number of main list items
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+ */

@@ -15,6 +15,7 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
   @override
   void initState() {
     super.initState();
+    print("initStateCalled  :UserActivityScreen");
   }
 
   @override

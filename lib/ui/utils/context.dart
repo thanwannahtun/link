@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 
 extension DialogExt on BuildContext {
@@ -100,45 +101,58 @@ class Context {
     BuildContext context, {
     required Widget headerWidget,
     required List<T> itemList,
+    Widget? icon,
     required Widget? Function(BuildContext, int) itemBuilder,
   }) async {
     return await showDialog<T>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          content: SizedBox(
-            // color: Colors.amber,
-            height: MediaQuery.of(context).size.height * 0.5,
-            width: MediaQuery.of(context).size.height * 0.8,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [Expanded(child: headerWidget)],
-                ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                        border: Border(
-                            top: BorderSide(
-                                color: context.tertiaryColor.withOpacity(0.7)),
-                            bottom: BorderSide(
-                                color:
-                                    context.tertiaryColor.withOpacity(0.7)))),
-                    child: ListView.separated(
-                        shrinkWrap: true,
-                        itemBuilder: itemBuilder,
-                        physics: const ClampingScrollPhysics(),
-                        separatorBuilder: (context, index) => const Divider(
-                              height: 1,
-                              thickness: 0.2,
-                            ),
-                        itemCount: itemList.length),
+          content: Stack(children: [
+            SizedBox(
+              // color: Colors.amber,
+              height: MediaQuery.of(context).size.height * 0.5,
+              width: MediaQuery.of(context).size.height * 0.8,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [Expanded(child: headerWidget)],
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                          border: Border(
+                              top: BorderSide(
+                                  color:
+                                      context.tertiaryColor.withOpacity(0.7)),
+                              bottom: BorderSide(
+                                  color:
+                                      context.tertiaryColor.withOpacity(0.7)))),
+                      child: ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: itemBuilder,
+                          physics: const ClampingScrollPhysics(),
+                          separatorBuilder: (context, index) => const Divider(
+                                height: 1,
+                                thickness: 0.2,
+                              ),
+                          itemCount: itemList.length),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            Positioned(
+                top: -10,
+                right: -10,
+                child: icon ??
+                    IconButton(
+                        onPressed: () {
+                          context.pop();
+                        },
+                        icon: const Icon(Icons.clear_rounded))),
+          ]),
         );
       },
     );

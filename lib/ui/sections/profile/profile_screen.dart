@@ -6,8 +6,19 @@ import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 import '../../../core/utils/app_insets.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    print("initStateCalled  :ProfileScreen");
+  }
 
   @override
   Widget build(BuildContext context) {

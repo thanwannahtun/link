@@ -10,12 +10,13 @@ import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
-import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../models/city.dart';
 import '../../../models/post.dart';
+import '../../utils/context.dart';
 import '../../widgets/custom_scaffold_body.dart';
 
 class HeroHomeScreen extends StatefulWidget {
@@ -30,15 +31,19 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   List<Post> _trendingRoutes = [];
   List<Post> _sponsoredRoutes = [];
+
   late final PostRouteCubit _trendingRouteBloc;
   late final PostRouteCubit _sponsoredRouteBloc;
+
+  final ValueNotifier<City?> _originNotifier = ValueNotifier(null);
+  final ValueNotifier<City?> _destinationNotifier = ValueNotifier(null);
 
   @override
   void initState() {
     super.initState();
+    print("initStateCalled  :HeroHomeScreen");
     _trendingRouteBloc = PostRouteCubit()..fetchRoutes();
     _sponsoredRouteBloc = PostRouteCubit()..fetchRoutes();
-    print("initStteCalled  :Hero_home");
     _selectedDateNotifier = ValueNotifier(DateTime.now());
   }
 
@@ -54,10 +59,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
-          onRefresh: () async {
-            _trendingRouteBloc.fetchRoutes();
-          },
-          child: _heroBody(context)),
+        onRefresh: () async {
+          _trendingRouteBloc.fetchRoutes();
+          _sponsoredRouteBloc.fetchRoutes();
+        },
+        child: _heroBody(context),
+      ),
       title: Text(
         "Home",
         style: TextStyle(
@@ -281,7 +288,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   imageUrl: (post.images?.firstOrNull == null)
                       ? ""
                       : "${App.baseImgUrl}${post.images?.first}",
-                ),
+                ).clipRRect(borderRadius: BorderRadius.circular(5)),
               ),
 
               const SizedBox(
@@ -570,7 +577,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   const Card.filled(
                     child: SizedBox(
                       height: 80,
-                      width: 200,
+                      width: 250,
                     ),
                   ),
                   TextButton(
@@ -709,21 +716,43 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             Column(
               children: [
                 /// FROM
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.location_on_rounded),
-                    SizedBox(
+                    const Icon(Icons.location_on_rounded),
+                    const SizedBox(
                       width: AppInsets.inset25,
                     ),
                     Expanded(
-                      child: TextField(
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                        ),
+                      child: ValueListenableBuilder(
+                        valueListenable: _originNotifier,
+                        builder:
+                            (BuildContext context, City? value, Widget? child) {
+                          return InkWell(
+                            onTap: () async {
+                              City? city = await _chooseCity();
+
+                              if (city != null) {
+                                _originNotifier.value = city;
+                              }
+                            },
+                            child: Text(
+                              value == null ? "Origin" : value.name.toString(),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
                       ),
+                      // child: TextField(
+                      //   style: TextStyle(
+                      //     fontWeight: FontWeight.bold,
+                      //   ),
+                      //   decoration: InputDecoration(
+                      //     border: InputBorder.none,
+                      //   ),
+                      // ),
                     ),
                   ],
                 ),
@@ -742,28 +771,52 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     const SizedBox(
                       width: AppInsets.inset5,
                     ),
-                    const Icon(
-                      Icons.swap_vert_circle,
-                      size: AppInsets.inset30,
+                    InkWell(
+                      onTap: () {
+                        City? origin = _originNotifier.value;
+                        City? destination = _destinationNotifier.value;
+                        _originNotifier.value = destination;
+                        _destinationNotifier.value = origin;
+                      },
+                      child: const Icon(
+                        Icons.swap_vert_circle,
+                        size: AppInsets.inset30,
+                      ),
                     )
                   ],
                 ),
 
                 /// TO
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.location_on_outlined),
-                    SizedBox(
+                    const Icon(Icons.location_on_outlined),
+                    const SizedBox(
                       width: AppInsets.inset25,
                     ),
                     Expanded(
-                      child: TextField(
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                        ),
+                      child: ValueListenableBuilder(
+                        valueListenable: _destinationNotifier,
+                        builder:
+                            (BuildContext context, City? value, Widget? child) {
+                          return InkWell(
+                            onTap: () async {
+                              City? city = await _chooseCity();
+
+                              if (city != null) {
+                                _destinationNotifier.value = city;
+                              }
+                            },
+                            child: Text(
+                              value == null
+                                  ? "Destination"
+                                  : value.name.toString(),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -825,4 +878,32 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   // Set to hold selected hobbies
   Set<String> selectedHobbies = {};
+
+  Future<City?> _chooseCity() async {
+    return await Context.showAlertDialog<City>(
+      context,
+      icon: IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+      headerWidget: ListTile(
+        leading: const Icon(Icons.location_on_outlined),
+        title: const Text("Choose Cities").bold(),
+      ).padding(
+          padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
+      itemList: App.cities,
+      itemBuilder: (ctx, index) {
+        return StatefulBuilder(
+          builder: (BuildContext ctx, void Function(void Function()) setState) {
+            return ListTile(
+              dense: true,
+              onTap: () {
+                setState(() {});
+                Navigator.pop(context, App.cities[index]);
+              },
+              // leading: const Icon(Icons.add_circle_outlined),
+              title: Text(App.cities[index].name ?? ""),
+            );
+          },
+        );
+      },
+    );
+  }
 }

@@ -114,10 +114,10 @@ class _TrendingRouteCardDetailState extends State<TrendingRouteCardDetail> {
             /// PhotoViewGalleryWidget
             (post?.images ?? []).isEmpty
                 ? Container()
-                : PhotoViewZoomableWidget(post: post).expanded().sizedBox(
-                      height: 350,
-                      width: double.infinity,
-                    ),
+                : PhotoViewZoomableWidget(post: post).sizedBox(
+                    height: 350,
+                    width: double.infinity,
+                  ),
             const SizedBox(height: 15),
             _buildInfoSection(
               "From",
@@ -181,23 +181,21 @@ class _TrendingRouteCardDetailState extends State<TrendingRouteCardDetail> {
       elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  "$label: ",
-                ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                "$label: ",
               ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  value,
-                  style: const TextStyle(fontSize: 16),
-                ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                value,
+                style: const TextStyle(fontSize: 16),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -252,7 +250,6 @@ class BuildReviewWidget extends StatelessWidget {
             child: Text("Be the first comment!"),
           ).padding(padding: const EdgeInsets.all(15))
         : ListView.builder(
-            shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: post?.comments?.length,
             itemBuilder: (context, index) {
@@ -269,7 +266,7 @@ class BuildReviewWidget extends StatelessWidget {
                     : ""),
               );
             },
-          );
+          ).expanded();
   }
 }
 
