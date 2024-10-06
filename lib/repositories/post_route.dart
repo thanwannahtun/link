@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -15,20 +14,20 @@ class PostRouteRepo extends ApiService {
   PostRouteRepo._();
   factory PostRouteRepo() => _instance;
 
-  FutureOr<List<Post>> fetchRoutes() async {
-    Response response = await getRequest('/routes');
+  FutureOr<List<Post>> fetchRoutes({Map<String, dynamic>? query}) async {
+    Response response = await getRequest('/routes', queryParameters: query);
     if (response.statusCode == 200) {
-      print("running on separate Isolate!");
-      final routes = await Isolate.run(
-        () {
-          List<Post> routes = [];
-          for (var route in response.data['data']) {
-            routes.add(Post.fromJson(route as Map<String, dynamic>));
-          }
-          return routes;
-        },
-      );
+      // print("running on separate Isolate!");
+      // final routes = await Isolate.run(
+      // () {
+      List<Post> routes = [];
+      for (var route in response.data['data']) {
+        routes.add(Post.fromJson(route as Map<String, dynamic>));
+      }
       return routes;
+      // },
+      // );
+      // return routes;
     } else {
       throw Exception("Failed to get Routes!");
     }

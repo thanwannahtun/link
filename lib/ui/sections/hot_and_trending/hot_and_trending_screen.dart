@@ -29,7 +29,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   void initState() {
     print("initStateCalled  :HotAndTrendingScreen");
     super.initState();
-    _postRouteCubit = PostRouteCubit()..fetchRoutes();
+    _postRouteCubit = PostRouteCubit()
+      ..fetchRoutes(query: {"categoryType": "suggested", "limit": 10});
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
     _listenRefresh();
@@ -79,7 +80,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
-          _postRouteCubit.fetchRoutes();
+          _postRouteCubit
+              .fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
         },
         // child: _customScrollViewWidget(),
         child: _body(),
@@ -119,6 +121,9 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   }
 
   Widget _showPosts() {
+    if (posts.isEmpty) {
+      return _showEmptyTrendingWidget();
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
       child: Column(
@@ -134,6 +139,53 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           )),
         ],
       ),
+    );
+  }
+
+  Column _showEmptyTrendingWidget() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Center(
+          child: Card.filled(
+            elevation: 3,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppInsets.inset25, vertical: AppInsets.inset35),
+              child: Column(
+                children: [
+                  const Text(
+                    "There is no Trending Posts for you",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(
+                    height: AppInsets.inset10,
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () => _postRouteCubit.fetchRoutes(query: {
+                                "categoryType": "trendinig",
+                                "limit": 10
+                              }),
+                          child: const Text("Refresh")),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      ElevatedButton(
+                          onPressed: () =>
+                              context.pushNamed(RouteLists.postCreatePage),
+                          child: const Text("Start Creating A Post!")),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        )
+      ],
     );
   }
 

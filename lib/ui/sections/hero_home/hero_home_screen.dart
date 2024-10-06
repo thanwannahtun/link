@@ -42,8 +42,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   void initState() {
     super.initState();
     print("initStateCalled  :HeroHomeScreen");
-    _trendingRouteBloc = PostRouteCubit()..fetchRoutes();
-    _sponsoredRouteBloc = PostRouteCubit()..fetchRoutes();
+    _trendingRouteBloc = PostRouteCubit()
+      ..fetchRoutes(query: {"categoryType": "trendinig", "limit": 10});
+    _sponsoredRouteBloc = PostRouteCubit()
+      ..fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
     _selectedDateNotifier = ValueNotifier(DateTime.now());
   }
 
@@ -60,8 +62,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
-          _trendingRouteBloc.fetchRoutes();
-          _sponsoredRouteBloc.fetchRoutes();
+          _trendingRouteBloc
+              .fetchRoutes(query: {"categoryType": "trending", "limit": 10});
+          _sponsoredRouteBloc
+              .fetchRoutes(query: {"categoryType": "sponsored", "limit": 7});
         },
         child: _heroBody(context),
       ),
@@ -107,7 +111,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             const SizedBox(
               height: AppInsets.inset8,
             ),
-            _trendingRoutesList(),
+            SizedBox(height: 100, child: _trendingRoutesList()),
             const SizedBox(
               height: 5,
             ),
@@ -115,7 +119,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             const SizedBox(
               height: AppInsets.inset8,
             ),
-            _sponsoredRoutesList(),
+            SizedBox(height: 350, child: _sponsoredRoutesList()),
           ],
         ),
       ),
@@ -123,26 +127,20 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   }
 
   Widget _sponsoredRoutesList() {
-    return SizedBox(
-      height: 350,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: BlocConsumer<PostRouteCubit, PostRouteState>(
         bloc: _sponsoredRouteBloc,
         builder: (context, state) {
           if (state.status == BlocStatus.fetchFailed ||
               state.status == BlocStatus.fetching) {
-            return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: _buildTrendingRoutesShimmer(context));
+            return _buildTrendingRoutesShimmer(context);
           }
           if (state.status == BlocStatus.fetched) {
             _sponsoredRoutes = state.routes;
-            return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: _buildSponsoredRoutesCard(context));
+            return _buildSponsoredRoutesCard(context);
           } else {
-            return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: _buildTrendingRoutesShimmer(context));
+            return _buildTrendingRoutesShimmer(context);
           }
         },
         listener: (BuildContext context, PostRouteState state) {},
@@ -171,49 +169,46 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
-  Row _trendingSearchTitleField(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          "Trending Search",
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: context.onPrimaryColor),
-        ),
-        TextButton(
-            onPressed: () {
-              context.pushNamed(RouteLists.trendingRouteCards);
-            },
-            child: Text(
-              "View All",
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: context.onPrimaryColor.withOpacity(0.8)),
-            )),
-      ],
+  Widget _trendingSearchTitleField(BuildContext context) {
+    return Opacity(
+      opacity: 0.7,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            "Trending Search",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          IconButton(
+              onPressed: () {
+                context.pushNamed(RouteLists.trendingRouteCards);
+              },
+              icon: const Icon(Icons.keyboard_arrow_right_sharp)),
+        ],
+      ),
     );
   }
 
-  Row _sponsoredPostsTitleField(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          "Suggested For you",
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: context.onPrimaryColor),
-        ),
-        TextButton(
-            onPressed: () {
-              // context.pushNamed(RouteLists.trendingRouteCards);
-            },
-            child: Text(
-              "View All",
-              style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: context.onPrimaryColor.withOpacity(0.8)),
-            )),
-      ],
+  Widget _sponsoredPostsTitleField(BuildContext context) {
+    return Opacity(
+      opacity: 0.7,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            "Suggested For you",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          IconButton(
+              onPressed: () {
+                // _trendingRouteBloc.f
+                // context.pushNamed(RouteLists.trendingRouteCards);
+              },
+              icon: const Icon(Icons.keyboard_arrow_right_sharp)),
+        ],
+      ),
     );
   }
 
@@ -228,6 +223,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     //   onTap: (value) {
     //     print("HI");
     //   },
+
+    if (_sponsoredRoutes.isEmpty) {
+      return _showEmptyTrendingCard(context);
+    }
     return Row(
       children: [
         ..._sponsoredRoutes.map(
@@ -443,7 +442,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
-  Row _buildTrendingRoutesCard(BuildContext context) {
+  Widget _buildTrendingRoutesCard(BuildContext context) {
+    if (_trendingRoutes.isEmpty) {
+      return SizedBox(height: 150, child: _showEmptyTrendingCard(context));
+    }
     return Row(
       children: [
         ..._trendingRoutes.map(
@@ -489,9 +491,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.bus_alert_rounded,
-                                    color: context.primaryColor,
+                                    // color: context.primaryColor,
                                   ),
                                   const SizedBox(
                                     width: AppInsets.inset5,
@@ -499,19 +501,20 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                   Text(
                                       "${post.origin?.name ?? ""}-${post.destination?.name ?? ""}"),
                                 ],
-                              ),
+                              ).expanded(),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                     vertical: AppInsets.inset10),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(
+                                        const Icon(
                                           Icons.today_rounded,
-                                          color: context.primaryColor,
+                                          // color: context.primaryColor,
                                         ),
                                         const SizedBox(
                                           width: AppInsets.inset5,
@@ -529,36 +532,69 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                         ),
                                         Text(post.commentCounts.toString())
                                       ],
-                                    ),
+                                    ).expanded(),
                                   ],
                                 ),
-                              )
+                              ).expanded()
                             ],
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ).expanded(flex: 2),
                 TextButton(
-                    style: const ButtonStyle(
-                      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
-                          vertical: AppInsets.inset5,
-                          horizontal: AppInsets.inset10)),
-                    ),
-                    onPressed: () {
-                      context.pushNamed(RouteLists.trendingRouteCardDetail,
-                          arguments: post);
-                      // context.pushNamed(RouteLists.trendingRouteCardDetail,
-                      //     arguments: post);
-                    },
-                    child: const Text("Book Now")),
+                        style: const ButtonStyle(
+                          padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
+                              vertical: AppInsets.inset5,
+                              horizontal: AppInsets.inset10)),
+                        ),
+                        onPressed: () {
+                          context.pushNamed(RouteLists.trendingRouteCardDetail,
+                              arguments: post);
+                          // context.pushNamed(RouteLists.trendingRouteCardDetail,
+                          //     arguments: post);
+                        },
+                        child: const Text("Book Now"))
+                    .expanded(),
               ],
             ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _showEmptyTrendingCard(BuildContext context) {
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      SizedBox(
+        height: double.infinity,
+        // width: double.infinity,
+        child: Center(
+          child: Card.filled(
+            child: SizedBox(
+              width: 350,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  const Text(
+                    "Their is no trending post available",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ).fittedBox(),
+                  ElevatedButton(
+                      onPressed: () =>
+                          // context.pushNamed(RouteLists.postCreatePage),
+                          _trendingRouteBloc.fetchRoutes(
+                              query: {"categoryType": "trending", "limit": 5}),
+                      child: const Text("Start Creating A Post!"))
+                ],
+              ).padding(padding: const EdgeInsets.all(AppInsets.inset8)),
+            ),
+          ),
+        ),
+      ),
+    ]);
   }
 
   Row _buildTrendingRoutesShimmer(BuildContext context) {
@@ -576,7 +612,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 children: [
                   const Card.filled(
                     child: SizedBox(
-                      height: 80,
+                      // height: double.infinity,
                       width: 250,
                     ),
                   ),
@@ -648,8 +684,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                             bottom: BorderSide(
                                                 color: context.primaryColor,
                                                 style: BorderStyle.solid))),
-                                    child: Text(DateTimeUtil.formatDate(
-                                        value ?? DateTime.now())),
+                                    child: Text(
+                                        DateTimeUtil.formatDate(
+                                            value ?? DateTime.now()),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold)),
                                   );
                                 },
                               ),

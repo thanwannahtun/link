@@ -16,10 +16,10 @@ class PostRouteCubit extends Cubit<PostRouteState> {
   PostRouteCubit()
       : super(const PostRouteState(status: BlocStatus.initial, routes: []));
 
-  fetchRoutes() async {
+  fetchRoutes({Map<String, dynamic>? query}) async {
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
-      List<Post> posts = await _postApiRepo.fetchRoutes();
+      List<Post> posts = await _postApiRepo.fetchRoutes(query: query);
       emit(state.copyWith(status: BlocStatus.fetched, routes: posts));
     } on DioException catch (e) {
       debugPrint("DioException ::  $e");
