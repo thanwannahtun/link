@@ -43,7 +43,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     super.initState();
     print("initStateCalled  :HeroHomeScreen");
     _trendingRouteBloc = PostRouteCubit()
-      ..fetchRoutes(query: {"categoryType": "trendinig", "limit": 10});
+      ..fetchRoutes(query: {"categoryType": "trending", "limit": 10});
     _sponsoredRouteBloc = PostRouteCubit()
       ..fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
     _selectedDateNotifier = ValueNotifier(DateTime.now());

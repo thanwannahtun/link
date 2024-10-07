@@ -13,14 +13,33 @@ part 'post_route_state.dart';
 
 class PostRouteCubit extends Cubit<PostRouteState> {
   final _postApiRepo = PostRouteRepo();
+
+  // ignore: prefer_final_fields
+  int _page = 1;
+
+  void updatePage({int? value}) {
+    _page = value ?? 1;
+  }
+
   PostRouteCubit()
       : super(const PostRouteState(status: BlocStatus.initial, routes: []));
 
   fetchRoutes({Map<String, dynamic>? query}) async {
+    if (state.status == BlocStatus.fetching) return;
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
-      List<Post> posts = await _postApiRepo.fetchRoutes(query: query);
-      emit(state.copyWith(status: BlocStatus.fetched, routes: posts));
+      var queryParams = <String, dynamic>{
+        "page": _page,
+      }..addEntries(query?.entries ?? {});
+
+      List<Post> posts = await _postApiRepo.fetchRoutes(
+        query: queryParams,
+      );
+      _page++;
+      Future.delayed(
+        const Duration(seconds: 2),
+        () => emit(state.copyWith(status: BlocStatus.fetched, routes: posts)),
+      );
     } on DioException catch (e) {
       debugPrint("DioException ::  $e");
       emit(state.copyWith(

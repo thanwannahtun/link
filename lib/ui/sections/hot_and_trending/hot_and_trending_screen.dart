@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/city/city_cubit.dart';
@@ -10,6 +12,7 @@ import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/utils/route_list.dart';
+import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -21,7 +24,7 @@ class HotAndTrendingScreen extends StatefulWidget {
 }
 
 class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
-  List<Post> posts = [];
+  final List<Post> _trendingPosts = [];
   late PostRouteCubit _postRouteCubit;
 
   late final ScrollController _scrollController;
@@ -33,7 +36,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       ..fetchRoutes(query: {"categoryType": "suggested", "limit": 10});
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
-    _listenRefresh();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -47,32 +51,20 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     super.dispose();
   }
 
-  Future<void> _listenRefresh() async {
-    _scrollController = ScrollController()
-      ..addListener(() {
-        if (_scrollController.position.pixels ==
-                _scrollController.position.maxScrollExtent
-            // && !_isLoadingMore
-            ) {
-          // If the end of the list is reached, trigger the refresh at the end
-          _refreshAtEnd();
-        }
-      });
+  void _onScroll() {
+    if (_isBottom) {
+      print("_isBottom $_isBottom ");
+      _postRouteCubit
+          .fetchRoutes(query: {"categoryType": "trending", "limit": 3});
+    }
   }
 
-  // Function to refresh when reaching the end
-  Future<void> _refreshAtEnd() async {
-    // setState(() {
-    //   _isLoadingMore = true; // Indicate loading
-    // });
-
-    // Simulating network request delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // setState(() {
-    //   items.addAll(List.generate(10, (index) => "New Item ${items.length + index}"));
-    //   _isLoadingMore = false; // Reset the loading state
-    // });
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    return currentScroll >=
+        (maxScroll * 0.98); // Trigger when scrolled 90% of the way
   }
 
   @override
@@ -80,6 +72,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
+          _postRouteCubit.updatePage(); // set page to default
           _postRouteCubit
               .fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
         },
@@ -110,10 +103,16 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         debugPrint("::::::::::::: ${state.status}");
         if (state.status == BlocStatus.fetchFailed) {
           return _buildShimmer(context);
-        } else if (state.status == BlocStatus.fetching) {
+        } else if (state.status == BlocStatus.fetching &&
+            _trendingPosts.isEmpty) {
           return _buildShimmer(context);
         }
-        posts = state.routes;
+        final newPosts = state.routes;
+        print("=====> _trendingPosts before fetched ${_trendingPosts.length}");
+        print("=====> newPosts ${newPosts.length}");
+        _trendingPosts.addAll(newPosts);
+        print("=====> _trendingPosts afeter fetched ${_trendingPosts.length}");
+
         return _showPosts();
       },
       listener: (context, state) {},
@@ -121,7 +120,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   }
 
   Widget _showPosts() {
-    if (posts.isEmpty) {
+    if (_trendingPosts.isEmpty) {
       return _showEmptyTrendingWidget();
     }
     return Padding(
@@ -166,11 +165,9 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton(
-                          onPressed: () => _postRouteCubit.fetchRoutes(query: {
-                                "categoryType": "trendinig",
-                                "limit": 10
-                              }),
-                          child: const Text("Refresh")),
+                          onPressed: () => _postRouteCubit.fetchRoutes(
+                              query: {"categoryType": "trending", "limit": 10}),
+                          child: const Icon(Icons.refresh_rounded)),
                       const SizedBox(
                         height: 5,
                       ),
@@ -215,16 +212,24 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return ListView.separated(
       controller: _scrollController,
       itemBuilder: (context, index) {
-        Post post = posts[index];
-        return PostRouteCard(
-          post: post,
-          onStarPressed: () => goPageDetail(post),
-          onCommentPressed: () => goPageDetail(post),
-          onAgencyPressed: () => context
-              .pushNamed(RouteLists.trendingRouteCardDetail, arguments: post),
-        );
+        if (index < _trendingPosts.length) {
+          Post post = _trendingPosts[index];
+          return PostRouteCard(
+            post: post,
+            onStarPressed: () => goPageDetail(post),
+            onCommentPressed: () => goPageDetail(post),
+            onAgencyPressed: () => context
+                .pushNamed(RouteLists.trendingRouteCardDetail, arguments: post),
+          );
+        } else {
+          return PostRouteCard(
+            post: Post(),
+            loading: true,
+          );
+        }
       },
-      itemCount: posts.length,
+      itemCount: _trendingPosts.length +
+          (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0),
       separatorBuilder: (BuildContext context, int index) => const SizedBox(
         height: 5,
       ),
