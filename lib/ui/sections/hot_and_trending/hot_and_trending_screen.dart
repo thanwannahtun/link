@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/city/city_cubit.dart';
@@ -11,6 +13,7 @@ import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
+import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
@@ -24,10 +27,12 @@ class HotAndTrendingScreen extends StatefulWidget {
 }
 
 class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
-  final List<Post> _trendingPosts = [];
+  List<Post> _trendingPosts = [];
   late PostRouteCubit _postRouteCubit;
 
   late final ScrollController _scrollController;
+  Timer? _debounceTimer;
+
   @override
   void initState() {
     print("initStateCalled  :HotAndTrendingScreen");
@@ -48,23 +53,30 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _debounceTimer?.cancel(); // Cancel the timer on dispose
     super.dispose();
   }
 
   void _onScroll() {
-    if (_isBottom) {
-      print("_isBottom $_isBottom ");
-      _postRouteCubit
-          .fetchRoutes(query: {"categoryType": "trending", "limit": 3});
-    }
+    if (_debounceTimer?.isActive ?? false) return; // Prevent further processing
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (_isBottom && (_postRouteCubit.state.status != BlocStatus.fetching)) {
+        print("_isBottom $_isBottom ");
+        _postRouteCubit
+            .fetchRoutes(query: {"categoryType": "trending", "limit": 5});
+      }
+    });
   }
 
   bool get _isBottom {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    return currentScroll >=
-        (maxScroll * 0.98); // Trigger when scrolled 90% of the way
+    final threshold = maxScroll * 0.02; // Set a threshold of 2%
+    // Check if the user is within the last 2% of the scrollable area
+    return (maxScroll - currentScroll <= threshold);
+    // return currentScroll >=
+    //     (maxScroll * 0.98); // Trigger when scrolled 90% of the way
   }
 
   @override
@@ -73,6 +85,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
           _postRouteCubit.updatePage(); // set page to default
+          _trendingPosts = [];
           _postRouteCubit
               .fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
         },
@@ -101,7 +114,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       bloc: _postRouteCubit,
       builder: (context, state) {
         debugPrint("::::::::::::: ${state.status}");
-        if (state.status == BlocStatus.fetchFailed) {
+        if (state.status == BlocStatus.fetchFailed && _trendingPosts.isEmpty) {
           return _buildShimmer(context);
         } else if (state.status == BlocStatus.fetching &&
             _trendingPosts.isEmpty) {
@@ -115,7 +128,30 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
         return _showPosts();
       },
-      listener: (context, state) {},
+      listener: (context, state) {
+        if (state.status == BlocStatus.fetchFailed &&
+            _trendingPosts.isNotEmpty) {
+          context.showSnackBar(SnackBar(
+            content: Text(state.error ?? "Internet Connection Error!"),
+          ));
+        }
+        /*
+        if (state.status == BlocStatus.fetchFailed) {
+          context.showSnackBar(
+            SnackBar(
+              content: Text(state.error ?? "Internet Connection Error!!"),
+              duration: const Duration(seconds: 3),
+              action: SnackBarAction(
+                  label: "Retry",
+                  onPressed: () {
+                    _postRouteCubit.fetchRoutes(
+                        query: {"categoryType": "trending", "limit": 10});
+                  }),
+            ),
+          );
+        }
+        */
+      },
     );
   }
 
@@ -191,15 +227,21 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
         final city = App.cities[index];
-        return Padding(
-          padding: const EdgeInsets.only(left: 5),
-          child: Chip(
-            label: Text(city.name ?? ""),
-            deleteIcon: const Icon(Icons.search),
-            side: BorderSide.none,
-            onDeleted: () => print("Hello"),
-          ),
-        );
+        // Check if there is a next city
+        final nextCityName = (index + 1 < App.cities.length)
+            ? App.cities[index + 1].name
+            : ""; // Prevent out-of-bounds access
+        return Card.filled(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+                    (nextCityName?.isNotEmpty ?? false)
+                        ? "${city.name} - $nextCityName"
+                        : city.name ?? "",
+                    style: const TextStyle(fontWeight: FontWeight.bold))
+                .padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppInsets.inset10))
+                .center());
       },
       separatorBuilder: (context, index) => const SizedBox(
         width: 5,
@@ -231,7 +273,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       itemCount: _trendingPosts.length +
           (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0),
       separatorBuilder: (BuildContext context, int index) => const SizedBox(
-        height: 5,
+        height: AppInsets.inset8,
       ),
     );
   }

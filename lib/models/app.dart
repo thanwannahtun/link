@@ -8,6 +8,9 @@ import '../domain/utils/image_compress.dart';
 
 class App {
   static const baseImgUrl = 'http://192.168.99.217:3000';
+  // static const baseImgUrl = 'http://localhost:3000';
+  /// Render Url
+  // static const baseImgUrl = 'https://link-myanmar-mongodb.onrender.com';
   static User user = User();
 
   static List<City> cities = [];

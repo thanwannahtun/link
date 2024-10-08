@@ -17,6 +17,10 @@ class ApiService {
   static const String _baseUrl = 'http://192.168.99.217:3000/api/v1';
   // static const String _baseUrl = 'http://localhost:3000/api/v1';
 
+  /// Render URL
+  // static const String _baseUrl =
+  //     "https://link-myanmar-mongodb.onrender.com/api/v1";
+
   ApiService([baseUrl = _baseUrl])
       : _dio = Dio(
           BaseOptions(
@@ -129,18 +133,20 @@ class ApiService {
   }
 
   Future<Response> getRequest(String path,
-      {Map<String, dynamic>? queryParameters}) async {
-    return await _dio.get(path, queryParameters: queryParameters);
+      {Map<String, dynamic>? queryParameters, Object? body}) async {
+    return await _dio.get(path, queryParameters: queryParameters, data: body);
   }
 
-  Future<Response> postRequest(String path, Object? data) async {
+  Future<Response> postRequest(String path, Object? data,
+      {Map<String, dynamic>? queryParameters}) async {
     // return await _dio.post(path, data: data);
     return await _dio.post(
       path,
       data: data,
-      options: Options(
-        contentType: Headers.multipartFormDataContentType,
-      ),
+      queryParameters: queryParameters,
+      // options: Options(
+      //   contentType: Headers.multipartFormDataContentType,
+      // ),
     );
   }
 

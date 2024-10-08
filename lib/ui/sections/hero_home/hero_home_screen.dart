@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
@@ -38,6 +39,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   final ValueNotifier<City?> _originNotifier = ValueNotifier(null);
   final ValueNotifier<City?> _destinationNotifier = ValueNotifier(null);
 
+  final GlobalKey _sponsoredKey = GlobalKey();
+  final GlobalKey _trendingKey = GlobalKey();
   @override
   void initState() {
     super.initState();
@@ -58,6 +61,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   @override
   Widget build(BuildContext context) {
     print("rebuild");
+    print("Equality ${_trendingRouteBloc == _sponsoredRouteBloc}");
 
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
@@ -100,26 +104,74 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /* 
             _originDestinationCard(context),
-
-            /// Date Choice field
+            // Date Choice field
             _dateChoiceActionCard(),
+            */
+            // Container(
+            //   padding: const EdgeInsets.only(bottom: AppInsets.inset5),
+            //   margin: const EdgeInsets.all(0.0),
+            //   color: Theme.of(context).cardColor.withOpacity(0.5),
+            //   child: Column(
+            //     children: [
+            _originDestinationCard(context),
+            // Date Choice field
+            _dateChoiceActionCard(),
+            //   ],
+            // ).padding(padding: const EdgeInsets.all(5)),
+            // ),
             const SizedBox(
               height: AppInsets.inset8,
             ),
+            Container(
+              padding: const EdgeInsets.only(bottom: AppInsets.inset5),
+              margin: const EdgeInsets.all(0.0),
+              color: Theme.of(context).cardColor.withOpacity(0.5),
+              child: Column(
+                children: [
+                  _trendingSearchTitleField(context),
+                  SizedBox(height: 130, child: _trendingRoutesList()),
+                ],
+              ).padding(padding: const EdgeInsets.all(5)),
+            ),
+            /*
             _trendingSearchTitleField(context),
             const SizedBox(
               height: AppInsets.inset8,
             ),
-            SizedBox(height: 100, child: _trendingRoutesList()),
+            SizedBox(height: 130, child: _trendingRoutesList()),
             const SizedBox(
               height: 5,
             ),
+            */
+            const SizedBox(
+              height: AppInsets.inset8,
+            ),
+            Container(
+              padding: const EdgeInsets.only(bottom: AppInsets.inset5),
+              margin: const EdgeInsets.all(0.0),
+              color: Theme.of(context).cardColor.withOpacity(0.5),
+              child: Column(
+                children: [
+                  _sponsoredPostsTitleField(context),
+                  const SizedBox(
+                    height: AppInsets.inset8,
+                  ),
+                  SizedBox(height: 370, child: _sponsoredRoutesList()),
+                ],
+              ).padding(padding: const EdgeInsets.all(5)),
+            ),
+            /*
             _sponsoredPostsTitleField(context),
             const SizedBox(
               height: AppInsets.inset8,
             ),
             SizedBox(height: 350, child: _sponsoredRoutesList()),
+          */
+            const SizedBox(
+              height: AppInsets.inset8,
+            ),
           ],
         ),
       ),
@@ -127,46 +179,42 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   }
 
   Widget _sponsoredRoutesList() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: BlocConsumer<PostRouteCubit, PostRouteState>(
-        bloc: _sponsoredRouteBloc,
-        builder: (context, state) {
+    return BlocConsumer<PostRouteCubit, PostRouteState>(
+      bloc: _sponsoredRouteBloc,
+      key: _sponsoredKey,
+      builder: (context, state) {
+        if (state.status == BlocStatus.fetchFailed ||
+            state.status == BlocStatus.fetching) {
+          return _buildTrendingRoutesShimmer(context);
+        }
+        if (state.status == BlocStatus.fetched) {
+          _sponsoredRoutes = state.routes;
+          return _buildSponsoredRoutesCard(context);
+        } else {
+          return _buildTrendingRoutesShimmer(context);
+        }
+      },
+      listener: (BuildContext context, PostRouteState state) {},
+    );
+  }
+
+  Widget _trendingRoutesList() {
+    return BlocConsumer<PostRouteCubit, PostRouteState>(
+        bloc: _trendingRouteBloc,
+        key: _trendingKey,
+        listener: (BuildContext context, Object? state) {},
+        builder: (BuildContext context, state) {
           if (state.status == BlocStatus.fetchFailed ||
               state.status == BlocStatus.fetching) {
             return _buildTrendingRoutesShimmer(context);
           }
           if (state.status == BlocStatus.fetched) {
-            _sponsoredRoutes = state.routes;
-            return _buildSponsoredRoutesCard(context);
+            _trendingRoutes = state.routes;
+            return _buildTrendingRoutesCard(context);
           } else {
             return _buildTrendingRoutesShimmer(context);
           }
-        },
-        listener: (BuildContext context, PostRouteState state) {},
-      ),
-    );
-  }
-
-  Widget _trendingRoutesList() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: BlocConsumer<PostRouteCubit, PostRouteState>(
-          bloc: _trendingRouteBloc,
-          listener: (BuildContext context, Object? state) {},
-          builder: (BuildContext context, state) {
-            if (state.status == BlocStatus.fetchFailed ||
-                state.status == BlocStatus.fetching) {
-              return _buildTrendingRoutesShimmer(context);
-            }
-            if (state.status == BlocStatus.fetched) {
-              _trendingRoutes = state.routes;
-              return _buildTrendingRoutesCard(context);
-            } else {
-              return _buildTrendingRoutesShimmer(context);
-            }
-          }),
-    );
+        });
   }
 
   Widget _trendingSearchTitleField(BuildContext context) {
@@ -203,7 +251,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           ),
           IconButton(
               onPressed: () {
-                // _trendingRouteBloc.f
                 // context.pushNamed(RouteLists.trendingRouteCards);
               },
               icon: const Icon(Icons.keyboard_arrow_right_sharp)),
@@ -213,37 +260,28 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   }
 
   Widget _buildSponsoredRoutesCard(BuildContext context) {
-    // return CarouselView(
-    //   itemExtent: MediaQuery.sizeOf(context).width - 30,
-    //   itemSnapping: true,
-    //   shrinkExtent: MediaQuery.sizeOf(context).width - 30,
-    //   elevation: 2,
-    //   backgroundColor: Theme.of(context).cardColor.withOpacity(0.8),
-    //   padding: const EdgeInsets.all(AppInsets.inset5),
-    //   onTap: (value) {
-    //     print("HI");
-    //   },
-
     if (_sponsoredRoutes.isEmpty) {
       return _showEmptyTrendingCard(context);
     }
-    return Row(
-      children: [
-        ..._sponsoredRoutes.map(
-          (post) => _sponsoredCard(context, post),
-        ),
-      ],
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        return _sponsoredCard(context, _sponsoredRoutes[index]);
+      },
+      itemCount: _sponsoredRoutes.length,
     );
   }
 
   Widget _sponsoredCard(BuildContext context, Post post) {
     return Card.filled(
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(1))),
       margin: const EdgeInsets.symmetric(
         horizontal: AppInsets.inset5,
       ),
-      color: Theme.of(context).cardColor.withOpacity(0.8),
+      color: Theme.of(context).cardColor,
       child: Container(
-        width: MediaQuery.sizeOf(context).width - 30,
+        width: MediaQuery.sizeOf(context).width - 100,
         decoration: BoxDecoration(
           border: Border.all(
             width: 0.01,
@@ -446,197 +484,328 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     if (_trendingRoutes.isEmpty) {
       return SizedBox(height: 150, child: _showEmptyTrendingCard(context));
     }
-    return Row(
-      children: [
-        ..._trendingRoutes.map(
-          (post) => Card.filled(
-            elevation: 0.5,
-            color: context.secondaryColor,
-            child: Column(
-              children: [
-                InkWell(
-                  onTap: () => context.pushNamed(
-                      RouteLists.trendingRouteCardDetail,
-                      arguments: post),
-                  child: Card.filled(
-                    shape: Border.all(width: 0.01),
-                    margin: const EdgeInsets.all(0.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                        image: (post.images?.isNotEmpty == true)
-                            ? NetworkImage(
-                                "${App.baseImgUrl}${post.images?.first}")
-                            : const AssetImage("assets/icon/app_logo.jpg"),
-                        // image: NetworkImage((post.images?.isNotEmpty == true)
-                        //     ? ((post.images?.firstOrNull != null)
-                        //         ? "${App.baseImgUrl}${post.images?.first}"
-                        //         : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1")
-                        //     : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
-                        fit: BoxFit.cover,
-                        opacity: 0.5,
-                        onError: (exception, stackTrace) => Container(
-                          color: Colors.amber,
-                        ),
-                      )),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppInsets.inset10,
-                            vertical: AppInsets.inset5),
-                        child: SizedBox(
-                          height: 80,
-                          width: 250,
-                          child: Column(
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        if (index < _trendingRoutes.length) {
+          Post post = _trendingRoutes[index];
+          return _trendingRouteCard(context, post);
+        }
+        return _navigateToAllTrendingRoutes();
+      },
+      itemCount: _trendingRoutes.length + 1,
+    );
+  }
+
+  Card _navigateToAllTrendingRoutes() {
+    return Card.filled(
+      child: TextButton.icon(
+        onPressed: () {
+          _trendingRouteBloc.fetchRoutes(query: {
+            "categoryType": "trending",
+          });
+          print("View All Pressed!");
+        },
+        label: const Text("View All"),
+        iconAlignment: IconAlignment.end,
+        icon: const Icon(Icons.double_arrow_rounded),
+      ).padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5)),
+    );
+  }
+
+  Widget _trendingRouteCard(
+    BuildContext context,
+    Post post,
+  ) {
+    Card.filled(
+      elevation: 0.5,
+      color: context.secondaryColor,
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => context.pushNamed(RouteLists.trendingRouteCardDetail,
+                arguments: post),
+            child: Card.filled(
+              shape: Border.all(width: 0.01),
+              margin: const EdgeInsets.all(0.0),
+              child: Container(
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                  image: (post.images?.isNotEmpty == true)
+                      ? NetworkImage("${App.baseImgUrl}${post.images?.first}")
+                      : const AssetImage("assets/icon/app_logo.jpg"),
+                  // image: NetworkImage((post.images?.isNotEmpty == true)
+                  //     ? ((post.images?.firstOrNull != null)
+                  //         ? "${App.baseImgUrl}${post.images?.first}"
+                  //         : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1")
+                  //     : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
+                  fit: BoxFit.cover,
+                  opacity: 0.5,
+                  onError: (exception, stackTrace) => Container(
+                    color: Colors.amber,
+                  ),
+                )),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppInsets.inset10,
+                      vertical: AppInsets.inset5),
+                  child: SizedBox(
+                    height: 80,
+                    width: 250,
+                    child: Column(
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.bus_alert_rounded,
+                              // color: context.primaryColor,
+                            ),
+                            const SizedBox(
+                              width: AppInsets.inset5,
+                            ),
+                            Text(
+                                "${post.origin?.name ?? ""}-${post.destination?.name ?? ""}"),
+                          ],
+                        ).expanded(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: AppInsets.inset10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Icon(
-                                    Icons.bus_alert_rounded,
+                                    Icons.today_rounded,
                                     // color: context.primaryColor,
                                   ),
                                   const SizedBox(
                                     width: AppInsets.inset5,
                                   ),
-                                  Text(
-                                      "${post.origin?.name ?? ""}-${post.destination?.name ?? ""}"),
+                                  Text(DateTimeUtil.formatDateTime(
+                                      post.scheduleDate))
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.star,
+                                    size: AppInsets.inset15,
+                                    color: Colors.amber,
+                                  ),
+                                  Text(post.commentCounts.toString())
                                 ],
                               ).expanded(),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: AppInsets.inset10),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.today_rounded,
-                                          // color: context.primaryColor,
-                                        ),
-                                        const SizedBox(
-                                          width: AppInsets.inset5,
-                                        ),
-                                        Text(DateTimeUtil.formatDateTime(
-                                            post.scheduleDate))
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.star,
-                                          size: AppInsets.inset15,
-                                          color: Colors.amber,
-                                        ),
-                                        Text(post.commentCounts.toString())
-                                      ],
-                                    ).expanded(),
-                                  ],
-                                ),
-                              ).expanded()
                             ],
                           ),
-                        ),
-                      ),
+                        ).expanded()
+                      ],
                     ),
                   ),
-                ).expanded(flex: 2),
-                TextButton(
-                        style: const ButtonStyle(
-                          padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
-                              vertical: AppInsets.inset5,
-                              horizontal: AppInsets.inset10)),
-                        ),
-                        onPressed: () {
-                          context.pushNamed(RouteLists.trendingRouteCardDetail,
-                              arguments: post);
-                          // context.pushNamed(RouteLists.trendingRouteCardDetail,
-                          //     arguments: post);
-                        },
-                        child: const Text("Book Now"))
-                    .expanded(),
-              ],
+                ),
+              ),
             ),
-          ),
+          ).expanded(flex: 2),
+          TextButton(
+                  style: const ButtonStyle(
+                    padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
+                        vertical: AppInsets.inset5,
+                        horizontal: AppInsets.inset10)),
+                  ),
+                  onPressed: () {
+                    context.pushNamed(RouteLists.trendingRouteCardDetail,
+                        arguments: post);
+                    // context.pushNamed(RouteLists.trendingRouteCardDetail,
+                    //     arguments: post);
+                  },
+                  child: const Text("Book Now"))
+              .expanded(),
+        ],
+      ),
+    );
+
+    return SizedBox(
+      width: 333,
+      child: Card.filled(
+        shape: const BeveledRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(3))),
+        child: Column(
+          children: [
+            /// header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CachedImage(
+                          imageUrl: post.agency?.profileImage ?? ""),
+                    ).clipRRect(borderRadius: BorderRadius.circular(50)),
+                    const SizedBox(width: 3),
+                    Text(
+                      post.agency?.name ?? "",
+                      style: const TextStyle(
+                          fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      DateTimeUtil.formatTime(
+                          context, TimeOfDay.fromDateTime(post.createdAt!)),
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  ],
+                ).padding(padding: const EdgeInsets.only(left: 5, top: 5)),
+                IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.more_horiz_outlined)),
+              ],
+            ).expanded(),
+
+            /// image and post info
+            InkWell(
+                onTap: () => context.pushNamed(
+                    RouteLists.trendingRouteCardDetail,
+                    arguments: post),
+                child: Row(
+                  children: [
+                    CachedImage(
+                            imageUrl: (post.images?.isNotEmpty == true)
+                                ? "${App.baseImgUrl}${post.images?.first}"
+                                : "")
+                        .clipRRect(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(5)),
+                        )
+                        .expanded(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: Column(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Text(
+                                "${post.origin?.name ?? ""} - ${post.destination?.name ?? ""}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                post.title ?? "",
+                                style: const TextStyle(fontSize: 12),
+                                textAlign: TextAlign.start,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            ],
+                          ).expanded(flex: 3),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DateTimeUtil.formatDateTime(post.scheduleDate),
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                              IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.comment,
+                                    size: 18,
+                                  ))
+                            ],
+                          ).expanded(),
+                        ],
+                      ),
+                    ).expanded(),
+                  ],
+                )).padding(padding: const EdgeInsets.all(5)).expanded(flex: 4),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   Widget _showEmptyTrendingCard(BuildContext context) {
-    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-      SizedBox(
-        height: double.infinity,
-        // width: double.infinity,
-        child: Center(
-          child: Card.filled(
-            child: SizedBox(
-              width: 350,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const Text(
-                    "Their is no trending post available",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ).fittedBox(),
-                  ElevatedButton(
-                      onPressed: () =>
-                          // context.pushNamed(RouteLists.postCreatePage),
-                          _trendingRouteBloc.fetchRoutes(
-                              query: {"categoryType": "trending", "limit": 5}),
-                      child: const Text("Start Creating A Post!"))
-                ],
-              ).padding(padding: const EdgeInsets.all(AppInsets.inset8)),
+    return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: double.infinity,
+            child: Center(
+              child: Card.filled(
+                child: SizedBox(
+                  // width: MediaQuery.sizeOf(context).width - 10,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      const Text(
+                        "Their is no trending post available",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ).fittedBox(),
+                      ElevatedButton(
+                          onPressed: () =>
+                              // context.pushNamed(RouteLists.postCreatePage),
+                              _trendingRouteBloc.fetchRoutes(query: {
+                                "categoryType": "trending",
+                                "limit": 5
+                              }),
+                          child: const Text("Start Creating A Post!"))
+                    ],
+                  ).padding(padding: const EdgeInsets.all(AppInsets.inset8)),
+                ),
+              ),
             ),
+          ).expanded(),
+        ]);
+  }
+
+  Widget _buildTrendingRoutesShimmer(BuildContext context) {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) => Shimmer.fromColors(
+        baseColor: context.primaryColor,
+        highlightColor: context.onPrimaryColor,
+        child: Card.filled(
+          elevation: 0.5,
+          color: context.secondaryColor,
+          child: Column(
+            children: [
+              const Card.filled(
+                child: SizedBox(
+                  // height: double.infinity,
+                  width: 250,
+                ),
+              ),
+              TextButton(
+                  style: const ButtonStyle(
+                    padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
+                        vertical: AppInsets.inset5,
+                        horizontal: AppInsets.inset10)),
+                  ),
+                  onPressed: () {},
+                  child: const Text("Book Now")),
+            ],
           ),
         ),
       ),
-    ]);
-  }
-
-  Row _buildTrendingRoutesShimmer(BuildContext context) {
-    return Row(
-      children: [
-        ...List<Widget>.generate(
-          7,
-          (index) => Shimmer.fromColors(
-            baseColor: context.primaryColor,
-            highlightColor: context.onPrimaryColor,
-            child: Card.filled(
-              elevation: 0.5,
-              color: context.secondaryColor,
-              child: Column(
-                children: [
-                  const Card.filled(
-                    child: SizedBox(
-                      // height: double.infinity,
-                      width: 250,
-                    ),
-                  ),
-                  TextButton(
-                      style: const ButtonStyle(
-                        padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
-                            vertical: AppInsets.inset5,
-                            horizontal: AppInsets.inset10)),
-                      ),
-                      onPressed: () {},
-                      child: const Text("Book Now")),
-                ],
-              ),
-            ),
-          ),
-        )
-      ],
+      itemCount: 7,
     );
   }
 
   Card _dateChoiceActionCard() {
     return Card.filled(
-      elevation: 0.5,
-      // color: context.secondaryColor,
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.zero)),
       child: Row(
         children: [
           Expanded(
@@ -725,7 +894,16 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        context.pushNamed(RouteLists.searchQueryRoutes);
+                        if (_originNotifier.value == null &&
+                            _destinationNotifier.value == null) {
+                          return;
+                        }
+                        context.pushNamed(RouteLists.searchQueryRoutes,
+                            arguments: {
+                              "origin": _originNotifier.value,
+                              "destination": _destinationNotifier.value,
+                              "date": _selectedDateNotifier.value
+                            });
                       },
                       icon: Icon(
                         color: context.onPrimaryColor,
@@ -745,14 +923,15 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   Widget _originDestinationCard(BuildContext context) {
     return Card.filled(
-      // color: context.secondaryColor,
-      elevation: 0.5,
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.zero)),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             /// from & to
             Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 /// FROM
                 Row(
@@ -774,13 +953,18 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                 _originNotifier.value = city;
                               }
                             },
+                            splashColor:
+                                Colors.transparent, // Removes the splash effect
+                            highlightColor: Colors
+                                .transparent, // Removes the highlight effect
+                            hoverColor: Colors.transparent,
                             child: Text(
                               value == null ? "Origin" : value.name.toString(),
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
-                            ),
+                            ), // Removes the hover effect
                           );
                         },
                       ),
@@ -838,6 +1022,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         builder:
                             (BuildContext context, City? value, Widget? child) {
                           return InkWell(
+                            splashColor:
+                                Colors.transparent, // Removes the splash effect
+                            highlightColor: Colors
+                                .transparent, // Removes the highlight effect
+                            hoverColor: Colors.transparent,
                             onTap: () async {
                               City? city = await _chooseCity();
 
@@ -929,6 +1118,15 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
       itemList: App.cities,
       itemBuilder: (ctx, index) {
+        if (index < 0) {
+          return Center(
+            child: IconButton(
+                onPressed: () {
+                  context.read<CityCubit>().fetchCities();
+                },
+                icon: const Icon(Icons.refresh_rounded)),
+          );
+        }
         return StatefulBuilder(
           builder: (BuildContext ctx, void Function(void Function()) setState) {
             return ListTile(

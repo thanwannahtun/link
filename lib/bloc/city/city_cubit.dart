@@ -27,10 +27,11 @@ class CityCubit extends Cubit<CityState> {
         cities = App.cities;
       }
 
-      emit(state.copyWith(
-        status: BlocStatus.fetched,
-        cities: cities,
-      ));
+      cities.sort(
+        (a, b) => (a.name ?? "").compareTo(b.name ?? ""),
+      );
+
+      emit(state.copyWith(status: BlocStatus.fetched, cities: cities));
     } on Exception catch (e) {
       emit(state.copyWith(
           status: BlocStatus.fetchFailed,

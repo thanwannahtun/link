@@ -5,6 +5,7 @@ import 'package:link/core/utils/app_insets.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/screens/post_route_card.dart';
+import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 import '../../../models/app.dart';
@@ -71,7 +72,10 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: AppInsets.inset5),
-          child: PostRouteCard(post: Post()),
+          child: PostRouteCard(
+            post: Post(),
+            loading: true,
+          ),
         );
       },
     );
@@ -83,21 +87,21 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
         final city = App.cities[index];
-        return Padding(
-          padding: const EdgeInsets.only(left: 5),
-          child: Chip(
-            label: Text(city.name ?? ""),
-            deleteIcon: const Icon(Icons.arrow_drop_down),
-            side: BorderSide.none,
-            onDeleted: () => showModalBottomSheet(
-              context: context,
-              builder: (context) => Container(
-                color: Colors.blue[50],
-              ),
-            ),
-            deleteButtonTooltipMessage: "Filter",
-          ),
-        );
+        // Check if there is a next city
+        final nextCityName = (index + 1 < App.cities.length)
+            ? App.cities[index + 1].name
+            : ""; // Prevent out-of-bounds access
+        return Card.filled(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+                    (nextCityName?.isNotEmpty ?? false)
+                        ? "${city.name} - $nextCityName"
+                        : city.name ?? "",
+                    style: const TextStyle(fontWeight: FontWeight.bold))
+                .padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppInsets.inset10))
+                .center());
       },
       separatorBuilder: (context, index) => const SizedBox(
         width: 5,

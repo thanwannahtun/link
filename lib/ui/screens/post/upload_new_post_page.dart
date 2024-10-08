@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
@@ -62,6 +63,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     super.initState();
     _postCreateUtilCubit = context.read<PostCreateUtilCubit>();
     _postRouteCubit = context.read<PostRouteCubit>();
+    context.read<CityCubit>().fetchCities();
     _initFocusNodes();
   }
 

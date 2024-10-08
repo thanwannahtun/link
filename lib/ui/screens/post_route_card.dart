@@ -43,6 +43,8 @@ class PostRouteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card.filled(
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(1))),
       margin: const EdgeInsets.all(0.0),
       child: SizedBox(
         child: Column(
@@ -120,7 +122,10 @@ class PostRouteCard extends StatelessWidget {
 
   Widget _buildImageWidget(List<String>? images) {
     if ((images ?? []).isEmpty) {
-      return Container();
+      return Container(
+        height: loading ? 100 : null,
+        color: Colors.black12,
+      );
     } else {
       return PhotoViewGalleryWidget(
         backgroundDecoration: const BoxDecoration(color: Colors.black12),
@@ -149,7 +154,7 @@ class PostRouteCard extends StatelessWidget {
                   child: Container(
                     width: 50,
                     height: 50,
-                    color: Colors.black38,
+                    color: Colors.black12,
                     child: loading
                         ? null
                         : Image.network(
@@ -226,24 +231,39 @@ class PostRouteCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            post.title ?? "",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          if (post.description != null)
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox.fromSize(
-                size: const Size.fromHeight(10),
-              ),
-              ExpandableText(
-                text: post.description ?? "",
-              ),
-              SizedBox.fromSize(
-                size: const Size.fromHeight(10),
-              ),
-            ]),
-        ],
+        children: loading
+            ? [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 5, left: 5, right: 5),
+                  child: Container(
+                    height: 15,
+                    width: 100,
+                    color: Colors.black12,
+                  ).clipRRect(
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(15))),
+                )
+              ]
+            : [
+                Text(
+                  post.title ?? "",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                if (post.description != null)
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox.fromSize(
+                          size: const Size.fromHeight(10),
+                        ),
+                        ExpandableText(
+                          text: post.description ?? "",
+                        ),
+                        SizedBox.fromSize(
+                          size: const Size.fromHeight(10),
+                        ),
+                      ]),
+              ],
       ),
     );
   }
@@ -265,7 +285,7 @@ class PostRouteCard extends StatelessWidget {
                 child: Container(
                   width: 100,
                   height: double.infinity,
-                  color: Colors.black38,
+                  color: Colors.black12,
                 ),
               ).clipRRect(borderRadius: BorderRadius.circular(50)),
             )

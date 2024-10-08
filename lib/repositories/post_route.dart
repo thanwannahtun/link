@@ -14,8 +14,10 @@ class PostRouteRepo extends ApiService {
   PostRouteRepo._();
   factory PostRouteRepo() => _instance;
 
-  FutureOr<List<Post>> fetchRoutes({Map<String, dynamic>? query}) async {
-    Response response = await getRequest('/routes', queryParameters: query);
+  FutureOr<List<Post>> fetchRoutes(
+      {Object? body, Map<String, dynamic>? query}) async {
+    Response response =
+        await postRequest('/routes', body, queryParameters: query);
     if (response.statusCode == 200) {
       // print("running on separate Isolate!");
       // final routes = await Isolate.run(
@@ -85,7 +87,7 @@ class PostRouteRepo extends ApiService {
       formData.files
           .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
 
-      Response response = await postRequest('/routes', formData);
+      Response response = await postRequest('/routes/uploads/', formData);
       if (response.statusCode == 201) {
         return Post.fromJson(response.data['data'].first);
       } else {

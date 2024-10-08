@@ -24,7 +24,7 @@ class PostRouteCubit extends Cubit<PostRouteState> {
   PostRouteCubit()
       : super(const PostRouteState(status: BlocStatus.initial, routes: []));
 
-  fetchRoutes({Map<String, dynamic>? query}) async {
+  fetchRoutes({Object? body, Map<String, dynamic>? query}) async {
     if (state.status == BlocStatus.fetching) return;
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
@@ -34,20 +34,24 @@ class PostRouteCubit extends Cubit<PostRouteState> {
 
       List<Post> posts = await _postApiRepo.fetchRoutes(
         query: queryParams,
+        body: body,
       );
-      _page++;
+
+      /// Checking success fetchRoutes
+      if (posts.isNotEmpty) {
+        _page++;
+      }
       Future.delayed(
         const Duration(seconds: 2),
         () => emit(state.copyWith(status: BlocStatus.fetched, routes: posts)),
       );
-    } on DioException catch (e) {
-      debugPrint("DioException ::  $e");
+    } on Exception catch (e, stackTrace) {
+      debugPrint(
+          "===================================================================\nError ::  $e  :: staceTrace [[ $stackTrace ]] \n===================================================================");
       emit(state.copyWith(
+          routes: [],
           status: BlocStatus.fetchFailed,
           error: ApiErrorHandler.handle(e).message));
-    } catch (e, stackTrace) {
-      debugPrint("Error ::  $e  :: staceTrace [[ $stackTrace ]] ");
-      emit(state.copyWith(status: BlocStatus.fetchFailed, error: e.toString()));
     }
   }
 
