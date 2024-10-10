@@ -443,7 +443,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
                   style: TextStyle(
                     color: context.tertiaryColor,
                   ),
-                ).bold(),
+                ).styled(),
                 trailing: Text(
                   "12-03-20204 11:45 AM",
                   style: TextStyle(
@@ -686,7 +686,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       context,
       headerWidget: ListTile(
         leading: const Icon(Icons.location_on_outlined),
-        title: const Text("Choose Cities").bold(),
+        title: const Text("Choose Cities").styled(),
       ).padding(
           padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
       itemList: App.cities,
@@ -937,19 +937,18 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppInsets.inset15),
-            const Text("Cities Schedule").bold(textAlign: TextAlign.start),
+            const Text("Cities Schedule").styled(ta: TextAlign.start),
             const SizedBox(height: AppInsets.inset15),
             _chooseCityName(),
             const SizedBox(height: AppInsets.inset15),
-            const Text("Date*").bold(textAlign: TextAlign.start),
+            const Text("Date*").styled(ta: TextAlign.start),
             _chooseDepartureDateChoiceDialog(),
             const SizedBox(height: AppInsets.inset15),
-            const Text("Time*").bold(textAlign: TextAlign.start),
+            const Text("Time*").styled(ta: TextAlign.start),
             // _showTimePickerDialog(context),
             _chooseArrivalDateChoiceDialog(),
             const SizedBox(height: AppInsets.inset15),
-            const Text("Description(optional)")
-                .bold(textAlign: TextAlign.start),
+            const Text("Description(optional)").styled(ta: TextAlign.start),
             _writeCityDescripton(),
             const SizedBox(height: AppInsets.inset15),
             _chowPrivacyInfo(),
@@ -1097,7 +1096,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
           context,
           headerWidget: ListTile(
             leading: const Icon(Icons.location_on_outlined),
-            title: const Text("Choose Cities").bold(),
+            title: const Text("Choose Cities").styled(),
           ).padding(
               padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
           itemList: App.cities,

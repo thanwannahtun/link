@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
+import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/screens/post_route_card.dart';
@@ -18,6 +21,17 @@ class TrendingRoutesCard extends StatefulWidget {
 }
 
 class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
+  late final PostRouteCubit _trendingRouteBloc;
+  List<Post> _trendingRoutes = [];
+  @override
+  void initState() {
+    super.initState();
+    _trendingRouteBloc = PostRouteCubit()
+      ..fetchRoutes(query: {
+        "categoryType": "trending",
+      });
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
@@ -46,23 +60,41 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
   }
 
   Widget _body(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
-          child: SizedBox(
-            height: 50,
-            // color: Colors.amber,
-            child: _buildFilters(),
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
-            child: _postViewBuilder(),
-          ),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: BlocConsumer<PostRouteCubit, PostRouteState>(
+        bloc: _trendingRouteBloc,
+        listener: (BuildContext context, PostRouteState state) {},
+        builder: (BuildContext context, PostRouteState state) {
+          if (state.status == BlocStatus.fetched) {
+            _trendingRoutes = state.routes;
+            return Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+                  child: SizedBox(
+                    height: 50,
+                    // color: Colors.amber,
+                    child: _buildFilters(),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppInsets.inset5),
+                    child: _postViewBuilder(),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator.adaptive(),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -73,8 +105,7 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
         return Padding(
           padding: const EdgeInsets.only(bottom: AppInsets.inset5),
           child: PostRouteCard(
-            post: Post(),
-            loading: true,
+            post: _trendingRoutes[index],
           ),
         );
       },

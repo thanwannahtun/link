@@ -26,7 +26,7 @@ class CachedImage extends StatelessWidget {
       fit: fit,
       placeholder: placeholder ??
           (context, url) => const Image(
-                image: AssetImage('assets/icon/app_logo.jpg'),
+                image: AssetImage('assets/images/loading_bg.png'),
                 fit: BoxFit.cover,
               ),
       errorWidget: errorWidget ??

@@ -30,7 +30,7 @@ class AppTheme {
     );
 
     return ThemeData(
-      scaffoldBackgroundColor: const Color(0xffEBF4F6),
+      scaffoldBackgroundColor: const Color.fromARGB(255, 241, 248, 250),
       appBarTheme: const AppBarTheme(
         backgroundColor: LightTheme.tertiaryBg,
         titleTextStyle: TextStyle(

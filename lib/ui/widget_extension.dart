@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 
 extension WidgetExt on Widget {
-
   Widget fittedBox({
-  Key? key,
-  BoxFit fit = BoxFit.contain,
-  AlignmentGeometry alignment = Alignment.center,
-  Clip clipBehavior = Clip.none,
-}){
+    Key? key,
+    BoxFit fit = BoxFit.contain,
+    AlignmentGeometry alignment = Alignment.center,
+    Clip clipBehavior = Clip.none,
+  }) {
     return FittedBox(
-      key:key,
-      fit:fit,
-      alignment:alignment,
-      clipBehavior:clipBehavior, 
-      child:this,
+      key: key,
+      fit: fit,
+      alignment: alignment,
+      clipBehavior: clipBehavior,
+      child: this,
     );
   }
 
@@ -89,11 +88,35 @@ extension NumExtension on num {
 }
 
 extension StyleExtension on Text {
-  Text bold({TextAlign? textAlign}) {
+  Text styled({
+    TextAlign? ta,
+    FontWeight? fw,
+    double? fs,
+    Color? color,
+    FontStyle? fStyle,
+    double? lSpacing,
+    TextDecoration? decoration,
+  }) {
     return Text(
       data ?? "",
-      textAlign: textAlign,
-      style: style?.copyWith(fontWeight: FontWeight.bold),
+      textAlign: ta ?? textAlign,
+      style: style?.copyWith(
+            fontWeight: fw ?? style?.fontWeight,
+            fontSize: fs ?? style?.fontSize,
+            color: color ?? style?.color,
+            fontStyle: fStyle ?? style?.fontStyle,
+            letterSpacing: lSpacing ?? style?.letterSpacing,
+            decoration: decoration ?? style?.decoration,
+          ) ??
+          TextStyle(
+            // Default values if no style is provided
+            fontWeight: fw,
+            fontSize: fs,
+            color: color,
+            fontStyle: fStyle,
+            letterSpacing: lSpacing,
+            decoration: decoration,
+          ),
     );
   }
 }

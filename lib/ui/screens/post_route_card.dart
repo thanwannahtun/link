@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
+import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/utils/expandable_text.dart';
 import 'package:link/ui/widget_extension.dart';
@@ -150,20 +151,17 @@ class PostRouteCard extends StatelessWidget {
               Padding(
                 padding: paddingLeft ?? const EdgeInsets.only(),
                 child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
                   onTap: loading ? null : onAgencyPressed,
                   child: Container(
-                    width: 50,
-                    height: 50,
+                    width: 40,
+                    height: 40,
                     color: Colors.black12,
                     child: loading
                         ? null
-                        : Image.network(
-                            post.agency?.profileImage ??
-                                "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg",
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(),
-                          ),
+                        : CachedImage(
+                            imageUrl: post.agency?.profileImage ??
+                                "https://www.shutterstock.com/image-vector/travel-logo-agency-260nw-2274032709.jpg"),
                   ).clipRRect(
                     borderRadius: BorderRadius.circular(50),
                   ),

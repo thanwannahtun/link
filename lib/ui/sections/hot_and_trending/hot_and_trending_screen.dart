@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
@@ -43,6 +44,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     // context.read<PostRouteCubit>().fetchRoutes();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    context.read<BottomSelectCubit>().stream.listen(_onBottomDoubleSelect);
   }
 
   @override
@@ -55,6 +57,20 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     _scrollController.dispose();
     _debounceTimer?.cancel(); // Cancel the timer on dispose
     super.dispose();
+  }
+
+  void _onBottomDoubleSelect(NavigationStates event) {
+    print(event);
+    if (mounted) {
+      if (event == NavigationStates.B) {
+        print(
+            "[NavigationStates] State Equal ::: ${event == context.read<BottomSelectCubit>().state} ");
+        if (context.read<BottomSelectCubit>().state == NavigationStates.B) {
+          print("[NavigationStates] Hello World! ");
+          // Update the UI conditionally
+        }
+      }
+    }
   }
 
   void _onScroll() {
@@ -100,7 +116,10 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
             fontWeight: FontWeight.bold),
       ),
       action: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            _scrollController.animateTo(0,
+                duration: const Duration(seconds: 1), curve: Curves.bounceIn);
+          },
           icon: Icon(
             Icons.search,
             color: context.onPrimaryColor,

@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/core/utils/app_insets.dart';
 
+// ignore: must_be_immutable
 class AppBottomNavigationBar extends StatefulWidget {
   const AppBottomNavigationBar({super.key});
-
+  // ValueChanged<NavigationStates?>? onDoubleTap;
   @override
   State<AppBottomNavigationBar> createState() => _AppBottomNavigationBarState();
 }
@@ -30,20 +31,44 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
     ),
   ];
 
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = NavigationStates.A.index;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      iconSize: AppInsets.inset20,
-      items: items,
-      currentIndex: context.read<BottomSelectCubit>().state.index,
-      showUnselectedLabels: true,
-      type: BottomNavigationBarType.fixed,
-      onTap: (index) {
+    return GestureDetector(
+      onDoubleTap: () {
+        print(
+            "[NavigationStates] onDoubleTap ::: currentIndex => ${NavigationStates.values[_currentIndex]} ");
         context
             .read<BottomSelectCubit>()
-            .navigateTo(state: NavigationStates.values[index]);
+            .navigateTo(state: NavigationStates.values[_currentIndex]);
         setState(() {});
+        // widget.onDoubleTap!(NavigationStates
+        //     .values[context.read<BottomSelectCubit>().state.index]);
+        // context.read<BottomSelectCubit>().doubleTap(
+        //     currentState: NavigationStates
+        //         .values[context.read<BottomSelectCubit>().state.index]);
       },
+      child: BottomNavigationBar(
+        iconSize: AppInsets.inset20,
+        items: items,
+        currentIndex: context.read<BottomSelectCubit>().state.index,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          _currentIndex = index;
+          context
+              .read<BottomSelectCubit>()
+              .navigateTo(state: NavigationStates.values[index]);
+          setState(() {});
+        },
+      ),
     );
   }
 }
