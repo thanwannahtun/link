@@ -70,7 +70,7 @@ class User {
       password: json['password'],
       refreshToken: json['refreshToken'],
       accessToken: json['accessToken'],
-      role: json['role'] == Role.admin.name ? 'admin' : 'user',
+      // role: json['role'] == Role.admin.name ? 'admin' : 'user',
     );
   }
 

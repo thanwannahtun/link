@@ -12,7 +12,7 @@ import 'package:link/ui/sections/profile/setting_screen.dart';
 import 'package:link/ui/sections/search/search_query_routes.dart';
 import 'package:link/ui/utils/route_list.dart';
 
-import '../screens/profile/public_profile_screen.dart';
+import '../screens/profile/public_agency_profile_screen.dart';
 import '../sections/hero_home/hero_home_screen.dart';
 
 class RouteGenerator {
@@ -75,7 +75,7 @@ class RouteGenerator {
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const PublicProfileScreen();
+            return const PublicAgencyProfileScreen();
           },
         );
       case RouteLists.settingScreen:

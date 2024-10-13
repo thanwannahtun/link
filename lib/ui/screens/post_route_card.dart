@@ -16,6 +16,7 @@ class PostRouteCard extends StatelessWidget {
     super.key,
     required this.post,
     this.loading = false, // for shimmer purpose
+    this.isLike = false,
     this.onAgencyPressed,
     this.onMenuPressed,
     this.onSharePressed,
@@ -23,11 +24,13 @@ class PostRouteCard extends StatelessWidget {
     this.onCommentPressed,
     this.onLocationPressed,
     this.onPhonePressed,
+    this.onPhotoPressed,
     this.paddingLeft,
   });
 
   final Post post;
   bool loading;
+  bool isLike;
 
   /// start
   void Function()? onAgencyPressed;
@@ -35,7 +38,8 @@ class PostRouteCard extends StatelessWidget {
   void Function()? onSharePressed;
   void Function()? onPhonePressed;
   void Function()? onCommentPressed;
-  void Function()? onStarPressed;
+  void Function(bool isLiked)? onStarPressed;
+  void Function()? onPhotoPressed;
   void Function()? onLocationPressed;
   EdgeInsetsGeometry? paddingLeft;
 
@@ -104,7 +108,8 @@ class PostRouteCard extends StatelessWidget {
             /// Card Footer
             BuildCardFooter(
                     loading: loading,
-                    onStarPressed: onStarPressed,
+                    isLike: isLike,
+                    onStarPressed: onStarPressed ?? (value) {},
                     onCommentPressed: onCommentPressed,
                     onPhonePressed: onPhonePressed,
                     onLocationPressed: onLocationPressed,
@@ -128,11 +133,14 @@ class PostRouteCard extends StatelessWidget {
         color: Colors.black12,
       );
     } else {
-      return PhotoViewGalleryWidget(
-        backgroundDecoration: const BoxDecoration(color: Colors.black12),
-        images:
-            post.images?.map((img) => '${App.baseImgUrl}$img').toList() ?? [],
-      ).sizedBox(height: 200, width: double.infinity);
+      return GestureDetector(
+        onTap: onPhotoPressed,
+        child: PhotoViewGalleryWidget(
+          backgroundDecoration: const BoxDecoration(color: Colors.black12),
+          images:
+              post.images?.map((img) => '${App.baseImgUrl}$img').toList() ?? [],
+        ).sizedBox(height: 200, width: double.infinity),
+      );
     }
   }
 
@@ -338,10 +346,12 @@ class BuildCardFooter extends StatelessWidget {
     required this.onPhonePressed,
     required this.onLocationPressed,
     required this.onSharePressed,
+    required this.isLike,
   });
 
   final bool loading;
-  final void Function()? onStarPressed;
+  final bool isLike;
+  final void Function(bool isLiked) onStarPressed;
   final void Function()? onCommentPressed;
   final void Function()? onPhonePressed;
   final void Function()? onLocationPressed;
@@ -354,9 +364,16 @@ class BuildCardFooter extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-            child: InkWell(
-                onTap: loading ? null : onStarPressed,
-                child: const Icon(Icons.hotel_class_outlined))),
+          child: LikeIcon(
+            isLike: isLike,
+            toggleLike: onStarPressed,
+          ),
+          /*
+          InkWell(
+              onTap: loading ? null : onStarPressed,
+              child: const Icon(Icons.hotel_class_outlined)),
+              */
+        ),
         Expanded(
             child: InkWell(
                 onTap: loading ? null : onCommentPressed,
@@ -376,6 +393,61 @@ class BuildCardFooter extends StatelessWidget {
               child: const Icon(Icons.share)),
         ),
       ],
+    );
+  }
+}
+
+class LikeIcon extends StatefulWidget {
+  const LikeIcon({super.key, this.isLike = false, required this.toggleLike});
+
+  // Initial 'like' state
+  final bool isLike;
+
+  // External function that accepts the updated 'like' state
+  final void Function(bool isLiked) toggleLike;
+
+  @override
+  State<LikeIcon> createState() => _LikeIconState();
+}
+
+class _LikeIconState extends State<LikeIcon> {
+  late final ValueNotifier<bool> _likeNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize ValueNotifier with the initial like state
+    _likeNotifier = ValueNotifier(widget.isLike);
+  }
+
+  // Clean up ValueNotifier to avoid memory leaks
+  @override
+  void dispose() {
+    _likeNotifier.dispose();
+    super.dispose();
+  }
+
+  // Toggle the like state internally and pass the new value to the external callback
+  void _toggleLike() {
+    _likeNotifier.value = !_likeNotifier.value;
+    widget.toggleLike(_likeNotifier.value); // Pass the updated state
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: _toggleLike, // Call the internal toggle function
+      icon: ValueListenableBuilder<bool>(
+        valueListenable: _likeNotifier,
+        builder: (context, value, child) {
+          return Icon(
+            value ? Icons.star_sharp : Icons.star_border_purple500_sharp,
+            color: value
+                ? Colors.yellow
+                : Colors.grey, // Change color based on state
+          );
+        },
+      ),
     );
   }
 }

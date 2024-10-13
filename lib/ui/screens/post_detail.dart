@@ -35,7 +35,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
               post: post ?? Post(),
               onCommentPressed: onCommentPressed,
               onLocationPressed: () {},
-              onStarPressed: () {},
+              onStarPressed: (isLiked) {},
               paddingLeft: const EdgeInsets.only(left: 10),
             ),
           ],

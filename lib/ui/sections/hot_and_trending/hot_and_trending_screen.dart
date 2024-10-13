@@ -276,12 +276,15 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         if (index < _trendingPosts.length) {
           Post post = _trendingPosts[index];
           return PostRouteCard(
-            post: post,
-            onStarPressed: () => goPageDetail(post),
-            onCommentPressed: () => goPageDetail(post),
-            onAgencyPressed: () => context
-                .pushNamed(RouteLists.trendingRouteCardDetail, arguments: post),
-          );
+              post: post,
+              onStarPressed: (isLiked) {
+                isLiked != isLiked;
+                // update LikeCounts
+              },
+              // isLike: true,
+              onCommentPressed: () => goPageDetail(post),
+              onPhotoPressed: () => goPageDetail(post),
+              onAgencyPressed: () => goAgencyPage(post));
         } else {
           return PostRouteCard(
             post: Post(),
@@ -297,8 +300,13 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     );
   }
 
-  Future<Object?> goPageDetail(Post post) => Navigator.of(context)
-      .pushNamed(RouteLists.postDetailPage, arguments: post);
+  Future<Object?> goPageDetail(Post post) =>
+      context.pushNamed(RouteLists.trendingRouteCardDetail, arguments: post);
+  Future<Object?> goAgencyPage(Post post) =>
+      context.pushNamed(RouteLists.publicAgencyProfile, arguments: post.agency);
+
+  // Navigator.of(context)
+  // .pushNamed(RouteLists.postDetailPage, arguments: post);
 
   _buildShimmer(BuildContext context) {
     return Column(

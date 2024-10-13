@@ -13,6 +13,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/utils/app_insets.dart';
 import '../../../domain/bloc_utils/bloc_status.dart';
 import '../../screens/post_route_card.dart';
+import '../../utils/route_list.dart';
 
 class SearchQueryRoutes extends StatefulWidget {
   const SearchQueryRoutes({super.key});
@@ -141,7 +142,13 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
     return ListView.separated(
       itemCount: _posts.length,
       itemBuilder: (context, index) {
-        return PostRouteCard(post: _posts[index]);
+        return PostRouteCard(
+          post: _posts[index],
+          onAgencyPressed: () {
+            context.pushNamed(RouteLists.publicAgencyProfile,
+                arguments: _posts[index].agency);
+          },
+        );
       },
       separatorBuilder: (BuildContext context, int index) => const SizedBox(
         height: AppInsets.inset8,

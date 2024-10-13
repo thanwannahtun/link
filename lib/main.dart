@@ -12,6 +12,8 @@ import 'package:link/domain/bloc_utils/app_bloc_observer.dart';
 import 'package:link/models/city.dart';
 import 'package:link/ui/utils/route_generator.dart';
 import 'package:link/ui/utils/route_list.dart';
+
+import 'bloc/agency/agency_cubit.dart';
 // import 'package:path_provider/path_provider.dart';
 
 void main() async {
@@ -79,6 +81,9 @@ class _LinkApplicationState extends State<LinkApplication>
         ),
         BlocProvider<PostRouteCubit>(
           create: (context) => PostRouteCubit(),
+        ),
+        BlocProvider<AgencyCubit>(
+          create: (context) => AgencyCubit(),
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(

@@ -12,6 +12,7 @@ import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 import '../../../models/app.dart';
+import '../../utils/route_list.dart';
 
 class TrendingRoutesCard extends StatefulWidget {
   const TrendingRoutesCard({super.key});
@@ -100,17 +101,26 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
 
   ListView _postViewBuilder() {
     return ListView.builder(
-      itemCount: 10,
+      // itemCount: 10,
+      itemCount: _trendingRoutes.length,
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: AppInsets.inset5),
           child: PostRouteCard(
             post: _trendingRoutes[index],
+            onAgencyPressed: () => goAgencyPage(_trendingRoutes[index]),
+            onPhotoPressed: () => goPageDetail(_trendingRoutes[index]),
           ),
         );
       },
     );
   }
+
+  Future<Object?> goPageDetail(Post post) =>
+      context.pushNamed(RouteLists.trendingRouteCardDetail, arguments: post);
+
+  Future<Object?> goAgencyPage(Post post) =>
+      context.pushNamed(RouteLists.publicAgencyProfile, arguments: post.agency);
 
   ListView _buildFilters() {
     return ListView.separated(

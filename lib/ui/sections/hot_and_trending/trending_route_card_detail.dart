@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/utils/app_insets.dart';
+import 'package:link/models/agency.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/comment.dart';
 import 'package:link/models/post.dart';
@@ -11,6 +13,8 @@ import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/comment_persistent_footer_button.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:link/ui/widgets/photo_view_gallery_widget.dart';
+
+import '../../utils/route_list.dart';
 
 class TrendingRouteCardDetail extends StatefulWidget {
   const TrendingRouteCardDetail({super.key});
@@ -41,9 +45,8 @@ class _TrendingRouteCardDetailState extends State<TrendingRouteCardDetail> {
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
         title: _titleAppBar(),
-        body: post == null
-            ? const Center(child: CircularProgressIndicator())
-            : _buildPostBody(),
+        backButton: BackButton(onPressed: () => context.pop()),
+        body: _buildPostBody(),
         persistentFooterButtons: [
           CommentShareContactFooterButtons(
             post: post,
@@ -64,6 +67,10 @@ class _TrendingRouteCardDetailState extends State<TrendingRouteCardDetail> {
           onTap: () {
             // context.pushNamed(RouteLists.publicAgencyProfile,
             //     arguments: post?.agency);
+            context.pushNamed(
+              RouteLists.publicAgencyProfile,
+              arguments: post?.agency ?? Agency(),
+            );
           },
           child: Container(
             width: 40,

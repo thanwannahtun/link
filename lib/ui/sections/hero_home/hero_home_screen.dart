@@ -544,6 +544,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 borderRadius: BorderRadius.circular(50),
                 onTap: () {
                   print("===> go to Agency Detail");
+                  context.pushNamed(
+                    RouteLists.publicAgencyProfile,
+                    arguments: post.agency,
+                  );
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -736,17 +740,33 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CachedImage(
-                          imageUrl: post.agency?.profileImage ?? ""),
-                    ).clipRRect(borderRadius: BorderRadius.circular(50)),
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed(
+                          RouteLists.publicAgencyProfile,
+                          arguments: post.agency,
+                        );
+                      },
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CachedImage(
+                            imageUrl: post.agency?.profileImage ?? ""),
+                      ).clipRRect(borderRadius: BorderRadius.circular(50)),
+                    ),
                     const SizedBox(width: 3),
-                    Text(
-                      post.agency?.name ?? "",
-                      style: const TextStyle(
-                          fontSize: 10, fontWeight: FontWeight.bold),
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed(
+                          RouteLists.publicAgencyProfile,
+                          arguments: post.agency,
+                        );
+                      },
+                      child: Text(
+                        post.agency?.name ?? "",
+                        style: const TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
                     ),
                     const SizedBox(width: 3),
                     Text(
