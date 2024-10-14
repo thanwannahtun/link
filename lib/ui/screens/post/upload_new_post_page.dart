@@ -361,11 +361,11 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _fromCityField(context).expanded(),
-                SizedBox(
+                const SizedBox(
                   width: 25,
                   child: Icon(
                     Icons.compare_arrows,
-                    color: context.secondaryColor,
+                    // color: context.secondaryColor,
                   ),
                 ),
                 _toCityField().expanded(),
@@ -976,8 +976,9 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
               description: _midpointDescriptionController.text);
           _selectedMidpointCity = null;
           _seletedArrivalDate = null;
+          _midpointArrivalDateController.clear();
           _seletedDepartureDate = null;
-
+          _midpointDepartureTimeController.clear();
           _midpointCityController.clear();
           _midpointDescriptionController.clear();
           _postCreateUtilCubit.addMidpoint(midpoint: midpoint);
@@ -1006,6 +1007,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   TextField _writeCityDescripton() {
     return TextField(
+      style: TextStyle(color: context.onPrimaryColor),
       autocorrect: true,
       maxLines: null,
       maxLength: 500,
@@ -1013,8 +1015,9 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       maxLengthEnforcement: MaxLengthEnforcement.none,
       // expands: true,
       controller: _midpointDescriptionController,
-      decoration:
-          AppStyle.inputDecoration(context).copyWith(hintText: "Description"),
+      decoration: AppStyle.inputDecoration(context).copyWith(
+          hintText: "Description",
+          hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7))),
     );
   }
 
@@ -1043,6 +1046,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   TextField _chooseDepartureDateChoiceDialog() {
     return TextField(
+      style: TextStyle(color: context.onPrimaryColor),
       onTap: () async {
         // DateTime? date = await showDatePicker(
         //     context: context,
@@ -1061,6 +1065,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       controller: _midpointDepartureTimeController,
       decoration: AppStyle.inputDecoration(context).copyWith(
         suffixIcon: const Icon(Icons.date_range_rounded),
+        hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7)),
         hintText:
             " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
       ),
@@ -1069,6 +1074,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   TextField _chooseArrivalDateChoiceDialog() {
     return TextField(
+      style: TextStyle(color: context.onPrimaryColor),
       onTap: () async {
         DateTime? date = await DateTimeUtil.showDateTimePickerDialog(context);
 
@@ -1082,10 +1088,10 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       readOnly: true,
       controller: _midpointArrivalDateController,
       decoration: AppStyle.inputDecoration(context).copyWith(
-        suffixIcon: const Icon(Icons.date_range_rounded),
-        hintText:
-            " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
-      ),
+          suffixIcon: const Icon(Icons.date_range_rounded),
+          hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7)),
+          hintText:
+              " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}"),
     );
   }
 
@@ -1126,8 +1132,10 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       controller: _midpointCityController,
       decoration: AppStyle.inputDecoration(context).copyWith(
         hintText: "City Name",
+        hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7)),
         suffixIcon: const Icon(Icons.location_on_outlined),
       ),
+      style: TextStyle(color: context.onPrimaryColor),
     );
   }
 
@@ -1404,15 +1412,18 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       38000,
       40000,
       45000,
+      28000,
+      30000,
+      32000,
+      35000,
+      38000,
+      40000,
+      45000,
     ];
     return showModalBottomSheet(
         context: context,
-        // constraints: const BoxConstraints.expand(height: 400),
-        builder: (context) => Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppInsets.inset8, vertical: AppInsets.inset15),
-              child: _priceChooseWidget(context, priceRanges),
-            ));
+        constraints: const BoxConstraints.expand(height: 400),
+        builder: (context) => _priceChooseWidget(context, priceRanges));
     // return Context.showBottomSheet(context,
     //     constraints: const BoxConstraints.expand(height: 400),
     //     showDragHandle: false,
@@ -1420,6 +1431,188 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     //     body: _priceChooseWidget(context, priceRanges));
   }
 
+  Widget _priceChooseWidget(BuildContext context, List<int> priceRanges) {
+    validatePrice(String value) {
+      if (int.tryParse(value) != null) {
+        _validPrice.value = true;
+        _priceNotifier.value = int.tryParse(value);
+        context.pop();
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppInsets.inset15, vertical: AppInsets.inset5),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        margin: const EdgeInsets.symmetric(vertical: AppInsets.inset10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppInsets.inset20, vertical: AppInsets.inset10),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Price Per Traveller (per seat)",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ).padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppInsets.inset10)),
+                const SizedBox(height: AppInsets.inset10),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Text Field for Price
+                    Expanded(
+                      flex: 4,
+                      child: TextField(
+                        onSubmitted: (value) {
+                          validatePrice(value);
+                        },
+                        keyboardType: TextInputType.number,
+                        focusNode: _priceFocusNode,
+                        onTapOutside: (event) => _unfoucsNode(_priceFocusNode),
+                        controller: _priceController,
+                        style: const TextStyle(fontSize: 16),
+                        decoration: const InputDecoration(
+                          hintText: "Enter Price",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 5),
+
+                    // Dropdown for Currency Selection
+                    Expanded(
+                      flex: 3,
+                      child: StatefulBuilder(
+                        builder: (BuildContext context,
+                            void Function(void Function()) rebuild) {
+                          return DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            isDense: true,
+                            value: _selectedCurrency,
+                            items: App.currencies
+                                .map((item) => DropdownMenuItem<String>(
+                                      value: item,
+                                      child: Text(item),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              rebuild(() {
+                                _selectedCurrency = value!;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 5),
+
+                    // Confirm Button
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          validatePrice(_priceController.text);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: AppInsets.inset10,
+                              horizontal: AppInsets.inset15),
+                          foregroundColor: context.onPrimaryColor,
+                          backgroundColor: context.tertiaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text("OK"),
+                        ),
+                      ).fittedBox(),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AppInsets.inset20),
+                // Suggestion Text
+                const Text(
+                  "Suggestions",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ).padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppInsets.inset10)),
+
+                // Responsive Grid for Suggested Prices
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 150,
+                    crossAxisSpacing: 10.0,
+                    mainAxisSpacing: 10.0,
+                    childAspectRatio: 2.5,
+                  ),
+                  itemCount: priceRanges.length,
+                  itemBuilder: (context, index) {
+                    final price = priceRanges[index];
+                    return InkWell(
+                      onTap: () {
+                        _validPrice.value = true;
+                        _priceNotifier.value = price;
+                        context.pop();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          color: context.tertiaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            price.toString(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: context.onPrimaryColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+/*
   Widget _priceChooseWidget(BuildContext context, List<int> priceRanges) {
     validatePrice(String value) {
       if (int.tryParse(value) != null) {
@@ -1503,46 +1696,49 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
             ).expanded()
           ],
         ),
-        const SizedBox(
-          height: AppInsets.inset8,
-        ),
+        const SizedBox(height: AppInsets.inset8),
         const Text("Suggesstion", style: TextStyle(fontWeight: FontWeight.bold))
             .padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: AppInsets.inset10)),
-        Wrap(
-          children: priceRanges
-              .map((price) => InkWell(
-                    onTap: () {
-                      _validPrice.value = true;
-                      _priceNotifier.value = price;
-                      context.pop();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppInsets.inset8,
-                          horizontal: AppInsets.inset10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(),
-                            color: context.tertiaryColor,
-                            borderRadius: BorderRadius.circular(3)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text(
-                            price.toString(),
-                            style: TextStyle(color: context.onPrimaryColor),
+        Flexible(
+          child: Wrap(
+            children: priceRanges
+                .map((price) => InkWell(
+                      onTap: () {
+                        _validPrice.value = true;
+                        _priceNotifier.value = price;
+                        context.pop();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: AppInsets.inset8,
+                            horizontal: AppInsets.inset10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(),
+                              color: context.tertiaryColor,
+                              borderRadius: BorderRadius.circular(3)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Text(
+                              price.toString(),
+                              style: TextStyle(color: context.onPrimaryColor),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ))
-              .toList(),
-        ).expanded(),
+                    ))
+                .toList(),
+          ),
+        ),
       ],
-    ).expanded();
+    ).padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppInsets.inset8, vertical: AppInsets.inset15),
+    );
   }
-
+*/
   void _validateMidpoint() {
     print("_validateMIdpint");
     if (_selectedMidpointCity == null ||

@@ -598,7 +598,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     return Card.filled(
       child: TextButton.icon(
         onPressed: () {
-          _trendingRouteBloc.updatePage(); // set page value to
+          // _trendingRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.fetchRoutes(query: {
             "categoryType": "trending",
           });
