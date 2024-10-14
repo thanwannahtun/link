@@ -64,7 +64,15 @@ class _SettingScreenState extends State<SettingScreen> {
           },
           icon: const Icon(Icons.arrow_right)),
     );
-    return Container();
+    return Container(
+      child: ListTile(
+        title: const Text("Upload New Post UI"),
+        trailing: const Icon(Icons.arrow_right_alt_sharp),
+        onTap: () => context.pushNamed(
+          RouteLists.uploadNewPost,
+        ),
+      ),
+    );
   }
 
   Agency sampleAgency = Agency(

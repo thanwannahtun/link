@@ -14,6 +14,8 @@ import 'package:link/ui/utils/route_list.dart';
 
 import '../screens/profile/public_agency_profile_screen.dart';
 import '../sections/hero_home/hero_home_screen.dart';
+import '../sections/upload/app_route_page.dart';
+import '../sections/upload/new_route_upload_screen_advance.dart';
 
 class RouteGenerator {
   static Route<T>? onGenerateRoute<T>(RouteSettings settings) {
@@ -90,6 +92,14 @@ class RouteGenerator {
           settings: settings,
           builder: (context) {
             return const PostDetailPage();
+          },
+        );
+      case RouteLists.uploadNewPost:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            // return const NewRouteUploadScreenSimple();
+            return const NewRouteUploadScreen();
           },
         );
       case RouteLists.postCreatePage:
