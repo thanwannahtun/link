@@ -1,7 +1,11 @@
+// ignore_for_file: unused_element
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:link/ui/screens/post/upload_new_post_page.dart';
+import 'package:link/ui/widget_extension.dart';
 
 /*
 class AddRouteScreen extends StatefulWidget {
@@ -338,9 +342,49 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
           const SizedBox(height: 16),
           _buildImageCarousel(),
           const SizedBox(height: 16),
-          _buildRoutesSummary(),
+          // _buildRoutesSummarySimple(),
+          const Text("Midpoints",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          RouteSummaryWidget(
+              route: RouteModel(
+                  origin: "origin",
+                  destination: "destination",
+                  scheduleDate: DateTime.now(),
+                  pricePerTraveller: 5000.22,
+                  midpoints: List<Midpoint>.generate(
+                    5,
+                    (index) => Midpoint(
+                        description: "description ${index + 1}",
+                        arrivalTime: "arrivalTime ${index + 1}"),
+                  ))),
+          /*
+          _buildRoutesSummary(RouteModel(
+              origin: "origin",
+              destination: "destination",
+              scheduleDate: DateTime.now(),
+              pricePerTraveller: 5000.22,
+              midpoints: List<Midpoint>.generate(
+                10,
+                (index) => Midpoint(
+                    description: "description ${index + 1}",
+                    arrivalTime: "arrivalTime ${index + 1}"),
+              ))),
+              */
+
+          _addMoreRoute(),
+          const SizedBox(
+            height: 16,
+          ),
         ],
       ),
+    );
+  }
+
+  ElevatedButton _addMoreRoute() {
+    return ElevatedButton.icon(
+      onPressed: _addNewRoute,
+      icon: const Icon(Icons.add),
+      label: const Text('Add Route'),
     );
   }
 
@@ -397,7 +441,158 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     );
   }
 
-  Widget _buildRoutesSummary() {
+  /// For more Advanced Routes List Design
+  Widget _buildRoutesSummary(RouteModel route) {
+    bool isExpanded = false;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Origin & Schedule Date
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Origin: ${route.origin}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Schedule Date:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${route.scheduleDate.toLocal()}'.split(' ')[0],
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Midpoints Section
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ..._buildMidpointSummaries(route.midpoints, isExpanded),
+                if (route.midpoints.length > 2)
+                  StatefulBuilder(builder: (BuildContext context,
+                      void Function(void Function()) rebuild) {
+                    return GestureDetector(
+                      onTap: () {
+                        rebuild(() {
+                          isExpanded = !isExpanded;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              isExpanded
+                                  ? 'Collapse Midpoints'
+                                  : 'View More Midpoints',
+                              style: const TextStyle(
+                                color: Colors.blueAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Icon(
+                              isExpanded
+                                  ? Icons.keyboard_arrow_up
+                                  : Icons.keyboard_arrow_down,
+                              color: Colors.blueAccent,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // Destination & Price Per Traveller
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Destination: ${route.destination}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ).expanded(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Price per Traveller:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '\$${route.pricePerTraveller.toStringAsFixed(2)}',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ).expanded(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Helper to build midpoints summaries with expand/collapse functionality
+  List<Widget> _buildMidpointSummaries(
+      List<Midpoint> midpoints, bool isExpanded) {
+    int displayedMidpoints = isExpanded ? midpoints.length : 2;
+    return midpoints.take(displayedMidpoints).map((midpoint) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '+ ${midpoint.description}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            if (midpoint.description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 16, top: 4),
+                child: Text(
+                  midpoint.description,
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+              ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
+  /// For Simple ListTile Routes List Design
+  Widget _buildRoutesSummarySimple() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -414,15 +609,17 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
                 itemCount: routes.length,
                 itemBuilder: (context, index) {
                   final route = routes[index];
-                  return ListTile(
-                    title: Text('${route.origin} to ${route.destination}'),
-                    subtitle: Text('Schedule: ${route.scheduleDate.toLocal()}'
-                        .split(' ')[0]),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        _editRoute(route, index);
-                      },
+                  return Card.filled(
+                    child: ListTile(
+                      title: Text('${route.origin} to ${route.destination}'),
+                      subtitle: Text('Schedule: ${route.scheduleDate.toLocal()}'
+                          .split(' ')[0]),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          _editRoute(route, index);
+                        },
+                      ),
                     ),
                   );
                 },
@@ -477,6 +674,164 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
         ),
       ),
     );
+  }
+}
+
+class RouteSummaryWidget extends StatefulWidget {
+  final RouteModel route;
+
+  const RouteSummaryWidget({super.key, required this.route});
+
+  @override
+  State<RouteSummaryWidget> createState() => _RouteSummaryWidgetState();
+}
+
+class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(10),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Origin & Schedule Date
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Origin: ${widget.route.origin}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Schedule Date:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${widget.route.scheduleDate.toLocal()}'.split(' ')[0],
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Midpoints Section
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ..._buildMidpointSummaries(widget.route.midpoints),
+                if (widget.route.midpoints.length > 2)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isExpanded = !isExpanded;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          Text(
+                            isExpanded
+                                ? 'Collapse Midpoints'
+                                : 'View More Midpoints',
+                            style: const TextStyle(
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Icon(
+                            isExpanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // Destination & Price Per Traveller
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Destination: ${widget.route.destination}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ).expanded(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Price per Traveller:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '\$${widget.route.pricePerTraveller.toStringAsFixed(2)}',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ).expanded(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper to build midpoints summaries with expand/collapse functionality
+  List<Widget> _buildMidpointSummaries(List<Midpoint> midpoints) {
+    int displayedMidpoints = isExpanded ? midpoints.length : 2;
+    return midpoints.take(displayedMidpoints).map((midpoint) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '+ ${"${midpoint.arrivalTime}Title"}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            if (midpoint.description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 16, top: 4),
+                child: Text(
+                  midpoint.description,
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+              ),
+          ],
+        ),
+      );
+    }).toList();
   }
 }
 
