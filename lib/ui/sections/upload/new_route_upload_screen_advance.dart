@@ -4,8 +4,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:link/ui/screens/post/upload_new_post_page.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/ui/widget_extension.dart';
+import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 /*
 class AddRouteScreen extends StatefulWidget {
@@ -306,15 +307,17 @@ class NewRouteUploadScreen extends StatefulWidget {
   const NewRouteUploadScreen({super.key});
 
   @override
-  _NewRouteUploadScreenState createState() => _NewRouteUploadScreenState();
+  State<NewRouteUploadScreen> createState() => _NewRouteUploadScreenState();
 }
 
 class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   List<RouteModel> routes = [];
+  List<String> images = [];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    print("rebuild");
+    Scaffold(
       appBar: AppBar(
         title: const Text('Create New Route'),
         centerTitle: true,
@@ -329,6 +332,20 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
         ),
       ),
     );
+    return CustomScaffoldBody(
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Expanded(child: _buildFormFields()),
+              _buildSubmitButton(),
+            ],
+          ),
+        ),
+        title: const Text('Create New Post'),
+        backButton: BackButton(
+          onPressed: () => context.pop(),
+        ));
   }
 
   Widget _buildFormFields() {
@@ -342,36 +359,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
           const SizedBox(height: 16),
           _buildImageCarousel(),
           const SizedBox(height: 16),
-          // _buildRoutesSummarySimple(),
-          const Text("Midpoints",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          RouteSummaryWidget(
-              route: RouteModel(
-                  origin: "origin",
-                  destination: "destination",
-                  scheduleDate: DateTime.now(),
-                  pricePerTraveller: 5000.22,
-                  midpoints: List<Midpoint>.generate(
-                    5,
-                    (index) => Midpoint(
-                        description: "description ${index + 1}",
-                        arrivalTime: "arrivalTime ${index + 1}"),
-                  ))),
-          /*
-          _buildRoutesSummary(RouteModel(
-              origin: "origin",
-              destination: "destination",
-              scheduleDate: DateTime.now(),
-              pricePerTraveller: 5000.22,
-              midpoints: List<Midpoint>.generate(
-                10,
-                (index) => Midpoint(
-                    description: "description ${index + 1}",
-                    arrivalTime: "arrivalTime ${index + 1}"),
-              ))),
-              */
-
-          _addMoreRoute(),
+          _buildRoutesSummarySimple(),
           const SizedBox(
             height: 16,
           ),
@@ -415,6 +403,62 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         SizedBox(
+          height: 120,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: images.length + 1, // Include the "Add" button
+            itemBuilder: (context, index) {
+              if (index == images.length) {
+                // Add new image button
+                return GestureDetector(
+                  onTap: _pickImageMultiple,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Center(child: Icon(Icons.add_a_photo)),
+                  ),
+                );
+              }
+              return Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.file(
+                      File(images[index]),
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          images.removeAt(index);
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        /*
+        SizedBox(
           height: 100,
           child: ListView(
             scrollDirection: Axis.horizontal,
@@ -425,8 +469,19 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
             ],
           ),
         ),
+      */
       ],
     );
+  }
+
+  Future<void> _pickImageMultiple() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        images.add(pickedFile.path); // Add the selected image to the list
+      });
+    }
   }
 
   Widget _buildImageCard() {
@@ -439,156 +494,6 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
       ),
       child: const Center(child: Icon(Icons.image, size: 40)),
     );
-  }
-
-  /// For more Advanced Routes List Design
-  Widget _buildRoutesSummary(RouteModel route) {
-    bool isExpanded = false;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Origin & Schedule Date
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Origin: ${route.origin}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'Schedule Date:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${route.scheduleDate.toLocal()}'.split(' ')[0],
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Midpoints Section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ..._buildMidpointSummaries(route.midpoints, isExpanded),
-                if (route.midpoints.length > 2)
-                  StatefulBuilder(builder: (BuildContext context,
-                      void Function(void Function()) rebuild) {
-                    return GestureDetector(
-                      onTap: () {
-                        rebuild(() {
-                          isExpanded = !isExpanded;
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          children: [
-                            Text(
-                              isExpanded
-                                  ? 'Collapse Midpoints'
-                                  : 'View More Midpoints',
-                              style: const TextStyle(
-                                color: Colors.blueAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Icon(
-                              isExpanded
-                                  ? Icons.keyboard_arrow_up
-                                  : Icons.keyboard_arrow_down,
-                              color: Colors.blueAccent,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            // Destination & Price Per Traveller
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Destination: ${route.destination}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ).expanded(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'Price per Traveller:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '\$${route.pricePerTraveller.toStringAsFixed(2)}',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ).expanded(),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-// Helper to build midpoints summaries with expand/collapse functionality
-  List<Widget> _buildMidpointSummaries(
-      List<Midpoint> midpoints, bool isExpanded) {
-    int displayedMidpoints = isExpanded ? midpoints.length : 2;
-    return midpoints.take(displayedMidpoints).map((midpoint) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '+ ${midpoint.description}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            if (midpoint.description.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, top: 4),
-                child: Text(
-                  midpoint.description,
-                  style: TextStyle(color: Colors.grey[700]),
-                ),
-              ),
-          ],
-        ),
-      );
-    }).toList();
   }
 
   /// For Simple ListTile Routes List Design
@@ -609,6 +514,11 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
                 itemCount: routes.length,
                 itemBuilder: (context, index) {
                   final route = routes[index];
+                  return RouteSummaryWidget(
+                    route: route,
+                    onEditRoute: () => _editRoute(route, index),
+                  );
+                  /*
                   return Card.filled(
                     child: ListTile(
                       title: Text('${route.origin} to ${route.destination}'),
@@ -622,6 +532,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
                       ),
                     ),
                   );
+                  */
                 },
               ),
         const SizedBox(height: 8),
@@ -679,8 +590,9 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
 class RouteSummaryWidget extends StatefulWidget {
   final RouteModel route;
+  final void Function()? onEditRoute;
 
-  const RouteSummaryWidget({super.key, required this.route});
+  const RouteSummaryWidget({super.key, required this.route, this.onEditRoute});
 
   @override
   State<RouteSummaryWidget> createState() => _RouteSummaryWidgetState();
@@ -798,6 +710,16 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                 ).expanded(),
               ],
             ),
+            const SizedBox(height: 8),
+
+            /// Edit Button
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: const Icon(Icons.edit_square),
+                onPressed: widget.onEditRoute,
+              ),
+            ),
           ],
         ),
       ),
@@ -808,27 +730,30 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
   List<Widget> _buildMidpointSummaries(List<Midpoint> midpoints) {
     int displayedMidpoints = isExpanded ? midpoints.length : 2;
     return midpoints.take(displayedMidpoints).map((midpoint) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '+ ${"${midpoint.arrivalTime}Title"}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            if (midpoint.description.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, top: 4),
-                child: Text(
-                  midpoint.description,
-                  style: TextStyle(color: Colors.grey[700]),
+      return Opacity(
+        opacity: 0.7,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '+ ${"Title : ${midpoint.arrivalTime}"}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  // color: Colors.black87,
                 ),
               ),
-          ],
+              if (midpoint.description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, top: 4),
+                  child: Text(
+                    midpoint.description,
+                    // style: TextStyle(color: Colors.grey[700]),
+                  ),
+                ),
+            ],
+          ),
         ),
       );
     }).toList();
