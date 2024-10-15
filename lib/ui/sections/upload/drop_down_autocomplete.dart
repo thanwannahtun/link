@@ -22,12 +22,14 @@ class CityAutocomplete extends StatefulWidget {
   final List<City> cities;
   final CityAutocompleteController controller;
   final Function(City) onSelected;
+  final String? initialValue;
 
   const CityAutocomplete({
     super.key,
     required this.cities,
     required this.controller,
     required this.onSelected,
+    this.initialValue,
   });
 
   @override
@@ -35,6 +37,16 @@ class CityAutocomplete extends StatefulWidget {
 }
 
 class _CityAutocompleteState extends State<CityAutocomplete> {
+  @override
+  void initState() {
+    super.initState();
+
+    // If an initial value is provided, set it to the controller
+    if (widget.initialValue != null) {
+      widget.controller.text = widget.initialValue!;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Autocomplete<City>(
@@ -62,7 +74,8 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
+            TextFormField(
+              // initialValue: widget.initialValue,
               controller:
                   textController, // Use the textController from the controller
               focusNode: focusNode,
