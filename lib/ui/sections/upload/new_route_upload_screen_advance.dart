@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
+import 'package:link/models/app.dart';
+import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
@@ -314,6 +316,15 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   List<RouteModel> routes = [];
   List<String> images = [];
 
+  final CityAutocompleteController _cityController =
+      CityAutocompleteController();
+
+  @override
+  void dispose() {
+    _cityController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     print("rebuild");
@@ -353,6 +364,15 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 16),
+          CityAutocomplete(
+            cities: App.cities,
+            controller: _cityController,
+            onSelected: (city) {
+              print("${city.name} sele");
+            },
+          ),
+          const SizedBox(height: 16),
           _buildTitleInput(),
           const SizedBox(height: 16),
           _buildDescriptionInput(),
@@ -1130,7 +1150,7 @@ class AddMidpointDialog extends StatefulWidget {
   const AddMidpointDialog({super.key});
 
   @override
-  _AddMidpointDialogState createState() => _AddMidpointDialogState();
+  State<AddMidpointDialog> createState() => _AddMidpointDialogState();
 }
 
 class _AddMidpointDialogState extends State<AddMidpointDialog> {
