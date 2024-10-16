@@ -24,7 +24,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void delayAndNavigateHomeScreen() {
     _timer = Timer.periodic(
       const Duration(milliseconds: 1500),
-      (timer) => context.pushReplacementNamed(RouteLists.app),
+      (timer) => Navigator.of(context)
+          .pushNamedAndRemoveUntil(RouteLists.app, (route) => false),
+      //  context.pushReplacementNamed(RouteLists.app),
       // (timer) => Navigator.pushNamedAndRemoveUntil(
       //   context,
       //   RouteLists.app,
