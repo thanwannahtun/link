@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/city.dart';
 
-
-
 class CityAutocompleteController extends TextEditingController {
   // Validation state for whether the city is valid
   bool isValid = true;
@@ -75,7 +73,8 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
         widget.controller.validateCity(true); // Valid city selected
         widget.onSelected(city); // Notify external state
       },
-      fieldViewBuilder: (context, textController, focusNode, onEditingComplete) {
+      fieldViewBuilder:
+          (context, textController, focusNode, onEditingComplete) {
         if (widget.initialValue != null && textController.text.isEmpty) {
           // Ensure initial value is only set if it's not already present in the controller
           textController.text = widget.initialValue!;
@@ -85,7 +84,8 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
-              controller: textController, // Use the textController from Autocomplete
+              controller:
+                  textController, // Use the textController from Autocomplete
               focusNode: focusNode,
               decoration: InputDecoration(
                 hintText: widget.hintText,
@@ -97,9 +97,15 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
               ),
               style: TextStyle(
                 color: widget.controller.isValid
-                    ? Colors.black
-                    : Colors.red, // Change color based on validity
+                    ? Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.color // Default text color based on theme
+                    : Theme.of(context)
+                        .colorScheme
+                        .error, // Adaptive error color
               ),
+
               onChanged: (value) {
                 _checkValidity(value); // Validate the input on change
               },
@@ -113,7 +119,7 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
 
   void _checkValidity(String userInput) {
     bool isMatching = widget.cities.any(
-            (city) => city.name!.toLowerCase().startsWith(userInput.toLowerCase()));
+        (city) => city.name!.toLowerCase().startsWith(userInput.toLowerCase()));
     widget.controller.validateCity(isMatching); // Update the validity state
   }
 }
