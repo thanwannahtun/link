@@ -12,11 +12,11 @@ class CityAutocompleteController extends TextEditingController {
   }
 
   // Clear method (optional: you can uncomment it if you need custom behavior)
-  // @override
-  // void clear() {
-  //   super.clear();
-  //   validateCity(false); // Optionally reset validation on clear
-  // }
+  @override
+  void clear() {
+    super.clear();
+    validateCity(false); // Optionally reset validation on clear
+  }
 
   // Get the current value from the text field
   String get currentValue => text;
@@ -31,6 +31,9 @@ class CityAutocomplete extends StatefulWidget {
   final String? initialValue; // City name as String
   final String? labelText;
   final String? hintText;
+  final InputBorder? border;
+  final FontWeight? fontWeight;
+  final String? Function(String?)? validator;
 
   const CityAutocomplete({
     super.key,
@@ -40,6 +43,9 @@ class CityAutocomplete extends StatefulWidget {
     this.initialValue,
     this.labelText,
     this.hintText,
+    this.border = const OutlineInputBorder(),
+    this.fontWeight =  FontWeight.bold,
+    this.validator,
   });
 
   @override
@@ -47,13 +53,23 @@ class CityAutocomplete extends StatefulWidget {
 }
 
 class _CityAutocompleteState extends State<CityAutocomplete> {
+  late final ValueNotifier<bool> _validNotifier;
+
   @override
   void initState() {
     super.initState();
+    _validNotifier = ValueNotifier(widget.controller.isValid);
     // If an initial value is provided, set it to the controller
     if (widget.initialValue != null) {
       widget.controller.text = widget.initialValue!;
+      _validNotifier.value = true;
     }
+  }
+
+  @override
+  void dispose() {
+    _validNotifier.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,6 +87,7 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
       onSelected: (City city) {
         widget.controller.text = city.name ?? "";
         widget.controller.validateCity(true); // Valid city selected
+        _validNotifier.value = true;
         widget.onSelected(city); // Notify external state
       },
       fieldViewBuilder:
@@ -83,33 +100,40 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextFormField(
-              controller:
-                  textController, // Use the textController from Autocomplete
-              focusNode: focusNode,
-              decoration: InputDecoration(
-                hintText: widget.hintText,
-                labelText: widget.labelText,
-                border: const OutlineInputBorder(),
-                errorText: widget.controller.isValid
-                    ? null
-                    : "No matching city found!", // Show error message
-              ),
-              style: TextStyle(
-                color: widget.controller.isValid
-                    ? Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.color // Default text color based on theme
-                    : Theme.of(context)
-                        .colorScheme
-                        .error, // Adaptive error color
-              ),
+            ValueListenableBuilder(
+              valueListenable: _validNotifier,
+              builder: (BuildContext context, bool value, Widget? child) {
+                return TextFormField(
+                  validator: widget.validator,
+                  controller:
+                      textController, // Use the textController from Autocomplete
+                  focusNode: focusNode,
+                  onTapOutside: (event) => focusNode.unfocus(),
+                  decoration: InputDecoration(
+                      hintText: widget.hintText,
+                      hintStyle:const TextStyle(
+                        color: Colors.grey,
+                      ),
+                      labelText: widget.labelText,
+                      border: widget.border,
+                      errorText: value ? null : "No matching!"
+                      // errorText: widget.controller.isValid
+                      //     ? null
+                      //     : "No matching city found!", // Show error message
+                      ),
+                  style: TextStyle(
+                    fontWeight:widget.fontWeight,
+                    color: value // widget.controller.isValid
+                        ? Theme.of(context).textTheme.bodyMedium?.color
+                        : Theme.of(context).colorScheme.error,
+                  ),
 
-              onChanged: (value) {
-                _checkValidity(value); // Validate the input on change
+                  onChanged: (value) {
+                    _checkValidity(value); // Validate the input on change
+                  },
+                  onEditingComplete: onEditingComplete,
+                );
               },
-              onEditingComplete: onEditingComplete,
             ),
           ],
         );
@@ -121,6 +145,7 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
     bool isMatching = widget.cities.any(
         (city) => city.name!.toLowerCase().startsWith(userInput.toLowerCase()));
     widget.controller.validateCity(isMatching); // Update the validity state
+    _validNotifier.value = widget.controller.isValid;
   }
 }
 

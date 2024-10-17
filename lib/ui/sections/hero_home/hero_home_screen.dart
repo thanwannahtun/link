@@ -14,6 +14,7 @@ import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
+import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:shimmer/shimmer.dart';
@@ -1066,13 +1067,22 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         valueListenable: _originNotifier,
                         builder:
                             (BuildContext context, City? value, Widget? child) {
+                          return CityAutocomplete(cities: App.cities, controller: CityAutocompleteController(), onSelected:(city) {
+                              _originNotifier.value = city;
+
+                          },
+                            border: InputBorder.none,
+                            labelText: "Origin",
+                            hintText: "From",
+                          );
+                          /*
                           return InkWell(
                             onTap: () async {
-                              City? city = await _chooseCity();
+                              // City? city = await _chooseCity();
 
-                              if (city != null) {
-                                _originNotifier.value = city;
-                              }
+                              // if (city != null) {
+                              //   _originNotifier.value = city;
+                              // }
                             },
                             splashColor:
                                 Colors.transparent, // Removes the splash effect
@@ -1087,6 +1097,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               ),
                             ), // Removes the hover effect
                           );
+                          */
                         },
                       ),
                       // child: TextField(
@@ -1142,6 +1153,16 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         valueListenable: _destinationNotifier,
                         builder:
                             (BuildContext context, City? value, Widget? child) {
+                              return CityAutocomplete(cities: App.cities, controller: CityAutocompleteController(), onSelected:(city) {
+                                _destinationNotifier.value = city;
+
+                              },
+                              border: InputBorder.none,
+                                labelText: "Destination",
+                                hintText: "To",
+
+                              );
+                          /*
                           return InkWell(
                             splashColor:
                                 Colors.transparent, // Removes the splash effect
@@ -1165,6 +1186,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               ),
                             ),
                           );
+                          */
                         },
                       ),
                     ),
@@ -1232,11 +1254,23 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     return await Context.showAlertDialog<City>(
       context,
       icon: IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-      headerWidget: ListTile(
-        leading: const Icon(Icons.location_on_outlined),
-        title: const Text("Choose Cities").styled(fw: FontWeight.bold),
-      ).padding(
-          padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
+      headerWidget: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.location_on_outlined),
+            title: const Text("Choose Cities").styled(fw: FontWeight.bold),
+          ),
+          CityAutocomplete(
+            cities: App.cities,
+            controller: CityAutocompleteController(),
+            onSelected: (city) {
+              print(city);
+            },
+            hintText: "Search",
+          )
+        ],
+      ),
       itemList: App.cities,
       itemBuilder: (ctx, index) {
         if (index < 0) {

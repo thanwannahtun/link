@@ -683,7 +683,7 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded),
+                    const Icon(Icons.location_on_rounded, size: 15,),
                     Text(
                       widget.route.origin.name ?? "",
                       style: const TextStyle(
@@ -746,7 +746,7 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded),
+                    const Icon(Icons.location_on_rounded, size: 15,),
                     Text(
                       widget.route.destination.name ?? "",
                       style: const TextStyle(
@@ -760,7 +760,7 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${widget.route.pricePerTraveller?.toStringAsFixed(2)}',
+                      widget.route.pricePerTraveller?.toStringAsFixed(2) ?? "",
                       style: const TextStyle(color: Colors.grey),
                     ),
                   ],
@@ -771,29 +771,32 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
 
             /// Edit Button and Accommodation
             Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Wrap(
                   children: List<Widget>.generate(
-                    8,
+                    5,
                     (index) => Card(
                         child: Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
-                      child: Opacity(
-                          opacity: 0.7,
-                          child: Text("AC $index")
-                              .styled(fs: 10, fw: FontWeight.bold)),
+                      child: Text("AC $index")
+                          .styled(fs: 10, fw: FontWeight.bold, color: Colors.grey),
                     )),
                   ),
                 ).expanded(),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit_square),
+                      iconSize: 15,
                       onPressed: widget.onEditRoute,
                     ),
                     IconButton(
                       icon: const Icon(Icons.clear_rounded),
+                      iconSize: 15,
                       onPressed: widget.onRemoveRoute,
                     ),
                   ],
@@ -1151,7 +1154,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                             : '',
                         keyboardType: TextInputType.number,
                         onSaved: (value) =>
-                            pricePerTraveller = double.parse(value!),
+                            pricePerTraveller = double.tryParse(value ?? "0.0") ?? 0.0,
                       ),
                       const SizedBox(height: 16),
                       _buildMidpointsSection(),
@@ -1530,15 +1533,12 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
                   midpointCity = city;
                   setState(() {});
                 },
+                border: const UnderlineInputBorder(),
+                validator: (value) =>
+                (value!.isEmpty || !_midpointCityController.isValid ) ? 'City name is required' : null,
+                labelText: "Midpoint Name",
               ),
-              if (midpointCity == null)
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Midpoint Name is required",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
+
               TextFormField(
                 decoration:
                     const InputDecoration(labelText: 'Arrival Time (Average)'),
@@ -1576,6 +1576,7 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
   }
 
   void _saveMidpoint() {
+
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final midpoint = Midpoint(
