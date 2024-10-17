@@ -592,7 +592,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
             : ElevatedButton.icon(
                 onPressed: _addNewRoute,
                 icon: const Icon(Icons.add),
-                label: const Text('Add Route'),
+                label: const Text('Add More Route'),
               ),
       ],
     );
@@ -683,7 +683,10 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded, size: 15,),
+                    const Icon(
+                      Icons.location_on_rounded,
+                      size: 15,
+                    ),
                     Text(
                       widget.route.origin.name ?? "",
                       style: const TextStyle(
@@ -746,7 +749,10 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.location_on_rounded, size: 15,),
+                    const Icon(
+                      Icons.location_on_rounded,
+                      size: 15,
+                    ),
                     Text(
                       widget.route.destination.name ?? "",
                       style: const TextStyle(
@@ -781,8 +787,8 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                         child: Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
-                      child: Text("AC $index")
-                          .styled(fs: 10, fw: FontWeight.bold, color: Colors.grey),
+                      child: Text("service ${index + 1}").styled(
+                          fs: 10, fw: FontWeight.bold, color: Colors.grey),
                     )),
                   ),
                 ).expanded(),
@@ -1080,6 +1086,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
       pricePerTraveller = widget.route!.pricePerTraveller ?? 0.0;
       midpoints = widget.route!.midpoints;
       routeImagePaths = widget.route!.routeImagePaths ?? [];
+      routeImagePath = widget.route!.routeImagePath;
 
       // Set initial values in controllers
       originController.text = origin?.name ?? "ORIGIN";
@@ -1096,7 +1103,11 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(
+          top: AppInsets.inset15,
+          left: AppInsets.inset15,
+          right: AppInsets.inset15,
+          bottom: 3),
       child: Column(
         children: [
           SingleChildScrollView(
@@ -1115,13 +1126,17 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                       const SizedBox(height: 16),
                       CityAutocomplete(
                         cities: App.cities,
-                        controller: CityAutocompleteController(),
+                        controller: originController,
                         initialValue: origin?.name,
                         onSelected: (value) {
                           origin = value;
                           setState(() {});
                         },
                         labelText: "Origin",
+                        validator: (value) =>
+                        (value!.isEmpty || !originController.isValid)
+                            ? 'Origin is required'
+                            : null,
                       ),
                       // _buildTextField(
                       //   label: 'Origin',
@@ -1131,13 +1146,16 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                       const SizedBox(height: 8),
                       CityAutocomplete(
                         cities: App.cities,
-                        controller: CityAutocompleteController(),
+                        controller: destinationController,
                         initialValue: destination?.name,
                         onSelected: (value) {
                           destination = value;
                           setState(() {});
                         },
                         labelText: "Destination",
+                        validator:(value) => (value!.isEmpty || !destinationController.isValid)
+                            ? 'Destination is required'
+                            : null,
                       ),
                       // _buildTextField(
                       //   label: 'Destination',
@@ -1153,8 +1171,8 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                             ? pricePerTraveller.toString()
                             : '',
                         keyboardType: TextInputType.number,
-                        onSaved: (value) =>
-                            pricePerTraveller = double.tryParse(value ?? "0.0") ?? 0.0,
+                        onSaved: (value) => pricePerTraveller =
+                            double.tryParse(value ?? "0.0") ?? 0.0,
                       ),
                       const SizedBox(height: 16),
                       _buildMidpointsSection(),
@@ -1162,6 +1180,27 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                       // _buildImagePicker(), // Add image picker here
                       const SizedBox(height: 16),
                       _buildImageCarousel(), // Add image carousel here
+                      const SizedBox(height: AppInsets.inset5),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Service Offer (Optional)',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            children: List<Widget>.generate(
+                              15,
+                                  (index) => Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    child: Text("service ${index + 1}").styled(
+                                        fs: 10, fw: FontWeight.bold, color: Colors.grey),
+                                  )),
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: AppInsets.inset5),
                     ],
                   ),
@@ -1184,63 +1223,73 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         const Text('Route Images (Optional)',
             style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: routeImagePaths.length + 1, // Include the "Add" button
-            itemBuilder: (context, index) {
-              if (index == routeImagePaths.length) {
-                // Add new image button
-                return GestureDetector(
-                  onTap: _pickImageMultiple,
+
+        if (routeImagePath == null)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: _pickImageForMidpoint,
+              child: Container(
+                width: double.infinity,
+                height: 150,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(child: Icon(Icons.add_a_photo)),
+              ),
+            ),
+          )
+        else
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: GestureDetector(
+                  onTap: _pickImageForMidpoint,
+                  child: Image.file(
+                    File(routeImagePath!),
+                    width: double.infinity,
+                    height: 150,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      routeImagePath = null;
+                    });
+                  },
                   child: Container(
-                    width: 100,
-                    height: 100,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.black.withOpacity(0.7),
+                      shape: BoxShape.circle,
                     ),
-                    child: const Center(child: Icon(Icons.add_a_photo)),
+                    child: const Icon(Icons.close, color: Colors.white),
                   ),
-                );
-              }
-              return Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.file(
-                      File(routeImagePaths[index]),
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          routeImagePaths.removeAt(index);
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                ),
+              ),
+            ],
           ),
-        ),
+
+        ///
+        ///
       ],
     );
+  }
+
+  Future<void> _pickImageForMidpoint() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      routeImagePath = pickedFile.path;
+      setState(() {
+
+      });
+    }
   }
 
   Future<void> _pickImageMultiple() async {
@@ -1300,6 +1349,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
     required FormFieldSetter<String> onSaved,
   }) {
     return TextFormField(
+      style: const TextStyle(fontWeight: FontWeight.bold),
       initialValue: initialValue,
       keyboardType: keyboardType,
       decoration: InputDecoration(
@@ -1316,6 +1366,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
       onTap: _selectDate,
       child: AbsorbPointer(
         child: TextFormField(
+          style: const TextStyle(fontWeight: FontWeight.bold),
           decoration: const InputDecoration(
             labelText: 'Schedule Date',
             border: OutlineInputBorder(),
@@ -1381,7 +1432,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: IconButton(
-                  icon: const Icon(Icons.delete),
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
                     setState(() {
                       midpoints.removeAt(index);
@@ -1392,9 +1443,10 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
             ],
           ));
         }),
+        const SizedBox(height: AppInsets.inset5,),
         SizedBox(
           width: double.infinity,
-          child: OutlinedButton.icon(
+          child: ElevatedButton.icon(
             onPressed: _addMidpoint,
             icon: const Icon(Icons.add),
             label: const Text('Add Midpoint'),
@@ -1455,6 +1507,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
       pricePerTraveller: pricePerTraveller!,
       midpoints: midpoints,
       routeImagePaths: routeImagePaths,
+      routeImagePath: routeImagePath,
     );
 
     // Call an API or handle the new route creation here
@@ -1469,6 +1522,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
     widget.route!.pricePerTraveller = pricePerTraveller!;
     widget.route!.midpoints = midpoints;
     widget.route!.routeImagePaths = routeImagePaths;
+    widget.route!.routeImagePath = routeImagePath;
 
     // Call an API or handle the route update here
     Navigator.pop(context, widget.route); // Close the modal after updating
@@ -1535,10 +1589,11 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
                 },
                 border: const UnderlineInputBorder(),
                 validator: (value) =>
-                (value!.isEmpty || !_midpointCityController.isValid ) ? 'City name is required' : null,
+                    (value!.isEmpty || !_midpointCityController.isValid)
+                        ? 'City name is required'
+                        : null,
                 labelText: "Midpoint Name",
               ),
-
               TextFormField(
                 decoration:
                     const InputDecoration(labelText: 'Arrival Time (Average)'),
@@ -1576,7 +1631,6 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
   }
 
   void _saveMidpoint() {
-
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final midpoint = Midpoint(
