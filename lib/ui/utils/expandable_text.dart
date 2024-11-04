@@ -26,7 +26,7 @@ class _ExpandableTextState extends State<ExpandableText> {
           maxLines: isExpanded ? null : widget.maxLines,
           overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
         ),
-        if (widget.text.length > widget.maxLines)
+        if (widget.text.length > 100 && widget.text.length > widget.maxLines)
           GestureDetector(
             onTap: () {
               setState(() {
@@ -34,8 +34,8 @@ class _ExpandableTextState extends State<ExpandableText> {
               });
             },
             child: Text(
-              isExpanded ? "See less" : "See more...",
-              style: const TextStyle(color: Colors.blue),
+              isExpanded ? "...seeLess" : "...seeMore",
+              style: TextStyle(color: Colors.grey.shade300),
             ),
           ),
       ],

@@ -1067,10 +1067,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         valueListenable: _originNotifier,
                         builder:
                             (BuildContext context, City? value, Widget? child) {
-                          return CityAutocomplete(cities: App.cities, controller: CityAutocompleteController(), onSelected:(city) {
+                          return CityAutocomplete(
+                            cities: App.cities,
+                            controller: CityAutocompleteController(),
+                            onSelected: (city) {
                               _originNotifier.value = city;
-
-                          },
+                            },
                             border: InputBorder.none,
                             labelText: "Origin",
                             hintText: "From",
@@ -1153,15 +1155,16 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         valueListenable: _destinationNotifier,
                         builder:
                             (BuildContext context, City? value, Widget? child) {
-                              return CityAutocomplete(cities: App.cities, controller: CityAutocompleteController(), onSelected:(city) {
-                                _destinationNotifier.value = city;
-
-                              },
-                              border: InputBorder.none,
-                                labelText: "Destination",
-                                hintText: "To",
-
-                              );
+                          return CityAutocomplete(
+                            cities: App.cities,
+                            controller: CityAutocompleteController(),
+                            onSelected: (city) {
+                              _destinationNotifier.value = city;
+                            },
+                            border: InputBorder.none,
+                            labelText: "Destination",
+                            hintText: "To",
+                          );
                           /*
                           return InkWell(
                             splashColor:

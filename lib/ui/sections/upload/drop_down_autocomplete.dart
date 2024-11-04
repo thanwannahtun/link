@@ -44,7 +44,7 @@ class CityAutocomplete extends StatefulWidget {
     this.labelText,
     this.hintText,
     this.border = const OutlineInputBorder(),
-    this.fontWeight =  FontWeight.bold,
+    this.fontWeight = FontWeight.bold,
     this.validator,
   });
 
@@ -111,7 +111,7 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
                   onTapOutside: (event) => focusNode.unfocus(),
                   decoration: InputDecoration(
                       hintText: widget.hintText,
-                      hintStyle:const TextStyle(
+                      hintStyle: const TextStyle(
                         color: Colors.grey,
                       ),
                       labelText: widget.labelText,
@@ -122,7 +122,7 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
                       //     : "No matching city found!", // Show error message
                       ),
                   style: TextStyle(
-                    fontWeight:widget.fontWeight,
+                    fontWeight: widget.fontWeight,
                     color: value // widget.controller.isValid
                         ? Theme.of(context).textTheme.bodyMedium?.color
                         : Theme.of(context).colorScheme.error,
@@ -148,8 +148,6 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
     _validNotifier.value = widget.controller.isValid;
   }
 }
-
-
 
 /*
 class CityAutocompleteController extends TextEditingController {

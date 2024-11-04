@@ -26,4 +26,6 @@ class RouteLists {
   static const String searchQueryRoutes = "/search_query_routes";
 
   static const String uploadNewPost = "/upload_new_post";
+
+  static const String getTrendingRoutes = "/get_trending_routes";
 }

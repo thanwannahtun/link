@@ -1,317 +1,31 @@
 // ignore_for_file: unused_element
 
 import 'dart:io';
+import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/core/utils/date_time_util.dart';
+import 'package:link/domain/api_utils/api_service.dart';
+import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
+import 'package:link/models/post.dart';
 import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
+import 'package:link/ui/sections/upload/post_create/post_create_cubit.dart';
+import 'package:link/ui/sections/upload/route_array_upload/file_util.dart';
+import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 import '../../../core/utils/app_insets.dart';
+import '../../../models/agency.dart';
 import '../../../models/city.dart';
 
-/*
-class AddRouteScreen extends StatefulWidget {
-  final RouteModel? route;
-
-  AddRouteScreen({this.route});
-
-  @override
-  _AddRouteScreenState createState() => _AddRouteScreenState();
-}
-
-class _AddRouteScreenState extends State<AddRouteScreen> {
-  final _formKey = GlobalKey<FormState>();
-  late String origin;
-  late String destination;
-  late DateTime scheduleDate;
-  late double pricePerTraveller;
-  List<Midpoint> midpoints = [];
-  List<String> routeImagePaths = []; // List of selected image paths
-  final ImagePicker _picker = ImagePicker(); // Image picker instance
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.route != null) {
-      origin = widget.route!.origin;
-      destination = widget.route!.destination;
-      scheduleDate = widget.route!.scheduleDate;
-      pricePerTraveller = widget.route!.pricePerTraveller;
-      midpoints = widget.route!.midpoints;
-      routeImagePaths = widget.route!.routeImagePath != null
-          ? [widget.route!.routeImagePath!] // If a route has a previously uploaded image
-          : [];
-    } else {
-      origin = '';
-      destination = '';
-      scheduleDate = DateTime.now();
-      pricePerTraveller = 0.0;
-      midpoints = [];
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Wrap(
-          children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.route != null ? 'Edit Route' : 'Add New Route',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Origin',
-                    initialValue: origin,
-                    onSaved: (value) => origin = value!,
-                  ),
-                  SizedBox(height: 8),
-                  _buildTextField(
-                    label: 'Destination',
-                    initialValue: destination,
-                    onSaved: (value) => destination = value!,
-                  ),
-                  SizedBox(height: 8),
-                  _buildDatePicker(),
-                  SizedBox(height: 8),
-                  _buildTextField(
-                    label: 'Price Per Traveller',
-                    initialValue: pricePerTraveller != 0.0
-                        ? pricePerTraveller.toString()
-                        : '',
-                    keyboardType: TextInputType.number,
-                    onSaved: (value) => pricePerTraveller = double.parse(value!),
-                  ),
-                  SizedBox(height: 16),
-                  _buildMidpointsSection(),
-                  SizedBox(height: 16),
-                  _buildImageCarousel(), // Add image carousel here
-                  SizedBox(height: 16),
-                  _buildSaveButton(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImageCarousel() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Route Images (Optional)', style: TextStyle(fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
-        Container(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: routeImagePaths.length + 1, // Include the "Add" button
-            itemBuilder: (context, index) {
-              if (index == routeImagePaths.length) {
-                // Add new image button
-                return GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(child: Icon(Icons.add_a_photo)),
-                  ),
-                );
-              }
-              return Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.file(
-                      File(routeImagePaths[index]),
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          routeImagePaths.removeAt(index);
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.close, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        routeImagePaths.add(pickedFile.path); // Add the selected image to the list
-      });
-    }
-  }
-
-  Widget _buildTextField({
-    required String label,
-    String? initialValue,
-    TextInputType keyboardType = TextInputType.text,
-    required FormFieldSetter<String> onSaved,
-  }) {
-    return TextFormField(
-      initialValue: initialValue,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
-      ),
-      validator: (value) => value!.isEmpty ? '$label is required' : null,
-      onSaved: onSaved,
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return GestureDetector(
-      onTap: _selectDate,
-      child: AbsorbPointer(
-        child: TextFormField(
-          decoration: InputDecoration(
-            labelText: 'Schedule Date',
-            border: OutlineInputBorder(),
-          ),
-          controller: TextEditingController(
-            text: '${scheduleDate.toLocal()}'.split(' ')[0],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: scheduleDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != scheduleDate)
-      setState(() {
-        scheduleDate = picked;
-      });
-  }
-
-  Widget _buildMidpointsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Midpoints',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        ...midpoints.map((midpoint) {
-          int index = midpoints.indexOf(midpoint);
-          return Card(
-            child: ListTile(
-              title: Text(midpoint.description),
-              subtitle: Text('Arrival Time: ${midpoint.arrivalTime}'),
-              trailing: IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () {
-                  setState(() {
-                    midpoints.removeAt(index);
-                  });
-                },
-              ),
-            ),
-          );
-        }).toList(),
-        TextButton.icon(
-          onPressed: _addMidpoint,
-          icon: Icon(Icons.add),
-          label: Text('Add Midpoint'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return ElevatedButton(
-      onPressed: _saveRoute,
-      child: Center(
-        child: Text(
-          widget.route != null ? 'Save Changes' : 'Add Route',
-          style: TextStyle(fontSize: 16),
-        ),
-      ),
-    );
-  }
-
-  void _saveRoute() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      final route = RouteModel(
-        origin: origin,
-        destination: destination,
-        scheduleDate: scheduleDate,
-        pricePerTraveller: pricePerTraveller,
-        midpoints: midpoints,
-        routeImagePath: routeImagePaths.isNotEmpty ? routeImagePaths.first : null, // Save first image if available
-      );
-      Navigator.pop(context, route);
-    }
-  }
-
-  void _addMidpoint() async {
-    final newMidpoint = await showDialog<Midpoint>(
-      context: context,
-      builder: (context) => AddMidpointDialog(),
-    );
-    if (newMidpoint != null) {
-      setState(() {
-        midpoints.add(newMidpoint);
-      });
-    }
-  }
-}
-
- */
 class NewRouteUploadScreen extends StatefulWidget {
   const NewRouteUploadScreen({super.key});
 
@@ -320,12 +34,49 @@ class NewRouteUploadScreen extends StatefulWidget {
 }
 
 class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
-  List<RouteModel> routes = [];
+  List<Routemodel> routes = [];
   List<String> images = [];
+
+  late FocusNode _titleFocusNode;
+  late FocusNode _descriptionFocusNode;
+
+  late PostCreateCubit _postCreateCubit;
+
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _postCreateCubit = PostCreateCubit();
+
+    _initFocusNodes();
+  }
 
   @override
   void dispose() {
+    _disposeFocusNodes();
     super.dispose();
+  }
+
+  _initFocusNodes() {
+    _titleController = TextEditingController();
+    _descriptionController = TextEditingController();
+    _descriptionFocusNode = FocusNode();
+    _titleFocusNode = FocusNode();
+  }
+
+  _disposeFocusNodes() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _descriptionFocusNode.dispose();
+    _titleFocusNode.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print("dependencies changed");
   }
 
   @override
@@ -362,17 +113,13 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildImageCarousel(),
+          // _buildImageCarousel(),
           const SizedBox(height: 8),
           _titleField(),
           const SizedBox(height: 16),
           _descriptionField(context),
           const SizedBox(height: 16),
-          // _buildTitleInput(),
-          // const SizedBox(height: 16),
-          // _buildDescriptionInput(),
-          // const SizedBox(height: 16),
-          _buildRoutesSummarySimple(),
+          _buildRoutesListView(),
           const SizedBox(height: 16),
         ],
       ),
@@ -383,14 +130,14 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
   TextField _titleField() {
     return TextField(
-        // focusNode: _titleFocusNode,
+        focusNode: _titleFocusNode,
         autocorrect: true,
         maxLines: null,
         minLines: 1,
-        // onTapOutside: (event) => _unfoucsNode(_titleFocusNode),
+        onTapOutside: (event) => _titleFocusNode.unfocus(),
         style: const TextStyle(
             fontWeight: FontWeight.bold, fontSize: AppInsets.font20),
-        controller: TextEditingController(),
+        controller: _titleController,
         decoration: const InputDecoration(
           hintText: "Title",
           hintStyle: TextStyle(
@@ -401,26 +148,17 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
   TextField _descriptionField(BuildContext context) {
     return TextField(
-        // focusNode: _descriptionFocusNode,
+        focusNode: _descriptionFocusNode,
         autocorrect: true,
         maxLines: null,
         minLines: 2,
-        // onTapOutside: (event) => _unfoucsNode(_descriptionFocusNode),
+        onTapOutside: (event) => _descriptionFocusNode.unfocus(),
         // maxLength: 7000,
-        controller: TextEditingController(),
+        controller: _descriptionController,
         decoration: const InputDecoration(
-          hintText: "Dercription",
+          hintText: "Description",
           border: InputBorder.none,
         ));
-  }
-
-  /// END
-  ElevatedButton _addMoreRoute() {
-    return ElevatedButton.icon(
-      onPressed: _addNewRoute,
-      icon: const Icon(Icons.add),
-      label: const Text('Add Route'),
-    );
   }
 
   Widget _buildTitleInput() {
@@ -549,95 +287,100 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   }
 
   /// For Simple ListTile Routes List Design
-  Widget _buildRoutesSummarySimple() {
+  Widget _buildRoutesListView() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // const Text(
-        //   'Routes',
-        //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        // ),
         const SizedBox(height: 8),
-        // routes.isEmpty
-        // ? const Opacity(opacity: 0.7, child: Text('Start Adding Routes'))
-        // :
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: routes.length,
-          itemBuilder: (context, index) {
-            final route = routes[index];
-            return RouteSummaryWidget(
-                route: route,
-                onEditRoute: () => _editRoute(route, index),
-                onRemoveRoute: () => setState(() {
-                      routes.removeAt(index);
-                    }));
+        BlocBuilder<PostCreateCubit, PostCreateState>(
+          bloc: _postCreateCubit,
+          builder: (context, state) {
+            if (state.status == BlocStatus.added) {
+              routes = state.routes;
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: routes.length,
+                itemBuilder: (context, index) {
+                  final route = routes[index];
+                  return RouteCardWidget(
+                    route: route,
+                    onEditRoute: () => _editRoute(route, index),
+                    onRemoveRoute: () =>
+                        _postCreateCubit.updateOrDeleteRoute(index: index),
+                  );
+                },
+              );
+            } else {
+              return Container();
+            }
           },
         ),
         const SizedBox(height: 8),
-        routes.isEmpty
-            ? Center(
-                child: ElevatedButton.icon(
-                  onPressed: _addNewRoute,
-                  icon: const Icon(Icons.add),
-                  label: const Center(
-                    child: Text(
-                      'Add Route',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-              )
-            : ElevatedButton.icon(
-                onPressed: _addNewRoute,
-                icon: const Icon(Icons.add),
-                label: const Text('Add More Route'),
+        Center(
+          child: ElevatedButton.icon(
+            onPressed: _addNewRoute,
+            icon: const Icon(Icons.add),
+            label: const Center(
+              child: Text(
+                'Add Route(s)',
+                style: TextStyle(fontSize: 16),
               ),
+            ),
+          ),
+        )
       ],
     );
   }
 
   void _addNewRoute() async {
-    final newRoute = await showModalBottomSheet<RouteModel>(
+    await showModalBottomSheet<Routemodel>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.zero)),
       backgroundColor: context.scaffoldBackgroundColor,
       useSafeArea: true,
-      builder: (context) => const AddRouteScreen(),
+      builder: (context) => AddRouteScreen(
+        onClosed: (Routemodel? value) {
+          if (value != null) {
+            _postCreateCubit.addRoute(route: value);
+          }
+        },
+      ),
     );
 
-    if (newRoute != null) {
-      setState(() {
-        routes.add(newRoute);
-      });
-    }
+    // if (newRoute != null) {
+    //   _postCreateCubit.addRoute(route: newRoute);
+    // }
   }
 
-  void _editRoute(RouteModel route, int index) async {
-    final updatedRoute = await showModalBottomSheet<RouteModel>(
+  void _editRoute(Routemodel route, int index) async {
+    // final updatedRoute =
+    await showModalBottomSheet<Routemodel>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.zero)),
       backgroundColor: context.scaffoldBackgroundColor,
-      builder: (context) => AddRouteScreen(route: route),
+      builder: (context) => AddRouteScreen(
+        route: route,
+        onClosed: (Routemodel? value) {
+          if (value != null) {
+            _postCreateCubit.updateOrDeleteRoute(
+                index: index, routeToUpdate: value);
+          }
+        },
+      ),
     );
-
-    if (updatedRoute != null) {
-      setState(() {
-        routes[index] = updatedRoute;
-      });
-    }
   }
 
   Widget _buildSubmitButton() {
     return ElevatedButton(
       onPressed: () {
         // Submit to the server
+        _uploadRoute();
       },
       child: const Center(
         child: Text(
@@ -647,36 +390,91 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
       ),
     );
   }
+
+  _uploadRoute() async {
+    List<File?> files = routes
+        .where((r) => r.image != null)
+        .map((r) => File(r.image ?? ""))
+        .toList();
+
+    List<File> compressedFiles =
+        await Future.wait(files.whereType<File>().map((file) async {
+      print("compressImage processing...");
+      return await App.compressImage(file);
+    }));
+
+    List<MultipartFile> multipartFiles = [];
+
+    multipartFiles = await Future.wait(
+        compressedFiles.map((f) => FileUtil.multipartFileFromFile(f)));
+
+    final data = {
+      "agency": "66b8d28d3e1a9b47a2c0e69c",
+      "title": _titleController.text,
+      "description": _descriptionController.text,
+      "routes": routes.map((r) => r.toJson()).toList()
+    };
+
+    FormData formData = FormData.fromMap(data);
+    formData.files
+        .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
+    await ApiService().postRequest('/routes/uploads/', formData).then((v) {
+      // if (mounted) context.pop();
+      print("-------------------------");
+      print("success");
+      print("-------------------------");
+    });
+    // context.read<PostRouteCubit>().uploadNewPost(post: post);
+  }
 }
 
-class RouteSummaryWidget extends StatefulWidget {
-  final RouteModel route;
+class PostModel {
+  final List<Routemodel> routes;
+  final String title;
+  final String description;
+
+  PostModel(
+      {required this.routes, required this.title, required this.description});
+}
+
+class RouteCardWidget extends StatefulWidget {
+  final Routemodel route;
   final void Function()? onEditRoute;
   final void Function()? onRemoveRoute;
 
-  const RouteSummaryWidget(
+  const RouteCardWidget(
       {super.key, required this.route, this.onEditRoute, this.onRemoveRoute});
 
   @override
-  State<RouteSummaryWidget> createState() => _RouteSummaryWidgetState();
+  State<RouteCardWidget> createState() => _RouteCardWidgetState();
 }
 
-class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
+class _RouteCardWidgetState extends State<RouteCardWidget> {
   bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(10),
+      // margin: const EdgeInsets.all(10),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppInsets.inset8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.route.image != null)
+              SizedBox(
+                  width: double.infinity,
+                  height: 100,
+                  child: Image.file(
+                    File(widget.route.image ?? ""),
+                    fit: BoxFit.cover,
+                  )).clipRRect(borderRadius: BorderRadius.circular(5)),
+            const SizedBox(height: 8),
+
             // Origin & Schedule Date
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -688,7 +486,7 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                       size: 15,
                     ),
                     Text(
-                      widget.route.origin.name ?? "",
+                      widget.route.origin?.name ?? "",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -715,8 +513,8 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ..._buildMidpointSummaries(widget.route.midpoints),
-                  if (widget.route.midpoints.length > 2)
+                  ..._buildMidpointSummaries(widget.route.midpoints ?? []),
+                  if ((widget.route.midpoints?.length ?? 0) > 2)
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -729,8 +527,8 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                           children: [
                             Icon(
                               isExpanded
-                                  ? Icons.keyboard_arrow_up
-                                  : Icons.keyboard_arrow_down,
+                                  ? Icons.arrow_drop_down_rounded
+                                  : Icons.arrow_drop_up_rounded,
                               color: Colors.blueAccent,
                             ),
                           ],
@@ -754,7 +552,7 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                       size: 15,
                     ),
                     Text(
-                      widget.route.destination.name ?? "",
+                      widget.route.destination?.name ?? "",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -766,7 +564,7 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      widget.route.pricePerTraveller?.toStringAsFixed(2) ?? "",
+                      widget.route.pricePerTraveller?.toString() ?? "",
                       style: const TextStyle(color: Colors.grey),
                     ),
                   ],
@@ -774,6 +572,7 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
               ],
             ),
             const SizedBox(height: 8),
+            _routeDescriptionWidget(widget.route.description),
 
             /// Edit Button and Accommodation
             Row(
@@ -815,8 +614,20 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
     );
   }
 
+  Widget _routeDescriptionWidget(String? description) {
+    return description != null
+        ? Text(
+            widget.route.description ?? "",
+            style: const TextStyle(color: Colors.grey),
+            textAlign: TextAlign.start,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 10,
+          )
+        : Container();
+  }
+
   // Helper to build midpoints summaries with expand/collapse functionality
-  List<Widget> _buildMidpointSummaries(List<Midpoint> midpoints) {
+  List<Widget> _buildMidpointSummaries(List<RouteMidpoint> midpoints) {
     int displayedMidpoints = isExpanded ? midpoints.length : 2;
     return midpoints.take(displayedMidpoints).map((midpoint) {
       return Padding(
@@ -852,10 +663,11 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      midpoint.arrivalTime ?? "",
+                      DateTimeUtil.formatTime(context,
+                          TimeOfDay.fromDateTime(midpoint.arrivalTime!)),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        // color: Colors.black87,
+                        color: Colors.grey,
                       ),
                     ),
                     if (((midpoint.price ?? 0).toString()).isNotEmpty)
@@ -875,14 +687,12 @@ class _RouteSummaryWidgetState extends State<RouteSummaryWidget> {
   }
 }
 
-/// Main End
-///
-
-/*
 class AddRouteScreen extends StatefulWidget {
-  final RouteModel? route;
+  final Routemodel? route;
 
-  const AddRouteScreen({super.key, this.route});
+  const AddRouteScreen({super.key, this.route, required this.onClosed});
+
+  final Function(Routemodel? value) onClosed;
 
   @override
   State<AddRouteScreen> createState() => _AddRouteScreenState();
@@ -894,175 +704,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
   City? destination;
   DateTime? scheduleDate;
   double? pricePerTraveller;
-  List<Midpoint> midpoints = [];
-  String? routeImagePath;
-  List<String> routeImagePaths = [];
-  final ImagePicker _picker = ImagePicker();
-
-  late CityAutocompleteController originController;
-  late CityAutocompleteController destinationController;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Initialize controllers
-    originController = CityAutocompleteController();
-    destinationController = CityAutocompleteController();
-
-    // If editing an existing route, prefill the data
-    if (widget.route != null) {
-      origin = widget.route!.origin;
-      destination = widget.route!.destination;
-      scheduleDate = widget.route?.scheduleDate;
-      pricePerTraveller = widget.route!.pricePerTraveller ?? 0.0;
-      midpoints = widget.route!.midpoints ?? [];
-      routeImagePaths = widget.route!.routeImagePaths ?? [];
-
-      // Set initial values in controllers
-      originController.text = origin?.name ?? "ORIGIN";
-      destinationController.text = destination?.name ?? "DEST";
-    } else {
-      scheduleDate = DateTime.now();
-      pricePerTraveller = 0.0;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).bottomSheetTheme.modalBarrierColor,
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Text(
-                      widget.route != null ? 'Edit Route' : 'Add New Route',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    CityAutocomplete(
-                      cities: App.cities,
-                      controller: originController,
-                      initialValue: origin?.name,
-                      onSelected: (value) {
-                        origin = value;
-                        setState(() {});
-                      },
-                      labelText: "Origin",
-                    ),
-                    const SizedBox(height: 8),
-                    CityAutocomplete(
-                      cities: App.cities,
-                      controller: destinationController,
-                      initialValue: destination?.name,
-                      onSelected: (value) {
-                        destination = value;
-                        setState(() {});
-                      },
-                      labelText: "Destination",
-                    ),
-                    const SizedBox(height: 8),
-                    // _buildDatePicker(),
-                    const SizedBox(height: 8),
-                    // _buildTextField(
-                    //   label: 'Price Per Traveller',
-                    //   initialValue: pricePerTraveller != 0.0
-                    //       ? pricePerTraveller.toString()
-                    //       : '',
-                    //   keyboardType: TextInputType.number,
-                    //   onSaved: (value) => pricePerTraveller = double.parse(value!),
-                    // ),
-                    const SizedBox(height: 16),
-                    // _buildMidpointsSection(),
-                    const SizedBox(height: 16),
-                    // _buildImageCarousel(), // Image picker and carousel
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ).expanded(),
-            const SizedBox(height: 16),
-            _buildSaveButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return ElevatedButton(
-      onPressed: () {
-        if (_formKey.currentState!.validate()) {
-          _formKey.currentState!.save();
-
-          // If editing, update the route
-          if (widget.route != null) {
-            _updateRoute();
-          } else {
-            _addRoute();
-          }
-        }
-      },
-      child: Text(widget.route != null ? 'Update Route' : 'Add Route'),
-    );
-  }
-
-  void _addRoute() {
-    // Logic for adding a new route
-    RouteModel newRoute = RouteModel(
-      origin: origin!,
-      destination: destination!,
-      scheduleDate: scheduleDate,
-      pricePerTraveller: pricePerTraveller!,
-      midpoints: midpoints,
-      routeImagePaths: routeImagePaths,
-    );
-
-    // Call an API or handle the new route creation here
-    Navigator.pop(context, newRoute); // Close the modal after saving
-  }
-
-  void _updateRoute() {
-    // Logic for updating an existing route
-    widget.route!.origin = origin!;
-    widget.route!.destination = destination!;
-    widget.route!.scheduleDate = scheduleDate;
-    widget.route!.pricePerTraveller = pricePerTraveller!;
-    widget.route!.midpoints = midpoints;
-    widget.route!.routeImagePaths = routeImagePaths;
-
-    // Call an API or handle the route update here
-    Navigator.pop(context, widget.route); // Close the modal after updating
-  }
-
-// Other widgets and methods remain the same...
-}
-
-*/
-
-class AddRouteScreen extends StatefulWidget {
-  final RouteModel? route;
-
-  const AddRouteScreen({super.key, this.route});
-
-  @override
-  State<AddRouteScreen> createState() => _AddRouteScreenState();
-}
-
-class _AddRouteScreenState extends State<AddRouteScreen> {
-  final _formKey = GlobalKey<FormState>();
-  City? origin;
-  City? destination;
-  DateTime? scheduleDate;
-  double? pricePerTraveller;
-  List<Midpoint> midpoints = [];
+  List<RouteMidpoint> midpoints = [];
   String? routeImagePath; // Path to the selected image
   List<String> routeImagePaths = []; // List of selected image paths
   final ImagePicker _picker = ImagePicker(); // Image picker instance
@@ -1070,6 +712,8 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
   late CityAutocompleteController originController;
   late CityAutocompleteController destinationController;
 
+  late TextEditingController _routeDescriptionController;
+
   @override
   void initState() {
     super.initState();
@@ -1077,23 +721,21 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
     // Initialize controllers
     originController = CityAutocompleteController();
     destinationController = CityAutocompleteController();
+    _routeDescriptionController = TextEditingController();
 
     // If editing an existing route, prefill the data
     if (widget.route != null) {
       origin = widget.route!.origin;
       destination = widget.route!.destination;
       scheduleDate = widget.route?.scheduleDate;
-      pricePerTraveller = widget.route!.pricePerTraveller ?? 0.0;
-      midpoints = widget.route!.midpoints;
-      routeImagePaths = widget.route!.routeImagePaths ?? [];
-      routeImagePath = widget.route!.routeImagePath;
-
-      // Set initial values in controllers
+      pricePerTraveller = widget.route!.pricePerTraveller;
+      midpoints = widget.route?.midpoints ?? [];
       originController.text = origin?.name ?? "ORIGIN";
       destinationController.text = destination?.name ?? "DEST";
+      routeImagePath = widget.route!.image;
+      _routeDescriptionController.text = widget.route!.description ?? "";
     } else {
       scheduleDate = DateTime.now();
-      pricePerTraveller = 0.0;
     }
   }
 
@@ -1134,15 +776,11 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                         },
                         labelText: "Origin",
                         validator: (value) =>
-                        (value!.isEmpty || !originController.isValid)
-                            ? 'Origin is required'
-                            : null,
+                            (value!.isEmpty || !originController.isValid)
+                                ? ''
+                                : null,
                       ),
-                      // _buildTextField(
-                      //   label: 'Origin',
-                      //   initialValue: origin,
-                      //   onSaved: (value) => origin = value!,
-                      // ),
+
                       const SizedBox(height: 8),
                       CityAutocomplete(
                         cities: App.cities,
@@ -1153,27 +791,29 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                           setState(() {});
                         },
                         labelText: "Destination",
-                        validator:(value) => (value!.isEmpty || !destinationController.isValid)
-                            ? 'Destination is required'
-                            : null,
+                        validator: (value) =>
+                            (value!.isEmpty || !destinationController.isValid)
+                                ? ''
+                                : null,
                       ),
-                      // _buildTextField(
-                      //   label: 'Destination',
-                      //   initialValue: destination,
-                      //   onSaved: (value) => destination = value!,
-                      // ),
+
                       const SizedBox(height: 8),
                       _buildDatePicker(),
                       const SizedBox(height: 8),
                       _buildTextField(
-                        label: 'Price Per Traveller',
-                        initialValue: pricePerTraveller != 0.0
-                            ? pricePerTraveller.toString()
-                            : '',
-                        keyboardType: TextInputType.number,
-                        onSaved: (value) => pricePerTraveller =
-                            double.tryParse(value ?? "0.0") ?? 0.0,
-                      ),
+                          label: 'Price Per Traveller',
+                          initialValue: pricePerTraveller != null
+                              ? pricePerTraveller.toString()
+                              : '',
+                          keyboardType: TextInputType.number,
+                          onSaved: (value) {
+                            setState(() {
+                              pricePerTraveller =
+                                  double.tryParse(value ?? "0.0");
+                            });
+                          }),
+                      const SizedBox(height: 8),
+                      _buildRouteDescriptionInput(context),
                       const SizedBox(height: 16),
                       _buildMidpointsSection(),
                       const SizedBox(height: 16),
@@ -1181,26 +821,8 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                       const SizedBox(height: 16),
                       _buildImageCarousel(), // Add image carousel here
                       const SizedBox(height: AppInsets.inset5),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Service Offer (Optional)',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            children: List<Widget>.generate(
-                              15,
-                                  (index) => Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
-                                    child: Text("service ${index + 1}").styled(
-                                        fs: 10, fw: FontWeight.bold, color: Colors.grey),
-                                  )),
-                            ),
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: AppInsets.inset5),
+                      _buildServiceOffer(),
                       const SizedBox(height: AppInsets.inset5),
                     ],
                   ),
@@ -1210,6 +832,47 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
           ).expanded(),
           const SizedBox(height: AppInsets.inset5),
           SizedBox(width: double.infinity, child: _buildSaveButton()),
+        ],
+      ),
+    );
+  }
+
+  TextFormField _buildRouteDescriptionInput(BuildContext context) {
+    return TextFormField(
+        autocorrect: true,
+        maxLines: null,
+        controller: _routeDescriptionController,
+        decoration: const InputDecoration(
+          hintText: "Description",
+          label: Text("Description(optional)"),
+          labelStyle:
+              TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+          border: OutlineInputBorder(
+              borderSide: BorderSide(width: 0.05, color: Colors.grey)),
+          // border: InputBorder.none,
+        ));
+  }
+
+  Widget _buildServiceOffer() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Service Offer (Optional)',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Wrap(
+            children: List<Widget>.generate(
+              5,
+              (index) => Card(
+                  child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                child: Text("service ${index + 1}")
+                    .styled(fs: 10, fw: FontWeight.bold, color: Colors.grey),
+              )),
+            ),
+          ),
         ],
       ),
     );
@@ -1225,19 +888,16 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         const SizedBox(height: 8),
 
         if (routeImagePath == null)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: GestureDetector(
-              onTap: _pickImageForMidpoint,
-              child: Container(
-                width: double.infinity,
-                height: 150,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(child: Icon(Icons.add_a_photo)),
+          GestureDetector(
+            onTap: _pickImageForMidpoint,
+            child: Container(
+              width: double.infinity,
+              height: 150,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
               ),
+              child: const Center(child: Icon(Icons.add_a_photo)),
             ),
           )
         else
@@ -1286,9 +946,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       routeImagePath = pickedFile.path;
-      setState(() {
-
-      });
+      setState(() {});
     }
   }
 
@@ -1356,7 +1014,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         labelText: label,
         border: const OutlineInputBorder(),
       ),
-      validator: (value) => value!.isEmpty ? '$label is required' : null,
+      validator: (value) => value!.isEmpty ? '' : null,
       onSaved: onSaved,
     );
   }
@@ -1416,12 +1074,13 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                     children: [
                       Text(midpoint.city?.name ?? ""),
                       const SizedBox(width: 10),
-                      Text(midpoint.arrivalTime ?? ""),
+                      Text(DateTimeUtil.formatDateTime(midpoint.arrivalTime) ??
+                          ""),
                     ],
                   ),
-                  midpoint.price != null
-                      ? Text((midpoint.price ?? "").toString())
-                      : Container(),
+                  // midpoint.price != null
+                  //     ? Text((midpoint.price ?? "").toString())
+                  //     : Container(),
                   Text(midpoint.description ?? ""),
                 ],
               )
@@ -1435,6 +1094,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     setState(() {
+                      print("index ::: ${index}");
                       midpoints.removeAt(index);
                     });
                   },
@@ -1443,7 +1103,9 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
             ],
           ));
         }),
-        const SizedBox(height: AppInsets.inset5,),
+        const SizedBox(
+          height: AppInsets.inset5,
+        ),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -1457,7 +1119,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
   }
 
   void _addMidpoint() async {
-    final newMidpoint = await showDialog<Midpoint>(
+    final newMidpoint = await showDialog<RouteMidpoint>(
       context: context,
       builder: (context) => const AddMidpointDialog(),
     );
@@ -1500,54 +1162,40 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
 
   void _addRoute() {
     // Logic for adding a new route
-    RouteModel newRoute = RouteModel(
-      origin: origin!,
-      destination: destination!,
-      scheduleDate: scheduleDate,
-      pricePerTraveller: pricePerTraveller!,
-      midpoints: midpoints,
-      routeImagePaths: routeImagePaths,
-      routeImagePath: routeImagePath,
-    );
+    Routemodel newRoute = Routemodel(
+        origin: origin,
+        agency: Agency(id: "66b8d3c63e1a9b47a2c0e6a5"),
+        destination: destination,
+        scheduleDate: scheduleDate,
+        pricePerTraveller: pricePerTraveller,
+        // pricePerTraveller: int.tryParse((pricePerTraveller ?? 0.0).toString()),
+        midpoints: midpoints,
+        // routeImagePaths: routeImagePaths,
+        // routeImagePath: routeImagePath,
+        description: _routeDescriptionController.text,
+        image: routeImagePath);
+    widget.onClosed(newRoute);
 
     // Call an API or handle the new route creation here
     Navigator.pop(context, newRoute); // Close the modal after saving
   }
 
   void _updateRoute() {
-    // Logic for updating an existing route
-    widget.route!.origin = origin!;
-    widget.route!.destination = destination!;
-    widget.route!.scheduleDate = scheduleDate;
-    widget.route!.pricePerTraveller = pricePerTraveller!;
-    widget.route!.midpoints = midpoints;
-    widget.route!.routeImagePaths = routeImagePaths;
-    widget.route!.routeImagePath = routeImagePath;
-
-    // Call an API or handle the route update here
-    Navigator.pop(context, widget.route); // Close the modal after updating
-  }
-
-  void _saveRoute() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      final route = RouteModel(
-        origin: origin!,
-        destination: destination!,
+    final Routemodel? route = widget.route?.copyWith(
+        origin: origin,
+        agency: Agency(id: "66b8d3c63e1a9b47a2c0e6a5"),
+        destination: destination,
         scheduleDate: scheduleDate,
+        // pricePerTraveller: 30000,
         pricePerTraveller: pricePerTraveller,
-        midpoints: midpoints,
-        // routeImagePath: routeImagePath, // Save image path
-        routeImagePath:
-            routeImagePaths.isNotEmpty ? routeImagePaths.first : null,
-        // Save first image if available
-        routeImagePaths: routeImagePaths.isNotEmpty
-            ? routeImagePaths
-            : null, // Save first image if available
-      );
-      print("save Route :: $route");
-      Navigator.pop(context, route);
-    }
+        image: routeImagePath,
+        description: _routeDescriptionController.text,
+        midpoints: midpoints);
+    // Logic for updating an existing route
+
+    widget.onClosed(route);
+    // Call an API or handle the route update here
+    Navigator.pop(context, route); // Close the modal after updating
   }
 }
 
@@ -1567,7 +1215,7 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
   late String description;
   late String arrivalTime;
   City? midpointCity;
-  int? price;
+  double? price;
 
   @override
   Widget build(BuildContext context) {
@@ -1608,10 +1256,11 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
                 onSaved: (value) => description = value!,
               ),
               TextFormField(
+                keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Price :'),
                 validator: (value) => null,
                 // value!.isEmpty ? 'Midpoint name is required' : null,
-                onSaved: (value) => price = int.tryParse(value ?? ""),
+                onSaved: (value) => price = double.tryParse(value ?? ""),
               ),
             ],
           ),
@@ -1633,9 +1282,9 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
   void _saveMidpoint() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final midpoint = Midpoint(
+      final midpoint = RouteMidpoint(
         description: description,
-        arrivalTime: arrivalTime,
+        arrivalTime: DateTime.now(),
         city: midpointCity,
         price: price,
       );
@@ -1643,73 +1292,3 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
     }
   }
 }
-
-/// Model
-
-class RouteModel {
-  City origin;
-  City destination;
-
-  // String origin;
-  // String destination;
-  DateTime? scheduleDate;
-  double? pricePerTraveller;
-  List<Midpoint> midpoints;
-  String? routeImagePath; // Optional image file path
-  List<String>? routeImagePaths; // Optional image file paths
-  RouteModel({
-    required this.origin,
-    required this.destination,
-    required this.scheduleDate,
-    required this.pricePerTraveller,
-    required this.midpoints,
-    this.routeImagePath, // Can be null if no image is uploaded
-    this.routeImagePaths, // Can be empty if no image is uploaded
-  });
-}
-
-class Midpoint {
-  String? description;
-  String? arrivalTime;
-  int? price;
-  City? city;
-
-  Midpoint({
-    this.city,
-    this.price,
-    this.description,
-    this.arrivalTime,
-  });
-}
-
-/// Upload New Post logic
-///
-/*
-import 'package:dio/dio.dart';
-
-Future<void> uploadRoute(RouteModel route) async {
-  Dio dio = Dio();
-
-  FormData formData = FormData.fromMap({
-    "origin": route.origin,
-    "destination": route.destination,
-    "scheduleDate": route.scheduleDate.toIso8601String(),
-    "pricePerTraveller": route.pricePerTraveller,
-    "midpoints": route.midpoints.map((m) => m.toJson()).toList(),
-    if (route.routeImagePath != null)
-      "routeImage": await MultipartFile.fromFile(route.routeImagePath!),
-  });
-
-  Response response = await dio.post(
-    'https://your-api-url.com/upload-route',
-    data: formData,
-  );
-
-  if (response.statusCode == 200) {
-    // Handle success
-  } else {
-    // Handle error
-  }
-}
-
-*/

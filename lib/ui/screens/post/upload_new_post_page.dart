@@ -1379,7 +1379,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
     _destination = _toCityNotifier.value;
     Post post = Post(
       agency: Agency(
-        id: "66b8d3c63e1a9b47a2c0e6a5",
+        id: "66b8d28d3e1a9b47a2c0e69c",
       ),
       title: _titleController.text,
       description: _descriptionController.text,

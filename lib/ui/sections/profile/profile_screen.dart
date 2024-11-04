@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/utils/route_list.dart';
+import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 import '../../../core/utils/app_insets.dart';
@@ -35,7 +37,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           IconButton(
               onPressed: () {
-                Navigator.of(context).pushNamed(RouteLists.postCreatePage);
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppInsets.inset8,
+                          vertical: AppInsets.inset15),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                              title: const Text("Upload New Post")
+                                  .styled(fw: FontWeight.bold),
+                              trailing: const Icon(Icons.add_box_outlined),
+                              onTap: () => context
+                                  .pushNamed(RouteLists.postCreatePage)
+                                  .then((value) => context.pop())),
+                          ListTile(
+                              title: const Text("Make Sponsorship")
+                                  .styled(fw: FontWeight.bold),
+                              trailing: const Icon(Icons.add_box_rounded),
+                              onTap: () => context
+                                  .pushNamed(
+                                    RouteLists.uploadNewPost,
+                                  )
+                                  .then((value) => context.pop())),
+                        ],
+                      ),
+                    );
+                  },
+                );
+                // Navigator.of(context).pushNamed(RouteLists.postCreatePage);
               },
               icon: Icon(
                 Icons.add_box_rounded,

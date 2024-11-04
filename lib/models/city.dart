@@ -53,7 +53,6 @@ class City extends HiveObject {
   }
 }
 
-
 /*
 class City {
   City({
@@ -100,4 +99,3 @@ class City {
   }
 }
 */
-

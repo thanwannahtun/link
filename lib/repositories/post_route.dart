@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:link/domain/api_utils/api_service.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
+import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
 import 'package:path/path.dart';
 
 class PostRouteRepo extends ApiService {
   static final PostRouteRepo _instance = PostRouteRepo._();
 
   PostRouteRepo._();
+
   factory PostRouteRepo() => _instance;
 
   FutureOr<List<Post>> fetchRoutes(
@@ -57,7 +59,7 @@ class PostRouteRepo extends ApiService {
     {"city": "66b613cd6c17b0be8b372dc8", "arrivalTime": "2024-09-01T15:00:00.000Z","order":1},
     {"city": "66b613cd6c17b0be8b372dcd", "arrivalTime": "2024-09-02T12:00:00.000Z","order":1},
     {"city": "66b613cd6c17b0be8b372dc7", "arrivalTime": "2024-09-03T15:00:00.000Z","order":2}
-    
+
   ],
   "title": "Travel around the world with us!",
   "description": "Happy Travelling!😎😎."
@@ -96,6 +98,44 @@ class PostRouteRepo extends ApiService {
     } catch (e, s) {
       debugPrint("error ::::-> $e  , stackTrace :::-> $s");
       rethrow;
+    }
+  }
+
+  FutureOr<List<Routemodel>> fetchRoutesByCategory(
+      {Object? body, Map<String, dynamic>? query}) async {
+    Response response =
+        await getRequest("/routes", body: body, queryParameters: query);
+    if (response.statusCode == 200) {
+      // print("running on separate Isolate!");
+      // final routes = await Isolate.run(
+      // () {
+      List<Routemodel> routes = [];
+      for (var route in response.data['data']) {
+        routes.add(Routemodel.fromJson(route as Map<String, dynamic>));
+      }
+      return routes;
+      // },
+      // );
+      // return routes;
+    } else {
+      throw Exception("Failed to get Routes!");
+    }
+  }
+
+  FutureOr<List<Post>> getPostWithRoutes(
+      {Object? body, Map<String, dynamic>? query}) async {
+    print("------------------ getPostWithRoutes()------------");
+
+    Response response =
+        await getRequest("/routes", body: body, queryParameters: query);
+    if (response.statusCode == 200) {
+      List<Post> routes = [];
+      for (var route in response.data['data']) {
+        routes.add(Post.fromJson(route as Map<String, dynamic>));
+      }
+      return routes;
+    } else {
+      throw Exception("Failed to get Routes!");
     }
   }
 }

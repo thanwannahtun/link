@@ -64,14 +64,17 @@ class _SettingScreenState extends State<SettingScreen> {
           },
           icon: const Icon(Icons.arrow_right)),
     );
-    return Container(
-      child: ListTile(
-        title: const Text("Upload New Post UI"),
-        trailing: const Icon(Icons.arrow_right_alt_sharp),
-        onTap: () => context.pushNamed(
-          RouteLists.uploadNewPost,
+    return Column(
+      children: [
+        ListTile(
+          title: const Text("Get Routes Screen"),
+          trailing: const Icon(Icons.arrow_right_alt_sharp),
+          onTap: () => context.pushNamed(
+            RouteLists.getTrendingRoutes,
+          ),
         ),
-      ),
+        const Divider(),
+      ],
     );
   }
 

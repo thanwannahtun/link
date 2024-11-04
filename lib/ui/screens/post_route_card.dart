@@ -63,7 +63,8 @@ class PostRouteCard extends StatelessWidget {
                 top: AppInsets.inset8,
               ),
               child: _cardHeader(),
-            ), // head
+            ),
+            // head
             const SizedBox(
               height: 5,
             ),
@@ -441,10 +442,11 @@ class _LikeIconState extends State<LikeIcon> {
         valueListenable: _likeNotifier,
         builder: (context, value, child) {
           return Icon(
-            value ? Icons.star_sharp : Icons.star_border_purple500_sharp,
+            value ? Icons.recommend : Icons.recommend_sharp,
             color: value
-                ? Colors.yellow
+                ? Colors.blue
                 : Colors.grey, // Change color based on state
+            size: 20,
           );
         },
       ),

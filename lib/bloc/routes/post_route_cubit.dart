@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:link/domain/api_utils/api_error_handler.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/repositories/post_route.dart';
+import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
 
 part 'post_route_state.dart';
 
@@ -17,12 +17,17 @@ class PostRouteCubit extends Cubit<PostRouteState> {
   // ignore: prefer_final_fields
   int _page = 1;
 
+  int get getPage {
+    return _page;
+  }
+
   void updatePage({int? value}) {
     _page = value ?? 1;
   }
 
   PostRouteCubit()
-      : super(const PostRouteState(status: BlocStatus.initial, routes: []));
+      : super(const PostRouteState(
+            status: BlocStatus.initial, routes: [], routeModels: []));
 
   fetchRoutes({Object? body, Map<String, dynamic>? query}) async {
     if (state.status == BlocStatus.fetching) return;
@@ -70,6 +75,70 @@ class PostRouteCubit extends Cubit<PostRouteState> {
 
       emit(state.copyWith(
           status: BlocStatus.uploadFailed,
+          error: ApiErrorHandler.handle(e).message));
+    }
+  }
+
+  getRoutesByCategory({Object? body, Map<String, dynamic>? query}) async {
+    if (state.status == BlocStatus.fetching) return;
+    emit(state.copyWith(status: BlocStatus.fetching));
+    try {
+      var queryParams = <String, dynamic>{
+        "page": _page,
+      }..addEntries(query?.entries ?? {});
+
+      List<Routemodel> routes = await _postApiRepo.fetchRoutesByCategory(
+        query: queryParams,
+        body: body,
+      );
+
+      /// Checking success fetchRoutes
+      if (routes.isNotEmpty) {
+        _page++;
+      }
+      Future.delayed(
+        const Duration(seconds: 2),
+        () => emit(
+            state.copyWith(status: BlocStatus.fetched, routeModels: routes)),
+      );
+    } on Exception catch (e, stackTrace) {
+      debugPrint(
+          "===================================================================\nError ::  $e  :: staceTrace [[ $stackTrace ]] \n===================================================================");
+      emit(state.copyWith(
+          routeModels: [],
+          status: BlocStatus.fetchFailed,
+          error: ApiErrorHandler.handle(e).message));
+    }
+  }
+
+  getPostWithRoutes({Object? body, Map<String, dynamic>? query}) async {
+    if (state.status == BlocStatus.fetching) return;
+    emit(state.copyWith(status: BlocStatus.fetching));
+    try {
+      var queryParams = <String, dynamic>{
+        "page": _page,
+      }..addEntries(query?.entries ?? {});
+
+      List<Post> posts = await _postApiRepo.getPostWithRoutes(
+        query: queryParams,
+        body: body,
+      );
+
+      /// Checking success fetchRoutes
+      if (posts.isNotEmpty) {
+        print("--------posts is not empty------------");
+        // _page++;
+      }
+      Future.delayed(
+        const Duration(seconds: 2),
+        () => emit(state.copyWith(status: BlocStatus.fetched, routes: posts)),
+      );
+    } on Exception catch (e, stackTrace) {
+      debugPrint(
+          "===================================================================\nError ::  $e  :: staceTrace [[ $stackTrace ]] \n===================================================================");
+      emit(state.copyWith(
+          routes: [],
+          status: BlocStatus.fetchFailed,
           error: ApiErrorHandler.handle(e).message));
     }
   }

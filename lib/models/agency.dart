@@ -101,9 +101,9 @@ class Agency {
   factory Agency.fromJson(Map<String, dynamic> json) {
     return Agency(
       id: json['_id'],
-      userId: json['user_id'] == null
-          ? null
-          : User.fromJson(json['user_id'] as Map<String, dynamic>),
+      // userId: json['user_id'] == null
+      //     ? null
+      //     : User.fromJson(json['user_id'] as Map<String, dynamic>),
       name: json['name'],
       description: json['profile_description'],
       profileImage: json['profile_image'],
