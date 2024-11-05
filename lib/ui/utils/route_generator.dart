@@ -14,6 +14,7 @@ import 'package:link/ui/sections/upload/route_array_upload/ui/trending_routes_sc
 import 'package:link/ui/utils/route_list.dart';
 
 import '../screens/profile/public_agency_profile_screen.dart';
+import '../screens/route_detail_page.dart';
 import '../sections/hero_home/hero_home_screen.dart';
 import '../sections/upload/app_route_page.dart';
 import '../sections/upload/new_route_upload_screen_advance.dart';
@@ -94,6 +95,13 @@ class RouteGenerator {
           settings: settings,
           builder: (context) {
             return const PostDetailPage();
+          },
+        );
+      case RouteLists.routeDetailPage:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return const RouteDetailPage();
           },
         );
       case RouteLists.getTrendingRoutes:

@@ -23,6 +23,9 @@ import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../core/utils/date_time_util.dart';
+import '../../utils/expandable_text.dart';
+
 class HotAndTrendingScreen extends StatefulWidget {
   const HotAndTrendingScreen({super.key});
 
@@ -343,25 +346,31 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       itemBuilder: (context, index) {
         // Insert widget every 5 items or based on other conditions
         final shouldShowHorizontalWidget =
-            (index % 5 == 0) && index != 0 && _trendingPosts.isNotEmpty;
+            (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
 
         if (shouldShowHorizontalWidget) {
           return HorizontalPostWithRoutesWidget(posts: _trendingPosts);
         }
 
         // Calculate the actual index considering additional horizontal widgets
-        final adjustedIndex = index - (index ~/ 5);
+        final adjustedIndex = index - (index ~/ 15);
 
         if (adjustedIndex < _trendingRoutes.length) {
           Routemodel route = _trendingRoutes[adjustedIndex];
-          return RouteModelCard(route: route);
+          return RouteModelCard(
+            route: route,
+            onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+              print("--- go to post detail");
+            },
+          );
         }
 
         // Placeholder for loading or other widgets
         return Container(
             color: Colors.amber, width: double.infinity, height: 200);
       },
-      itemCount: _trendingRoutes.length + (_trendingRoutes.length ~/ 5),
+      itemCount: _trendingRoutes.length + (_trendingRoutes.length ~/ 15),
       separatorBuilder: (BuildContext context, int index) => const SizedBox(
         height: AppInsets.inset8,
       ),
@@ -745,7 +754,7 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 400, // Height of the horizontal list
+      height: 300, // Height of the horizontal list
       child: CustomScrollView(
         scrollDirection: Axis.horizontal,
         slivers: [
@@ -753,63 +762,134 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 final post = posts[index];
-                return Container(
+                return SizedBox(
                   width: 300,
                   height: double.infinity,
                   child: Card.filled(
+                    // color: context.greyColor.withOpacity(0.1),
+                    color: Theme.of(context).cardColor.withOpacity(0.5),
                     child: Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            post.title ?? "Post Title",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            post.description ?? "Post Description",
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Expanded(
-                          child: SizedBox(
-                            child: (post.routes?.isNotEmpty ?? false)
-                                ? Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: CustomScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      slivers: [
-                                        SliverList(
-                                          delegate: SliverChildBuilderDelegate(
-                                            (BuildContext context,
-                                                int routeIndex) {
-                                              final route = post.routes![
-                                                  routeIndex]; // Safe to access here since we checked above
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 8.0),
-                                                child: SizedBox(
-                                                    width: 250,
-                                                    child: RouteModelCard(
-                                                        route: route)),
-                                              );
-                                            },
-                                            childCount: post.routes!
-                                                .length, // Use the actual length
-                                          ),
+                        Container(
+                            color: Theme.of(context).cardColor,
+                            child: RouteHeader(
+                                route: post.routes?.first ?? Routemodel())),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                post.title ?? "Post Title",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Expanded(
+                              child: SizedBox(
+                                child: (post.routes?.isNotEmpty ?? false)
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: CustomScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          slivers: [
+                                            SliverList(
+                                              delegate:
+                                                  SliverChildBuilderDelegate(
+                                                (BuildContext context,
+                                                    int routeIndex) {
+                                                  final route = post.routes![
+                                                      routeIndex]; // Safe to access here since we checked above
+                                                  return Card.filled(
+                                                    child: SizedBox(
+                                                        width: 250,
+                                                        height: double.infinity,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text("${route.origin?.name ?? ""} - ${route.destination?.name ?? ""}")
+                                                                  .styled(
+                                                                      fw: FontWeight
+                                                                          .bold,
+                                                                      fs: 15),
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  Text(
+                                                                    DateTimeUtil
+                                                                        .formatDateTime(
+                                                                            route.scheduleDate),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16,
+                                                                        color: Colors
+                                                                            .grey),
+                                                                  ),
+                                                                  Text(
+                                                                    route.pricePerTraveller !=
+                                                                            null
+                                                                        ? "\$${route.pricePerTraveller!.toStringAsFixed(2)}"
+                                                                        : "No Price",
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            16,
+                                                                        color: Colors
+                                                                            .grey),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 5),
+                                                              (route.midpoints ??
+                                                                          [])
+                                                                      .isEmpty
+                                                                  ? Container()
+                                                                  : RouteMidpoints(
+                                                                      midpoints:
+                                                                          route.midpoints ??
+                                                                              []),
+                                                            ],
+                                                          ),
+                                                        )),
+                                                  );
+                                                },
+                                                childCount: post.routes!
+                                                    .length, // Use the actual length
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  )
-                                : Center(
-                                    child: Text('No routes available',
-                                        style: TextStyle(color: Colors.grey)),
-                                  ),
-                          ),
-                        )
+                                      )
+                                    : const Center(
+                                        child: Text('No routes available',
+                                            style:
+                                                TextStyle(color: Colors.grey)),
+                                      ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ExpandableText(
+                                text: post.description ?? "Post Description",
+                                textStyle: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: context.greyColor),
+                              ),
+                            ),
+                          ],
+                        ).expanded(),
+                        Container(
+                            color: Theme.of(context).cardColor,
+                            child: RouteFooter(
+                                route: post.routes?.first ?? Routemodel()))
                       ],
                     ),
                   ),

@@ -9,6 +9,7 @@ class RouteLists {
   static const String publicAgencyProfile = "/public_agency_profile";
 
   static const String postDetailPage = "/post_detail";
+  static const String routeDetailPage = "/route_detail";
 
   static const String postCreatePage = "/post_create";
 
