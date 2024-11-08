@@ -10,13 +10,13 @@ class PostRouteState extends Equatable {
 
   final BlocStatus status;
   final List<Post> routes;
-  final List<Routemodel> routeModels;
+  final List<RouteModel> routeModels;
   final String? error;
 
   PostRouteState copyWith(
       {BlocStatus? status,
       List<Post>? routes,
-      List<Routemodel>? routeModels,
+      List<RouteModel>? routeModels,
       String? error}) {
     return PostRouteState(
         status: status ?? this.status,

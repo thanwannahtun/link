@@ -105,8 +105,8 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
               builder: (BuildContext context, bool value, Widget? child) {
                 return TextFormField(
                   validator: widget.validator,
-                  controller:
-                      textController, // Use the textController from Autocomplete
+                  controller: textController,
+                  // Use the textController from Autocomplete
                   focusNode: focusNode,
                   onTapOutside: (event) => focusNode.unfocus(),
                   decoration: InputDecoration(

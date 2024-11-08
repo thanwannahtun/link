@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,20 +7,22 @@ import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
+import 'package:link/core/styles/app_theme.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
+import 'package:link/ui/screens/route_detail_page.dart';
 import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
+import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../models/city.dart';
 import '../../../models/post.dart';
-import '../../screens/post_route_card.dart';
 import '../../utils/context.dart';
 import '../../widgets/custom_scaffold_body.dart';
 
@@ -35,8 +36,11 @@ class HeroHomeScreen extends StatefulWidget {
 class _HeroHomeScreenState extends State<HeroHomeScreen> {
   late final ValueNotifier<DateTime?> _selectedDateNotifier;
 
-  List<Post> _trendingRoutes = [];
-  List<Post> _sponsoredRoutes = [];
+  List<RouteModel> _trendingRoutes = [];
+
+  // List<Post> _trendingRoutes = [];
+  // List<Post> _sponsoredRoutes = [];
+  List<RouteModel> _sponsoredRoutes = [];
 
   late final PostRouteCubit _trendingRouteBloc;
   late final PostRouteCubit _sponsoredRouteBloc;
@@ -47,14 +51,19 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   late final ScrollController _scrollController;
   Timer? _debounceTimer;
 
+  final _originAutoCompleteController = CityAutocompleteController();
+  final _destinationAutoCompleteController = CityAutocompleteController();
+
   @override
   void initState() {
     super.initState();
     print("initStateCalled  :HeroHomeScreen");
     _trendingRouteBloc = PostRouteCubit()
-      ..fetchRoutes(query: {"categoryType": "trending", "limit": 10});
+      ..getRoutesByCategory(
+          query: {"categoryType": "trending_routes", "limit": 10});
     _sponsoredRouteBloc = PostRouteCubit()
-      ..fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
+      ..getRoutesByCategory(
+          query: {"categoryType": "trending_routes", "limit": 8});
     _selectedDateNotifier = ValueNotifier(DateTime.now());
 
     _scrollController = ScrollController(); // _sponsoredRoute Controller
@@ -74,8 +83,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           (_sponsoredRouteBloc.state.status != BlocStatus.fetching)) {
         print("_isBottom $_isBottom ");
         if (!(_sponsoredRoutes.length > 50)) {
-          _sponsoredRouteBloc
-              .fetchRoutes(query: {"categoryType": "suggested", "limit": 5});
+          _sponsoredRouteBloc.getRoutesByCategory(
+              query: {"categoryType": "trending_routes", "limit": 5});
         }
       }
     });
@@ -104,10 +113,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           _trendingRoutes = [];
           _sponsoredRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.updatePage(); // set page value to
-          _trendingRouteBloc
-              .fetchRoutes(query: {"categoryType": "trending", "limit": 10});
-          _sponsoredRouteBloc
-              .fetchRoutes(query: {"categoryType": "sponsored", "limit": 7});
+          _trendingRouteBloc.getRoutesByCategory(
+              query: {"categoryType": "trending_routes", "limit": 10});
+          // Todo: uncomment below
+          _sponsoredRouteBloc.getRoutesByCategory(
+              query: {"categoryType": "trending_routes", "limit": 7});
         },
         child: _heroBody(context),
       ),
@@ -142,7 +152,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /* 
+            /*
             _originDestinationCard(context),
             // Date Choice field
             _dateChoiceActionCard(),
@@ -169,7 +179,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               child: Column(
                 children: [
                   _trendingSearchTitleField(context),
-                  SizedBox(height: 130, child: _trendingRoutesList()),
+                  SizedBox(height: 200, child: _trendingRoutesList()),
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
@@ -229,11 +239,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             _sponsoredRoutes.isEmpty) {
           return _buildTrendingRoutesShimmer(context);
         }
-        final newPosts = state.routes;
+        final newRoutes = state.routeModels;
         print(
             "=====> _sponsoredRoutes before fetched ${_sponsoredRoutes.length}");
-        print("=====> newPosts ${newPosts.length}");
-        _sponsoredRoutes.addAll(newPosts);
+        print("=====> newRoutes ${newRoutes.length}");
+        _sponsoredRoutes.addAll(newRoutes);
         print(
             "=====> _sponsoredRoutes afeter fetched ${_sponsoredRoutes.length}");
 
@@ -251,9 +261,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           if (state.status == BlocStatus.fetchFailed ||
               state.status == BlocStatus.fetching) {
             return _buildTrendingRoutesShimmer(context);
-          }
-          if (state.status == BlocStatus.fetched) {
-            _trendingRoutes = state.routes;
+          } else if (state.status == BlocStatus.fetched) {
+            _trendingRoutes = state.routeModels;
+            print("_trendingRoutes :::: ${_trendingRoutes.length}");
             return _buildTrendingRoutesCard(context);
           } else {
             return _buildTrendingRoutesShimmer(context);
@@ -342,10 +352,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
-  Widget _sponsoredCard(BuildContext context, Post post) {
+  Widget _sponsoredCard(BuildContext context, RouteModel route) {
     return InkWell(
       onTap: () {
-        print(" ===> go to sponseored post detail");
+        context.pushNamed(RouteLists.routeDetailPage, arguments: route);
       },
       child: Card.filled(
         shape: const BeveledRectangleBorder(
@@ -366,12 +376,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             children: [
               /// header
               Expanded(
-                child: _sponsorHeader(post),
+                child: _sponsorHeader(route),
               ),
 
               Expanded(
                 flex: 5,
-                child: _sponsorBody(post, context),
+                child: _sponsorBody(route, context),
               ),
               const SizedBox(
                 height: 10,
@@ -383,7 +393,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
-  Padding _sponsorBody(Post post, BuildContext context) {
+  Padding _sponsorBody(RouteModel route, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset20),
       child: Card.filled(
@@ -397,11 +407,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               /// Images
               SizedBox(
                 width: double.infinity,
-                child: CachedImage(
-                  imageUrl: (post.images?.firstOrNull == null)
-                      ? ""
-                      : "${App.baseImgUrl}${post.images?.first}",
-                ).clipRRect(borderRadius: BorderRadius.circular(5)),
+                child: CachedImage(imageUrl: route.image ?? "")
+                    .clipRRect(borderRadius: BorderRadius.circular(5)),
               ).expanded(flex: 2),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,7 +427,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         width: AppInsets.inset10,
                       ),
                       Text(
-                        "${post.origin?.name ?? ""} to ${post.destination?.name ?? ""}",
+                        "${route.origin?.name ?? ""} to ${route.destination?.name ?? ""}",
                       ).styled(fw: FontWeight.bold).expanded(),
                     ],
                   ),
@@ -435,7 +442,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       const SizedBox(
                         width: AppInsets.inset10,
                       ),
-                      Text(DateTimeUtil.formatDateTime(post.scheduleDate))
+                      Text(DateTimeUtil.formatDateTime(route.scheduleDate))
                           .styled(fs: 12)
                     ],
                   ),
@@ -451,7 +458,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         width: AppInsets.inset10,
                       ),
                       Text(
-                        post.midpoints
+                        route.midpoints
                                 ?.map((m) => m.city?.name)
                                 .where((name) => name != null)
                                 .join(' - ') ??
@@ -467,7 +474,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
                   /// DESCRIPTION
                   Text(
-                    post.description ?? "",
+                    route.description ?? "",
                     style: const TextStyle(fontSize: 12),
                     textAlign: TextAlign.start,
                     overflow: TextOverflow.ellipsis,
@@ -483,21 +490,15 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
               /// Action Button
               ElevatedButton(
-                style: ButtonStyle(
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          side: BorderSide.none),
+                style: AppTheme.elevatedButtonThemeData().style?.copyWith(
+                    // minimumSize: WidgetStatePropertyAll(
+                    //     Size(MediaQuery.of(context).size.width * 0.8, 35)),
                     ),
-                    backgroundColor:
-                        WidgetStatePropertyAll(context.successColor),
-                    minimumSize: WidgetStatePropertyAll(
-                        Size(MediaQuery.of(context).size.width * 0.8, 35))),
                 onPressed: () {
                   print("===> GO TO SPONSORED POST DETAIL");
                 },
                 child: Text(
-                  "Action Button",
+                  "Book Now",
                   style: TextStyle(color: context.onPrimaryColor),
                 ),
               )
@@ -514,7 +515,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
-  Padding _sponsorHeader(Post post) {
+  Padding _sponsorHeader(RouteModel route) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -533,7 +534,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 ),
               ),
               Text(
-                "${(post.pricePerTraveler ?? 38000).toString()} Ks",
+                "${(route.pricePerTraveller ?? 38000).toString()} Ks",
                 style: const TextStyle(fontSize: 20),
               ).expanded(),
             ],
@@ -547,7 +548,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   print("===> go to Agency Detail");
                   context.pushNamed(
                     RouteLists.publicAgencyProfile,
-                    arguments: post.agency,
+                    arguments: route.agency,
                   );
                 },
                 child: Padding(
@@ -556,7 +557,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     width: 25,
                     height: 25,
                     child:
-                        CachedImage(imageUrl: post.agency?.profileImage ?? "")
+                        CachedImage(imageUrl: route.agency?.profileImage ?? "")
                             .clipRRect(
                       borderRadius: BorderRadius.circular(50),
                     ),
@@ -586,8 +587,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
         if (index < _trendingRoutes.length) {
-          Post post = _trendingRoutes[index];
-          return _trendingRouteCard(context, post);
+          RouteModel routeModel = _trendingRoutes[index];
+          print("routeMOdel json = ${routeModel.toJson()}");
+          return _trendingRouteCard(context, routeModel);
         }
         return _navigateToAllTrendingRoutes();
       },
@@ -600,8 +602,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       child: TextButton.icon(
         onPressed: () {
           // _trendingRouteBloc.updatePage(); // set page value to
-          _trendingRouteBloc.fetchRoutes(query: {
-            "categoryType": "trending",
+          _trendingRouteBloc.getRoutesByCategory(query: {
+            "categoryType": "trending_routes",
           });
           print("View All Pressed!");
         },
@@ -615,7 +617,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   Widget _trendingRouteCard(
     BuildContext context,
-    Post post,
+    RouteModel routeModel,
   ) {
     Card.filled(
       elevation: 0.5,
@@ -623,22 +625,18 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       child: Column(
         children: [
           InkWell(
-            onTap: () => context.pushNamed(RouteLists.trendingRouteCardDetail,
-                arguments: post),
+            onTap: () {
+              // Todo:
+              //   context.pushNamed(RouteLists.trendingRouteCardDetail,
+              //   arguments: routeModel);
+            },
             child: Card.filled(
               shape: Border.all(width: 0.01),
               margin: const EdgeInsets.all(0.0),
               child: Container(
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                  image: (post.images?.isNotEmpty == true)
-                      ? NetworkImage("${App.baseImgUrl}${post.images?.first}")
-                      : const AssetImage("assets/icon/app_logo.jpg"),
-                  // image: NetworkImage((post.images?.isNotEmpty == true)
-                  //     ? ((post.images?.firstOrNull != null)
-                  //         ? "${App.baseImgUrl}${post.images?.first}"
-                  //         : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1")
-                  //     : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
+                  image: NetworkImage(routeModel.image ?? ""),
                   fit: BoxFit.cover,
                   opacity: 0.5,
                   onError: (exception, stackTrace) => Container(
@@ -665,7 +663,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               width: AppInsets.inset5,
                             ),
                             Text(
-                                "${post.origin?.name ?? ""}-${post.destination?.name ?? ""}"),
+                                "${routeModel.origin?.name ?? ""}-${routeModel.destination?.name ?? ""}"),
                           ],
                         ).expanded(),
                         Padding(
@@ -685,7 +683,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                     width: AppInsets.inset5,
                                   ),
                                   Text(DateTimeUtil.formatDateTime(
-                                      post.scheduleDate))
+                                      routeModel.scheduleDate))
                                 ],
                               ),
                               Row(
@@ -695,7 +693,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                     size: AppInsets.inset15,
                                     color: Colors.amber,
                                   ),
-                                  Text(post.commentCounts.toString())
+                                  Text(15.toString())
                                 ],
                               ).expanded(),
                             ],
@@ -716,9 +714,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   ),
                   onPressed: () {
                     context.pushNamed(RouteLists.trendingRouteCardDetail,
-                        arguments: post);
+                        arguments: routeModel);
                     // context.pushNamed(RouteLists.trendingRouteCardDetail,
-                    //     arguments: post);
+                    //     arguments: routeModel);
                   },
                   child: const Text("Book Now"))
               .expanded(),
@@ -727,8 +725,18 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
 
     return SizedBox(
-      width: 333,
-      child: Card.filled(
+        width: 330,
+        child: GestureDetector(
+          onTap: () {
+            context.pushNamed(RouteLists.routeDetailPage,
+                arguments: routeModel);
+          },
+          child: RouteDetailPage(
+            route: routeModel,
+          ),
+        )
+        /*
+      Card.filled(
         shape: const BeveledRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(3))),
         child: Column(
@@ -745,14 +753,14 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       onTap: () {
                         context.pushNamed(
                           RouteLists.publicAgencyProfile,
-                          arguments: post.agency,
+                          arguments: routeModel.agency,
                         );
                       },
                       child: SizedBox(
                         height: 20,
                         width: 20,
                         child: CachedImage(
-                            imageUrl: post.agency?.profileImage ?? ""),
+                            imageUrl: routeModel.agency?.profileImage ?? ""),
                       ).clipRRect(borderRadius: BorderRadius.circular(50)),
                     ),
                     const SizedBox(width: 3),
@@ -760,19 +768,19 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       onTap: () {
                         context.pushNamed(
                           RouteLists.publicAgencyProfile,
-                          arguments: post.agency,
+                          arguments: routeModel.agency,
                         );
                       },
                       child: Text(
-                        post.agency?.name ?? "",
+                        routeModel.agency?.name ?? "",
                         style: const TextStyle(
                             fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(width: 3),
                     Text(
-                      DateTimeUtil.formatTime(
-                          context, TimeOfDay.fromDateTime(post.createdAt!)),
+                      DateTimeUtil.formatTime(context,
+                          TimeOfDay.fromDateTime(routeModel.createdAt!)),
                       style: const TextStyle(fontSize: 10),
                     ),
                   ],
@@ -783,17 +791,14 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               ],
             ).expanded(),
 
-            /// image and post info
+            /// image and routeModel info
             InkWell(
                 onTap: () => context.pushNamed(
                     RouteLists.trendingRouteCardDetail,
-                    arguments: post),
+                    arguments: routeModel),
                 child: Row(
                   children: [
-                    CachedImage(
-                            imageUrl: (post.images?.isNotEmpty == true)
-                                ? "${App.baseImgUrl}${post.images?.first}"
-                                : "")
+                    CachedImage(imageUrl: routeModel.image ?? "")
                         .clipRRect(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(5)),
@@ -808,12 +813,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               Text(
-                                "${post.origin?.name ?? ""} - ${post.destination?.name ?? ""}",
+                                "${routeModel.origin?.name ?? ""} - ${routeModel.destination?.name ?? ""}",
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                post.title ?? "",
+                                routeModel.description ?? "",
                                 style: const TextStyle(fontSize: 12),
                                 textAlign: TextAlign.start,
                                 overflow: TextOverflow.ellipsis,
@@ -825,7 +830,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                DateTimeUtil.formatDateTime(post.scheduleDate),
+                                DateTimeUtil.formatDateTime(
+                                    routeModel.scheduleDate),
                                 style: const TextStyle(fontSize: 10),
                               ),
                               Row(
@@ -849,7 +855,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           ],
         ),
       ),
-    );
+      */
+        );
   }
 
   Widget _showEmptyTrendingCard(BuildContext context) {
@@ -867,7 +874,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       const Text(
-                        "Their is no trending post available",
+                        "There is no trending post available",
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16),
                         textAlign: TextAlign.center,
@@ -875,8 +882,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       ElevatedButton(
                           onPressed: () =>
                               // context.pushNamed(RouteLists.postCreatePage),
-                              _trendingRouteBloc.fetchRoutes(query: {
-                                "categoryType": "trending",
+                              _trendingRouteBloc.getRoutesByCategory(query: {
+                                "categoryType": "trending_routes",
                                 "limit": 5
                               }),
                           child: const Text("Start Creating A Post!"))
@@ -1069,7 +1076,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             (BuildContext context, City? value, Widget? child) {
                           return CityAutocomplete(
                             cities: App.cities,
-                            controller: CityAutocompleteController(),
+                            controller: _originAutoCompleteController,
                             onSelected: (city) {
                               _originNotifier.value = city;
                             },
@@ -1134,6 +1141,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         City? destination = _destinationNotifier.value;
                         _originNotifier.value = destination;
                         _destinationNotifier.value = origin;
+                        _destinationAutoCompleteController.text =
+                            _originAutoCompleteController.text;
+                        _originAutoCompleteController.text =
+                            _destinationAutoCompleteController.text;
                       },
                       child: const Icon(
                         Icons.swap_vert_circle,
@@ -1157,7 +1168,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             (BuildContext context, City? value, Widget? child) {
                           return CityAutocomplete(
                             cities: App.cities,
-                            controller: CityAutocompleteController(),
+                            controller: _destinationAutoCompleteController,
                             onSelected: (city) {
                               _destinationNotifier.value = city;
                             },

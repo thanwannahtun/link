@@ -101,7 +101,7 @@ class PostRouteRepo extends ApiService {
     }
   }
 
-  FutureOr<List<Routemodel>> fetchRoutesByCategory(
+  FutureOr<List<RouteModel>> fetchRoutesByCategory(
       {Object? body, Map<String, dynamic>? query}) async {
     Response response =
         await getRequest("/routes", body: body, queryParameters: query);
@@ -109,9 +109,9 @@ class PostRouteRepo extends ApiService {
       // print("running on separate Isolate!");
       // final routes = await Isolate.run(
       // () {
-      List<Routemodel> routes = [];
+      List<RouteModel> routes = [];
       for (var route in response.data['data']) {
-        routes.add(Routemodel.fromJson(route as Map<String, dynamic>));
+        routes.add(RouteModel.fromJson(route as Map<String, dynamic>));
       }
       return routes;
       // },

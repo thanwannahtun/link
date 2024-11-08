@@ -34,7 +34,7 @@ class NewRouteUploadScreen extends StatefulWidget {
 }
 
 class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
-  List<Routemodel> routes = [];
+  List<RouteModel> routes = [];
   List<String> images = [];
 
   late FocusNode _titleFocusNode;
@@ -334,7 +334,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   }
 
   void _addNewRoute() async {
-    await showModalBottomSheet<Routemodel>(
+    await showModalBottomSheet<Route>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -342,7 +342,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
       backgroundColor: context.scaffoldBackgroundColor,
       useSafeArea: true,
       builder: (context) => AddRouteScreen(
-        onClosed: (Routemodel? value) {
+        onClosed: (RouteModel? value) {
           if (value != null) {
             _postCreateCubit.addRoute(route: value);
           }
@@ -355,9 +355,9 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     // }
   }
 
-  void _editRoute(Routemodel route, int index) async {
+  void _editRoute(RouteModel route, int index) async {
     // final updatedRoute =
-    await showModalBottomSheet<Routemodel>(
+    await showModalBottomSheet<RouteModel>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -366,7 +366,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
       backgroundColor: context.scaffoldBackgroundColor,
       builder: (context) => AddRouteScreen(
         route: route,
-        onClosed: (Routemodel? value) {
+        onClosed: (RouteModel? value) {
           if (value != null) {
             _postCreateCubit.updateOrDeleteRoute(
                 index: index, routeToUpdate: value);
@@ -429,7 +429,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 }
 
 class PostModel {
-  final List<Routemodel> routes;
+  final List<Route> routes;
   final String title;
   final String description;
 
@@ -438,7 +438,7 @@ class PostModel {
 }
 
 class RouteCardWidget extends StatefulWidget {
-  final Routemodel route;
+  final RouteModel route;
   final void Function()? onEditRoute;
   final void Function()? onRemoveRoute;
 
@@ -688,11 +688,11 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
 }
 
 class AddRouteScreen extends StatefulWidget {
-  final Routemodel? route;
+  final RouteModel? route;
 
   const AddRouteScreen({super.key, this.route, required this.onClosed});
 
-  final Function(Routemodel? value) onClosed;
+  final Function(RouteModel? value) onClosed;
 
   @override
   State<AddRouteScreen> createState() => _AddRouteScreenState();
@@ -1162,7 +1162,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
 
   void _addRoute() {
     // Logic for adding a new route
-    Routemodel newRoute = Routemodel(
+    RouteModel newRoute = RouteModel(
         origin: origin,
         agency: Agency(id: "66b8d3c63e1a9b47a2c0e6a5"),
         destination: destination,
@@ -1181,7 +1181,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
   }
 
   void _updateRoute() {
-    final Routemodel? route = widget.route?.copyWith(
+    final RouteModel? route = widget.route?.copyWith(
         origin: origin,
         agency: Agency(id: "66b8d3c63e1a9b47a2c0e6a5"),
         destination: destination,

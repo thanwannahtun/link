@@ -101,7 +101,7 @@ class RouteGenerator {
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const RouteDetailPage();
+            return const RouteDetailScreen();
           },
         );
       case RouteLists.getTrendingRoutes:

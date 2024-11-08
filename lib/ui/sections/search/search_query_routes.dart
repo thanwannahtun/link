@@ -6,6 +6,7 @@ import 'package:link/core/theme_extension.dart';
 import 'package:link/models/city.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post/upload_new_post_page.dart';
+import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
@@ -13,6 +14,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/utils/app_insets.dart';
 import '../../../domain/bloc_utils/bloc_status.dart';
 import '../../screens/post_route_card.dart';
+import '../../screens/route_detail_page.dart';
 import '../../utils/route_list.dart';
 
 class SearchQueryRoutes extends StatefulWidget {
@@ -27,8 +29,9 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
   City? origin;
   City? destination;
   DateTime? date;
+
   // create model later
-  final List<Post> _posts = [];
+  final List<RouteModel> _routes = [];
   late final PostRouteCubit _searchQueryCubit;
   bool _initial = true;
 
@@ -61,7 +64,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
         destination = argument["destination"] as City;
         date = argument["date"] as DateTime?;
         _searchQueryCubit = PostRouteCubit()
-          ..fetchRoutes(query: {
+          ..getRoutesByCategory(query: {
             "categoryType": "filter_searched_routes",
             "limit": 10
           }, body: {
@@ -114,16 +117,16 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
         bloc: _searchQueryCubit,
         builder: (BuildContext context, state) {
           debugPrint("::::::::::::: ${state.status}");
-          if (state.status == BlocStatus.fetchFailed && _posts.isEmpty) {
+          if (state.status == BlocStatus.fetchFailed && _routes.isEmpty) {
             return _buildShimmer(context);
-          } else if (state.status == BlocStatus.fetching && _posts.isEmpty) {
+          } else if (state.status == BlocStatus.fetching && _routes.isEmpty) {
             return _buildShimmer(context);
           }
-          final newPosts = state.routes;
-          print("=====> _posts before fetched ${_posts.length}");
-          print("=====> newPosts ${newPosts.length}");
-          _posts.addAll(newPosts);
-          print("=====> _posts afeter fetched ${_posts.length}");
+          final newRoutes = state.routeModels;
+          print("=====> _posts before fetched ${_routes.length}");
+          print("=====> newRoutes ${newRoutes.length}");
+          _routes.addAll(newRoutes);
+          print("=====> _routes afeter fetched ${_routes.length}");
           return _postViewBuilder();
         },
         listener: (BuildContext context, Object? state) {},
@@ -132,7 +135,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
   }
 
   Widget _postViewBuilder() {
-    if (_posts.isEmpty) {
+    if (_routes.isEmpty) {
       return Center(
         child: Text(
                 "No Rotes for ${origin?.name ?? ""} to ${destination?.name} ! ")
@@ -140,13 +143,24 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
       );
     }
     return ListView.separated(
-      itemCount: _posts.length,
+      itemCount: _routes.length,
       itemBuilder: (context, index) {
-        return PostRouteCard(
-          post: _posts[index],
-          onAgencyPressed: () {
-            context.pushNamed(RouteLists.publicAgencyProfile,
-                arguments: _posts[index].agency);
+        // PostRouteCard(
+        //  post: _routes[index],
+        //  onAgencyPressed: () {
+        //    context.pushNamed(RouteLists.publicAgencyProfile,
+        //        arguments: _routes[index].agency);
+        //  },
+        // );
+
+        return RouteInfoCardWidget(
+          route: _routes[index],
+          onRoutePressed: (route) {
+            context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+          },
+          onAgencyPressed: (route) {
+            context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+            print("--- go to post detail");
           },
         );
       },

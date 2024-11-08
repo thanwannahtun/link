@@ -33,7 +33,8 @@ class CustomScaffoldBody extends StatelessWidget {
   AppBar _appBar() {
     return AppBar(
       title: title,
-      leadingWidth: backButton != null ? 56 : 0.0, // 56 == default
+      leadingWidth: backButton != null ? 56 : 0.0,
+      // 56 == default
       automaticallyImplyLeading: true,
       leading: backButton ?? Container(),
       actions: [action ?? Container()],
@@ -51,6 +52,7 @@ class CustomScaffoldBody extends StatelessWidget {
             return Container(
               decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
+                  // color: Theme.of(context).cardColor,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10),

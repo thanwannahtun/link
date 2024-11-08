@@ -10,21 +10,18 @@ import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
-import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/screens/profile/route_model_card.dart';
+import 'package:link/ui/screens/route_detail_page.dart';
 import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../../../core/utils/date_time_util.dart';
-import '../../utils/expandable_text.dart';
 
 class HotAndTrendingScreen extends StatefulWidget {
   const HotAndTrendingScreen({super.key});
@@ -35,7 +32,7 @@ class HotAndTrendingScreen extends StatefulWidget {
 
 class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   List<Post> _trendingPosts = [];
-  List<Routemodel> _trendingRoutes = [];
+  List<RouteModel> _trendingRoutes = [];
   late PostRouteCubit _postRouteCubit;
 
   late final ScrollController _scrollController;
@@ -356,10 +353,22 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         final adjustedIndex = index - (index ~/ 15);
 
         if (adjustedIndex < _trendingRoutes.length) {
-          Routemodel route = _trendingRoutes[adjustedIndex];
-          return RouteModelCard(
+          RouteModel route = _trendingRoutes[adjustedIndex];
+
+          RouteModelCard(
             route: route,
             onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+              print("--- go to post detail");
+            },
+          );
+
+          return RouteInfoCardWidget(
+            route: route,
+            onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+            },
+            onAgencyPressed: (route) {
               context.pushNamed(RouteLists.routeDetailPage, arguments: route);
               print("--- go to post detail");
             },
@@ -394,7 +403,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
         // Display RouteModelCard for trending routes based on adjusted index
         if (actualIndex < _trendingRoutes.length) {
-          Routemodel route = _trendingRoutes[actualIndex];
+          RouteModel route = _trendingRoutes[actualIndex];
           return RouteModelCard(route: route);
         }
 
@@ -755,150 +764,109 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 300, // Height of the horizontal list
-      child: CustomScrollView(
-        scrollDirection: Axis.horizontal,
-        slivers: [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                final post = posts[index];
-                return SizedBox(
-                  width: 300,
-                  height: double.infinity,
-                  child: Card.filled(
-                    // color: context.greyColor.withOpacity(0.1),
-                    color: Theme.of(context).cardColor.withOpacity(0.5),
-                    child: Column(
-                      children: [
-                        Container(
-                            color: Theme.of(context).cardColor,
-                            child: RouteHeader(
-                                route: post.routes?.first ?? Routemodel())),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                post.title ?? "Post Title",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                child: (post.routes?.isNotEmpty ?? false)
-                                    ? Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: CustomScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          slivers: [
-                                            SliverList(
-                                              delegate:
-                                                  SliverChildBuilderDelegate(
-                                                (BuildContext context,
-                                                    int routeIndex) {
-                                                  final route = post.routes![
-                                                      routeIndex]; // Safe to access here since we checked above
-                                                  return Card.filled(
-                                                    child: SizedBox(
-                                                        width: 250,
-                                                        height: double.infinity,
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text("${route.origin?.name ?? ""} - ${route.destination?.name ?? ""}")
-                                                                  .styled(
-                                                                      fw: FontWeight
-                                                                          .bold,
-                                                                      fs: 15),
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .spaceBetween,
-                                                                children: [
-                                                                  Text(
-                                                                    DateTimeUtil
-                                                                        .formatDateTime(
-                                                                            route.scheduleDate),
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16,
-                                                                        color: Colors
-                                                                            .grey),
-                                                                  ),
-                                                                  Text(
-                                                                    route.pricePerTraveller !=
-                                                                            null
-                                                                        ? "\$${route.pricePerTraveller!.toStringAsFixed(2)}"
-                                                                        : "No Price",
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16,
-                                                                        color: Colors
-                                                                            .grey),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 5),
-                                                              (route.midpoints ??
-                                                                          [])
-                                                                      .isEmpty
-                                                                  ? Container()
-                                                                  : RouteMidpoints(
-                                                                      midpoints:
-                                                                          route.midpoints ??
-                                                                              []),
-                                                            ],
-                                                          ),
-                                                        )),
-                                                  );
-                                                },
-                                                childCount: post.routes!
-                                                    .length, // Use the actual length
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    : const Center(
-                                        child: Text('No routes available',
-                                            style:
-                                                TextStyle(color: Colors.grey)),
-                                      ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ExpandableText(
-                                text: post.description ?? "Post Description",
-                                textStyle: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: context.greyColor),
-                              ),
-                            ),
-                          ],
-                        ).expanded(),
-                        Container(
-                            color: Theme.of(context).cardColor,
-                            child: RouteFooter(
-                                route: post.routes?.first ?? Routemodel()))
-                      ],
+      child: posts.isEmpty
+          ? Container(
+              color: Colors.amber,
+              height: double.infinity,
+              width: double.infinity,
+            )
+          : CustomScrollView(
+              scrollDirection: Axis.horizontal,
+              slivers: [
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      final post = posts[index];
+                      return buildHorizontalRouteCard(context, post);
+                    },
+                    childCount: posts.length,
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget buildHorizontalRouteCard(BuildContext context, Post post) {
+    return Card(
+      child: SizedBox(
+        width: 300,
+        height: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RouteHeader(route: post.routes?.first ?? RouteModel()),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Text(
+                      post.title ?? "Post Title",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                );
-              },
-              childCount: posts.length,
+                  Expanded(
+                    flex: 3,
+                    child: (post.routes?.isNotEmpty ?? false)
+                        ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CustomScrollView(
+                              scrollDirection: Axis.horizontal,
+                              slivers: [
+                                SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (BuildContext context, int routeIndex) {
+                                      final route =
+                                          post.routes![routeIndex]; // Safe
+                                      return Card(
+                                        color: Theme.of(context)
+                                            .cardColor
+                                            .withOpacity(0.9),
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 5),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: RouteInfoBodyWithMidpoints(
+                                              cardWidth: 260, route: route),
+                                        ),
+                                      );
+                                    },
+                                    childCount: post.routes!
+                                        .length, // Use the actual length
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const Center(
+                            child: Text('No routes available',
+                                style: TextStyle(color: Colors.grey)),
+                          ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Text(
+                        post.description ?? "Post Description",
+                        style: const TextStyle(fontSize: 12),
+                        textAlign: TextAlign.start,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            RouteFooter(
+              route: post.routes?.first ?? RouteModel(),
+              onBookPressed: (RouteModel route) {},
+            )
+          ],
+        ),
       ),
     );
   }

@@ -45,7 +45,7 @@ class Post {
   final String? title;
   final String? description;
   final List<String>? images;
-  final List<Routemodel>? routes;
+  final List<RouteModel>? routes;
 
   Map<String, dynamic> toJson() {
     return {
@@ -99,7 +99,7 @@ class Post {
       //     ?.map((e) => Midpoint.fromJson(e))
       //     .toList(),
       routes: (json['routes'] as List<dynamic>?)
-          ?.map((e) => Routemodel.fromJson(e))
+          ?.map((e) => RouteModel.fromJson(e))
           .toList(),
       commentCounts: json['commentCounts'] ?? 0,
       likeCounts: json['likeCounts'] ?? 0,
@@ -134,7 +134,7 @@ class Post {
       int? shareCounts,
       List<Comment>? comments,
       List<String>? images,
-      List<Routemodel>? routes,
+      List<RouteModel>? routes,
       List<Like>? likes}) {
     return Post(
         id: id ?? id,

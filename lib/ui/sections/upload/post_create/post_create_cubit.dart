@@ -15,7 +15,7 @@ class PostCreateCubit extends Cubit<PostCreateState> {
           ),
         );
 
-  addRoute({required Routemodel route}) {
+  addRoute({required RouteModel route}) {
     if (state.routes.length >= 5) {
       emit(
         state.copyWith(
@@ -23,7 +23,7 @@ class PostCreateCubit extends Cubit<PostCreateState> {
             error: "You've Got Maximum Route Limit !"),
       );
     } else {
-      List<Routemodel> routes =
+      List<RouteModel> routes =
           List.from(state.routes); // Assuming state holds the list
       routes.add(route);
       emit(
@@ -32,8 +32,8 @@ class PostCreateCubit extends Cubit<PostCreateState> {
     }
   }
 
-  updateOrDeleteRoute({required int index, Routemodel? routeToUpdate}) {
-    List<Routemodel> routes = List.from(state.routes);
+  updateOrDeleteRoute({required int index, RouteModel? routeToUpdate}) {
+    List<RouteModel> routes = List.from(state.routes);
     if (routeToUpdate != null) {
       routes[index] = routeToUpdate;
       // final updRoutes = List<Routemodel>.from(routes);
@@ -43,5 +43,4 @@ class PostCreateCubit extends Cubit<PostCreateState> {
       emit(state.copyWith(routes: routes));
     }
   }
-
 }

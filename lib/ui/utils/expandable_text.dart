@@ -22,7 +22,8 @@ class _ExpandableTextState extends State<ExpandableText> {
       children: [
         Text(
           widget.text,
-          style: widget.textStyle,
+          // style: widget.textStyle,
+          style: Theme.of(context).textTheme.headlineMedium,
           maxLines: isExpanded ? null : widget.maxLines,
           overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
         ),

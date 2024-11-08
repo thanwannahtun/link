@@ -87,7 +87,7 @@ class PostRouteCubit extends Cubit<PostRouteState> {
         "page": _page,
       }..addEntries(query?.entries ?? {});
 
-      List<Routemodel> routes = await _postApiRepo.fetchRoutesByCategory(
+      List<RouteModel> routes = await _postApiRepo.fetchRoutesByCategory(
         query: queryParams,
         body: body,
       );
