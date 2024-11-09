@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/styles/app_style.dart';
+import 'package:link/core/theme_extension.dart';
 
 class ExpandableText extends StatefulWidget {
   final String text;
@@ -23,7 +25,10 @@ class _ExpandableTextState extends State<ExpandableText> {
         Text(
           widget.text,
           // style: widget.textStyle,
-          style: Theme.of(context).textTheme.headlineMedium,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: context.greyColor),
           maxLines: isExpanded ? null : widget.maxLines,
           overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
         ),

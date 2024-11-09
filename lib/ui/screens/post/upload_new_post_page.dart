@@ -1392,7 +1392,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
     _postRouteCubit.uploadNewPost(
       post: post,
-      files: _xfiles.map((xfile) => File(xfile.path)).toList(),
+      files: _xfiles.map((xFile) => File(xFile.path)).toList(),
     );
   }
 

@@ -10,6 +10,7 @@ import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
+import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
@@ -22,6 +23,8 @@ import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
+
+import '../../../domain/api_utils/api_query.dart';
 
 class HotAndTrendingScreen extends StatefulWidget {
   const HotAndTrendingScreen({super.key});
@@ -44,7 +47,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     super.initState();
     _postRouteCubit = PostRouteCubit()
       ..getRoutesByCategory(
-          query: {"categoryType": "trending_routes", "limit": 10});
+          query: APIQuery(categoryType: "trending_routes", limit: 10));
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
     _scrollController = ScrollController();
@@ -78,27 +81,32 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     }
   }
 
-  int _fetchToggle = 0; // Counter to alternate between fetches
+  // int _fetchToggle = 0; // Counter to alternate between fetches
 
   void _onScroll() {
-    if (_debounceTimer?.isActive ?? false)
+    if (_debounceTimer?.isActive ?? false) {
       return; // Prevent multiple calls in quick succession
+    }
 
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       if (_isBottom && (_postRouteCubit.state.status != BlocStatus.fetching)) {
         print("_isBottom $_isBottom ");
 
-        if (_fetchToggle % 2 == 0) {
+        // if (_fetchToggle % 2 == 0) {
+        if (_postRouteCubit.getPage % 4 == 0) {
           // Fetch vertical list
           _postRouteCubit.getRoutesByCategory(
-              query: {"categoryType": "trending_routes", "limit": 5});
+              query: APIQuery(categoryType: "trending_routes", limit: 5));
         } else {
+          print("fetched for post with routes");
+
           // Fetch horizontal list (posts with routes)
           _postRouteCubit.getPostWithRoutes(
-              query: {"categoryType": "post_with_routes", "limit": 5});
+              query: APIQuery(categoryType: "post_with_routes", limit: 5));
         }
 
-        _fetchToggle++; // Alternate fetch toggle
+        // _fetchToggle++; // Alternate fetch toggle
+        // _postRouteCubit.updatePage(value: (_postRouteCubit.getPage + 1));
 
         // Fetch more routes for the vertical list
         // _postRouteCubit.getRoutesByCategory(
@@ -150,7 +158,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           _trendingPosts = [];
           _trendingRoutes = [];
           _postRouteCubit.getRoutesByCategory(
-              query: {"categoryType": "trending_routes", "limit": 8});
+              query: APIQuery(categoryType: "trending_routes", limit: 5));
         },
         // child: _customScrollViewWidget(),
         child: _body(),
@@ -167,16 +175,10 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
             _scrollController.animateTo(0,
                 duration: const Duration(seconds: 1), curve: Curves.bounceIn);
           },
-          icon: IconButton(
-            onPressed: () {
-              _postRouteCubit.getRoutesByCategory(
-                  query: {"categoryType": "trending_routes", "limit": 5});
-            },
-            icon: Icon(
-              Icons.search,
-              color: context.onPrimaryColor,
-              size: AppInsets.inset30,
-            ),
+          icon: Icon(
+            Icons.search,
+            color: context.onPrimaryColor,
+            size: AppInsets.inset30,
           )),
     );
   }
@@ -195,17 +197,15 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           return _buildShimmer(context);
         }
         final newPosts = state.routes;
-        _trendingPosts.addAll(newPosts);
+        if (_postRouteCubit.getPage % 4 == 0) {
+          _trendingPosts.addAll(newPosts);
+        }
+
         // final newPosts = state.routes;
         final newRoutes = state.routeModels;
-        print("=====> _trendingPosts before fetched ${_trendingPosts.length}");
-        print("=====> newPosts ${newPosts.length}");
-        print(
-            "=====> _trendingRoutes before fetched ${_trendingRoutes.length}");
+
         print("=====> newRoutes ${newRoutes.length}");
-        // _trendingPosts.addAll(newRoutes);
         _trendingRoutes.addAll(newRoutes);
-        print("=====> _trendingPosts after fetched ${_trendingPosts.length}");
         print("=====> _trendingRoutes after fetched ${_trendingRoutes.length}");
 
         return _showPosts();
@@ -286,10 +286,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                     children: [
                       ElevatedButton(
                           onPressed: () => _postRouteCubit.getRoutesByCategory(
-                                  query: {
-                                    "categoryType": "trending_routes",
-                                    "limit": 10
-                                  }),
+                              query: APIQuery(
+                                  categoryType: "trending_routes", limit: 10)),
                           child: const Icon(Icons.refresh_rounded)),
                       const SizedBox(
                         height: 5,
@@ -410,47 +408,6 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         // Placeholder for loading or other widgets
         return Container(
             color: Colors.amber, width: double.infinity, height: 200);
-        // Check if _trendingPosts has data and insert HorizontalPostWithRoutesWidget at the top
-        // if (_trendingPosts.isNotEmpty && index == 0) {
-        //   print("horizontal list view ");
-        //   return HorizontalPostWithRoutesWidget(posts: _trendingPosts);
-        // }
-
-        // Calculate the adjusted index for _trendingRoutes
-        // final adjustedIndex = _trendingPosts.isNotEmpty ? index - 1 : index;
-
-        // Display RouteModelCard for each route
-        // if (adjustedIndex < _trendingRoutes.length) {
-        //   Routemodel route = _trendingRoutes[adjustedIndex];
-        //   return RouteModelCard(route: route);
-        // } else {
-
-        // }
-        /*
-        // if (index < _trendingPosts.length) {
-        if (index < _trendingRoutes.length) {
-          // Post post = _trendingPosts[index];
-          Routemodel route = _trendingRoutes[index];
-          return RouteModelCard(route: route);
-          // return PostRouteCard(
-          //     post: post,
-          //     onStarPressed: (isLiked) {
-          //       isLiked != isLiked;
-          //       // update LikeCounts
-          //     },
-          //     // isLike: true,
-          //     onCommentPressed: () => goPageDetail(post),
-          //     onPhotoPressed: () => goPageDetail(post),
-          //     onAgencyPressed: () => goAgencyPage(post));
-        } else {
-          return Container(
-              color: Colors.amber, width: double.infinity, height: 200);
-          // return PostRouteCard(
-          //   post: Post(),
-          //   loading: true,
-          // );
-        }
-         */
       },
       itemCount: _trendingRoutes.length +
           (_trendingPosts.isNotEmpty
@@ -490,7 +447,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                   baseColor: context.primaryColor,
                   highlightColor: context.onPrimaryColor,
                   child: const Chip(
-                    label: Text(" suggesstion "),
+                    label: Text(" suggestion "),
                     deleteIcon: Icon(Icons.search),
                   ),
                 ),
@@ -523,25 +480,17 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   }
 }
 
-final List<String> images = [
-  "https://images.pexels.com/photos/1051072/pexels-photo-1051072.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/1051078/pexels-photo-1051078.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/3943882/pexels-photo-3943882.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/54380/pexels-photo-54380.jpeg?auto=compress&cs=tinysrgb&w=600"
-];
+final List<String> images = [];
 
-class ImagePageView extends StatelessWidget {
-  const ImagePageView({super.key});
+class ImagePageViewBuilder extends StatelessWidget {
+  const ImagePageViewBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return PageView.builder(
       itemCount: images.length,
       itemBuilder: (context, index) {
-        return Image.network(
-          images[index],
-          fit: BoxFit.contain,
-        );
+        return CachedImage(imageUrl: images[index]);
       },
     );
   }
@@ -591,12 +540,7 @@ class ThumbnailWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         return Stack(
           children: [
-            Image.network(
-              images[index],
-              fit: BoxFit.cover,
-              width: double.infinity, // Ensure image takes full width
-              height: double.infinity, // Ensure image takes full height
-            ),
+            CachedImage(imageUrl: images[index]),
             const Positioned(
               bottom: 8.0,
               right: 8.0,
@@ -619,10 +563,7 @@ class SliverGridWidget extends StatelessWidget {
         SliverAppBar(
           expandedHeight: 200.0,
           flexibleSpace: FlexibleSpaceBar(
-            background: Image.network(
-              'https://images.pexels.com/photos/1051072/pexels-photo-1051072.jpeg?auto=compress&cs=tinysrgb&w=600',
-              fit: BoxFit.cover,
-            ),
+            background: CachedImage(imageUrl: ""),
           ),
         ),
         SliverGrid(
@@ -643,118 +584,6 @@ class SliverGridWidget extends StatelessWidget {
   }
 }
 
-/*
-
-
-
-// Custom delegate to create a persistent header with pinned behavior
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  _SliverAppBarDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
-  }
-}
-
-
-  // ignore: unused_element
-  BlocConsumer<PostRouteCubit, PostRouteState> _customScrollViewWidget() {
-    return BlocConsumer<PostRouteCubit, PostRouteState>(
-      bloc: _postRouteCubit,
-      listener: (BuildContext context, PostRouteState state) {},
-      builder: (BuildContext context, PostRouteState state) {
-        if (state.status == BlocStatus.fetchFailed) {
-          return _buildShimmer(context);
-        } else if (state.status == BlocStatus.fetching) {
-          return _buildShimmer(context);
-        }
-        posts = state.routes;
-
-        return Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: CustomScrollView(
-            slivers: [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _SliverAppBarDelegate(
-                  minHeight: 40.0, // Minimum height when collapsed
-                  maxHeight: 40.0, // Maximum height when expanded
-                  child: Container(
-                    color: Colors.white, // Background color
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) {
-                          final city = App.cities[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 5),
-                            child: Chip(
-                              label: Text(city.name ?? ""),
-                              deleteIcon: const Icon(Icons.search),
-                              onDeleted: () => print("Hello"),
-                            ),
-                          );
-                        },
-                        separatorBuilder: (context, index) => const SizedBox(
-                          width: 5,
-                        ),
-                        itemCount: App.cities.length,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    Post post = posts[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppInsets.inset5),
-                      child: PostRouteCard(
-                        post: post,
-                        onStarPressed: () => goPageDetail(post),
-                        onCommentPressed: () => goPageDetail(post),
-                        onAgencyPressed: () => context.pushNamed(
-                            RouteLists.trendingRouteCardDetail,
-                            arguments: post),
-                      ),
-                    );
-                  },
-                  childCount: App.cities.length, // Number of main list items
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
- */
 class HorizontalPostWithRoutesWidget extends StatelessWidget {
   final List<Post> posts;
 
@@ -795,7 +624,7 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RouteHeader(route: post.routes?.first ?? RouteModel()),
+            RouteHeader(route: post.routes?.first ?? const RouteModel()),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -805,7 +634,7 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
                     padding: const EdgeInsets.all(5.0),
                     child: Text(
                       post.title ?? "Post Title",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
                   Expanded(
@@ -822,9 +651,7 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
                                       final route =
                                           post.routes![routeIndex]; // Safe
                                       return Card(
-                                        color: Theme.of(context)
-                                            .cardColor
-                                            .withOpacity(0.9),
+                                        color: context.greyFilled,
                                         margin: const EdgeInsets.symmetric(
                                             horizontal: 5),
                                         child: Padding(
@@ -850,8 +677,11 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: Text(
-                        post.description ?? "Post Description",
-                        style: const TextStyle(fontSize: 12),
+                        post.description ?? "",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: context.greyColor),
                         textAlign: TextAlign.start,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
@@ -862,8 +692,10 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
               ),
             ),
             RouteFooter(
-              route: post.routes?.first ?? RouteModel(),
-              onBookPressed: (RouteModel route) {},
+              route: post.routes?.first ?? const RouteModel(),
+              onBookPressed: (RouteModel route) {
+                context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+              },
             )
           ],
         ),

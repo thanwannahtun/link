@@ -85,13 +85,13 @@ class PostRouteRepo extends ApiService {
         );
       }
       final data = post.toJson();
-      FormData formData = FormData.fromMap(data);
-      formData.files
-          .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
+      FormData formData = FormData.fromMap(data)
+        ..files
+            .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
 
       Response response = await postRequest('/routes/uploads/', formData);
       if (response.statusCode == 201) {
-        return Post.fromJson(response.data['data'].first);
+        return Post.fromJson(response.data['data'][0]);
       } else {
         throw Exception("Failed to upload a new post");
       }

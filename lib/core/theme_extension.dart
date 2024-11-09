@@ -21,6 +21,8 @@ extension TextThemeExtensions on BuildContext {
 
   Color get greyColor => Colors.grey;
 
+  Color get greyFilled => Theme.of(this).colorScheme.onSecondary;
+
   // Accessing Text Colors
 
   Color get titleColor =>

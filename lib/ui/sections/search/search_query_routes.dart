@@ -3,15 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
-import 'package:link/models/city.dart';
+import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/utils/app_insets.dart';
+import '../../../domain/api_utils/api_query.dart';
 import '../../../domain/bloc_utils/bloc_status.dart';
 import '../../screens/post_route_card.dart';
 import '../../screens/route_detail_page.dart';
@@ -26,9 +26,7 @@ class SearchQueryRoutes extends StatefulWidget {
 
 class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
   /// create model later
-  City? origin;
-  City? destination;
-  DateTime? date;
+  SearchRoutesQuery? searchRoutesQuery;
 
   // create model later
   final List<RouteModel> _routes = [];
@@ -37,15 +35,6 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
 
   @override
   void initState() {
-    // _searchQueryCubit = PostRouteCubit()
-    //   ..fetchRoutes(query: {
-    //     "categoryType": "filter_searched_routes",
-    //     "limit": 10
-    //   }, body: {
-    //     "origin": "66b613cd6c17b0be8b372dc6",
-    //     "destination": "66b613cd6c17b0be8b372dc4",
-    //     "date": "2024-10-08 00:00:00.000"
-    //   });
     super.initState();
   }
 
@@ -60,18 +49,11 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
       if (ModalRoute.of(context)?.settings.arguments != null) {
         Map<String, dynamic> argument =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-        origin = argument["origin"] as City;
-        destination = argument["destination"] as City;
-        date = argument["date"] as DateTime?;
+        searchRoutesQuery = argument as SearchRoutesQuery;
         _searchQueryCubit = PostRouteCubit()
-          ..getRoutesByCategory(query: {
-            "categoryType": "filter_searched_routes",
-            "limit": 10
-          }, body: {
-            "origin": origin?.id,
-            "destination": destination?.id,
-            "date": date?.toIso8601String()
-          });
+          ..getRoutesByCategory(
+              query: APIQuery(categoryType: "filter_searched_routes", limit: 5),
+              body: searchRoutesQuery?.toJson());
       }
       _initial = false;
     }
@@ -138,7 +120,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
     if (_routes.isEmpty) {
       return Center(
         child: Text(
-                "No Rotes for ${origin?.name ?? ""} to ${destination?.name} ! ")
+                "No Routes for ${searchRoutesQuery?.origin?.name ?? ""} to ${searchRoutesQuery?.destination?.name} ! ")
             .padding(padding: const EdgeInsets.all(35)),
       );
     }
@@ -160,7 +142,6 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
           },
           onAgencyPressed: (route) {
             context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-            print("--- go to post detail");
           },
         );
       },
@@ -183,7 +164,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
                   baseColor: context.primaryColor,
                   highlightColor: context.onPrimaryColor,
                   child: const Chip(
-                    label: Text(" suggesstion "),
+                    label: Text(" suggestion "),
                     deleteIcon: Icon(Icons.search),
                   ),
                 ),

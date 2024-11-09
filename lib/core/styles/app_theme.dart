@@ -27,9 +27,18 @@ class AppTheme {
       secondary: LightTheme.secondaryBg,
       tertiary: LightTheme.tertiaryBg,
       onPrimary: Colors.white,
+      onSecondary: Color(0xf5f5f5ff),
     );
 
     TextTheme lightTextTheme = const TextTheme(
+      titleMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.secondaryBg),
+      titleSmall: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
       headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
@@ -39,13 +48,23 @@ class AppTheme {
           fontWeight: FontWeight.bold,
           color: LightTheme.primaryText),
       headlineSmall: TextStyle(
-          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
       bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: LightTheme.primaryText),
       bodyMedium: TextStyle(
           fontSize: 14,
+          fontWeight: FontWeight.normal,
+          color: LightTheme.primaryText),
+      labelMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
+      labelSmall: TextStyle(
+          fontSize: 10,
           fontWeight: FontWeight.normal,
           color: LightTheme.primaryText),
     );
@@ -97,9 +116,18 @@ class AppTheme {
       secondary: DarkTheme.secondaryBg,
       tertiary: DarkTheme.tertiaryBg,
       onPrimary: Colors.white,
+      onSecondary: Color(0xff424242),
     );
 
     TextTheme darkTextTheme = const TextTheme(
+      titleMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.tertiaryBg),
+      titleSmall: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
       headlineLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
@@ -109,13 +137,23 @@ class AppTheme {
           fontWeight: FontWeight.bold,
           color: DarkTheme.primaryText),
       headlineSmall: TextStyle(
-          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
       bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
           color: DarkTheme.primaryText),
       bodyMedium: TextStyle(
           fontSize: 14,
+          fontWeight: FontWeight.normal,
+          color: DarkTheme.primaryText),
+      labelMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
+      labelSmall: TextStyle(
+          fontSize: 10,
           fontWeight: FontWeight.normal,
           color: DarkTheme.primaryText),
     );

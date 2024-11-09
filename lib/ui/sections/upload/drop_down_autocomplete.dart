@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/styles/app_style.dart';
+import 'package:link/core/theme_extension.dart';
 import '../../../models/city.dart';
 
 class CityAutocompleteController extends TextEditingController {
@@ -111,9 +113,10 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
                   onTapOutside: (event) => focusNode.unfocus(),
                   decoration: InputDecoration(
                       hintText: widget.hintText,
-                      hintStyle: const TextStyle(
-                        color: Colors.grey,
-                      ),
+                      hintStyle:
+                          Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: context.greyColor,
+                              ),
                       labelText: widget.labelText,
                       border: widget.border,
                       errorText: value ? null : "No matching!"

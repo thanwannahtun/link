@@ -15,13 +15,17 @@ import 'package:link/domain/api_utils/api_service.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
+import 'package:link/ui/screens/post/upload_new_post_page.dart';
+import 'package:link/ui/screens/post_detail.dart';
 import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
 import 'package:link/ui/sections/upload/post_create/post_create_cubit.dart';
 import 'package:link/ui/sections/upload/route_array_upload/file_util.dart';
 import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
+import '../../../bloc/routes/post_route_cubit.dart';
 import '../../../core/utils/app_insets.dart';
 import '../../../models/agency.dart';
 import '../../../models/city.dart';
@@ -135,8 +139,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
         maxLines: null,
         minLines: 1,
         onTapOutside: (event) => _titleFocusNode.unfocus(),
-        style: const TextStyle(
-            fontWeight: FontWeight.bold, fontSize: AppInsets.font20),
+        style: Theme.of(context).textTheme.headlineMedium,
         controller: _titleController,
         decoration: const InputDecoration(
           hintText: "Title",
@@ -153,6 +156,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
         maxLines: null,
         minLines: 2,
         onTapOutside: (event) => _descriptionFocusNode.unfocus(),
+        style: Theme.of(context).textTheme.bodyLarge,
         // maxLength: 7000,
         controller: _descriptionController,
         decoration: const InputDecoration(
@@ -378,17 +382,60 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
   Widget _buildSubmitButton() {
     return ElevatedButton(
-      onPressed: () {
-        // Submit to the server
-        _uploadRoute();
-      },
-      child: const Center(
-        child: Text(
-          'Upload Route',
-          style: TextStyle(fontSize: 16),
-        ),
-      ),
-    );
+        onPressed: () {
+          // Submit to the server
+          _uploadRoute();
+        },
+        child: BlocConsumer<PostRouteCubit, PostRouteState>(
+          builder: (BuildContext context, PostRouteState state) {
+            if (state.status == BlocStatus.uploading) {
+              return const Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator.adaptive(strokeWidth: 3),
+                    Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Text("uploading..."),
+                    ),
+                  ],
+                ),
+              );
+            } else if (state.status == BlocStatus.uploadFailed) {
+              return const Center(
+                child: Text(
+                  'Try again',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red),
+                ),
+              );
+            }
+            return const Center(
+              child: Text(
+                'Upload Route',
+                style: TextStyle(fontSize: 16),
+              ),
+            );
+          },
+          listener: (BuildContext context, PostRouteState state) {
+            if (state.status == BlocStatus.uploaded) {
+              context.pop();
+              SnackBar snackBar = SnackBar(
+                  content: Row(
+                children: [
+                  Icon(Icons.panorama_fish_eye_outlined,
+                      color: context.tertiaryColor),
+                  const Text("Successfully Uploaded")
+                ],
+              ));
+
+              context.showSnackBar(snackBar);
+            }
+          },
+        )).padding(padding: const EdgeInsets.symmetric(vertical: 5));
   }
 
   _uploadRoute() async {
@@ -397,34 +444,12 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
         .map((r) => File(r.image ?? ""))
         .toList();
 
-    List<File> compressedFiles =
-        await Future.wait(files.whereType<File>().map((file) async {
-      print("compressImage processing...");
-      return await App.compressImage(file);
-    }));
-
-    List<MultipartFile> multipartFiles = [];
-
-    multipartFiles = await Future.wait(
-        compressedFiles.map((f) => FileUtil.multipartFileFromFile(f)));
-
-    final data = {
-      "agency": "66b8d28d3e1a9b47a2c0e69c",
-      "title": _titleController.text,
-      "description": _descriptionController.text,
-      "routes": routes.map((r) => r.toJson()).toList()
-    };
-
-    FormData formData = FormData.fromMap(data);
-    formData.files
-        .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
-    await ApiService().postRequest('/routes/uploads/', formData).then((v) {
-      // if (mounted) context.pop();
-      print("-------------------------");
-      print("success");
-      print("-------------------------");
-    });
-    // context.read<PostRouteCubit>().uploadNewPost(post: post);
+    final post = Post(
+        agency: Agency(id: "66b8d28d3e1a9b47a2c0e69c"),
+        title: _titleController.text,
+        description: _descriptionController.text,
+        routes: routes);
+    context.read<PostRouteCubit>().uploadNewPost(post: post, files: files);
   }
 }
 
@@ -762,8 +787,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                     children: [
                       Text(
                         widget.route != null ? 'Edit Route' : 'Add New Route',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 16),
                       CityAutocomplete(
@@ -842,12 +866,12 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         autocorrect: true,
         maxLines: null,
         controller: _routeDescriptionController,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: "Description",
-          label: Text("Description(optional)"),
-          labelStyle:
-              TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
-          border: OutlineInputBorder(
+          label: const Text("Description(optional)"),
+          hintStyle: Theme.of(context).textTheme.labelMedium,
+          labelStyle: Theme.of(context).textTheme.labelMedium,
+          border: const OutlineInputBorder(
               borderSide: BorderSide(width: 0.05, color: Colors.grey)),
           // border: InputBorder.none,
         ));
@@ -1074,13 +1098,13 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                     children: [
                       Text(midpoint.city?.name ?? ""),
                       const SizedBox(width: 10),
-                      Text(DateTimeUtil.formatDateTime(midpoint.arrivalTime) ??
-                          ""),
+                      Text(DateTimeUtil.formatDateTime(midpoint.arrivalTime))
+                          .expanded(),
                     ],
                   ),
-                  // midpoint.price != null
-                  //     ? Text((midpoint.price ?? "").toString())
-                  //     : Container(),
+                  midpoint.price != null
+                      ? Text((midpoint.price ?? "").toString())
+                      : Container(),
                   Text(midpoint.description ?? ""),
                 ],
               )
@@ -1089,7 +1113,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                           horizontal: 16, vertical: 10))
                   .expanded(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () {
@@ -1177,7 +1201,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
     widget.onClosed(newRoute);
 
     // Call an API or handle the new route creation here
-    Navigator.pop(context, newRoute); // Close the modal after saving
+    Navigator.pop(context); // Close the modal after saving
   }
 
   void _updateRoute() {
@@ -1195,7 +1219,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
 
     widget.onClosed(route);
     // Call an API or handle the route update here
-    Navigator.pop(context, route); // Close the modal after updating
+    Navigator.pop(context); // Close the modal after updating
   }
 }
 
@@ -1252,6 +1276,7 @@ class _AddMidpointDialogState extends State<AddMidpointDialog> {
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Description'),
                 validator: (value) => null,
+                maxLines: null,
                 // value!.isEmpty ? 'Description is required' : null,
                 onSaved: (value) => description = value!,
               ),

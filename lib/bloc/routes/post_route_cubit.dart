@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:link/domain/api_utils/api_error_handler.dart';
+import 'package:link/domain/api_utils/api_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/repositories/post_route.dart';
@@ -51,8 +52,11 @@ class PostRouteCubit extends Cubit<PostRouteState> {
         () => emit(state.copyWith(status: BlocStatus.fetched, routes: posts)),
       );
     } on Exception catch (e, stackTrace) {
-      debugPrint(
-          "===================================================================\nError ::  $e  :: staceTrace [[ $stackTrace ]] \n===================================================================");
+      debugPrint("""====== <Error> >
+            (error) - $e
+            ====== 
+            (staceTrace) - $stackTrace 
+            ====== <Error/>""");
       emit(state.copyWith(
           routes: [],
           status: BlocStatus.fetchFailed,
@@ -71,7 +75,11 @@ class PostRouteCubit extends Cubit<PostRouteState> {
 
       emit(state.copyWith(status: BlocStatus.uploaded, routes: updatedPosts));
     } on Exception catch (e, s) {
-      debugPrint("[[[  Exception :: $e ^ stackTrace :: $s :::: ]]]");
+      debugPrint("""====== <Error> >
+            (error) - $e
+            ====== 
+            (staceTrace) - $s 
+            ====== <Error/>""");
 
       emit(state.copyWith(
           status: BlocStatus.uploadFailed,
@@ -79,16 +87,14 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     }
   }
 
-  getRoutesByCategory({Object? body, Map<String, dynamic>? query}) async {
+  getRoutesByCategory({Object? body, APIQuery? query}) async {
     if (state.status == BlocStatus.fetching) return;
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
-      var queryParams = <String, dynamic>{
-        "page": _page,
-      }..addEntries(query?.entries ?? {});
+      APIQuery? queryParams = query?.copyWith(page: _page);
 
       List<RouteModel> routes = await _postApiRepo.fetchRoutesByCategory(
-        query: queryParams,
+        query: queryParams?.toJson(),
         body: body,
       );
 
@@ -102,8 +108,11 @@ class PostRouteCubit extends Cubit<PostRouteState> {
             state.copyWith(status: BlocStatus.fetched, routeModels: routes)),
       );
     } on Exception catch (e, stackTrace) {
-      debugPrint(
-          "===================================================================\nError ::  $e  :: staceTrace [[ $stackTrace ]] \n===================================================================");
+      debugPrint("""====== <Error> >
+            (error) - $e
+            ====== 
+            (staceTrace) - $stackTrace 
+            ====== <Error/>""");
       emit(state.copyWith(
           routeModels: [],
           status: BlocStatus.fetchFailed,
@@ -111,31 +120,32 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     }
   }
 
-  getPostWithRoutes({Object? body, Map<String, dynamic>? query}) async {
+  getPostWithRoutes({Object? body, APIQuery? query}) async {
     if (state.status == BlocStatus.fetching) return;
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
-      var queryParams = <String, dynamic>{
-        "page": _page,
-      }..addEntries(query?.entries ?? {});
+      APIQuery? queryParams = query?.copyWith(page: _page);
 
       List<Post> posts = await _postApiRepo.getPostWithRoutes(
-        query: queryParams,
+        query: queryParams?.toJson(),
         body: body,
       );
 
       /// Checking success fetchRoutes
       if (posts.isNotEmpty) {
         print("--------posts is not empty------------");
-        // _page++;
+        _page++;
       }
       Future.delayed(
         const Duration(seconds: 2),
         () => emit(state.copyWith(status: BlocStatus.fetched, routes: posts)),
       );
     } on Exception catch (e, stackTrace) {
-      debugPrint(
-          "===================================================================\nError ::  $e  :: staceTrace [[ $stackTrace ]] \n===================================================================");
+      debugPrint("""====== <Error> >
+            (error) - $e
+            ====== 
+            (staceTrace) - $stackTrace 
+            ====== <Error/>""");
       emit(state.copyWith(
           routes: [],
           status: BlocStatus.fetchFailed,

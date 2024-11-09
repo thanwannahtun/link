@@ -68,6 +68,7 @@ class Post {
       // "images": images,
       "images": [],
       "description": description,
+      "routes": routes?.map((r) => r.toJson()).toList() ?? []
     };
   }
 

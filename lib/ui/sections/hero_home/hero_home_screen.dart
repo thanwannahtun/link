@@ -12,6 +12,8 @@ import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/core/widgets/cached_image.dart';
+import 'package:link/domain/api_utils/api_query.dart';
+import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/ui/screens/route_detail_page.dart';
@@ -22,7 +24,6 @@ import 'package:link/ui/widget_extension.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../models/city.dart';
-import '../../../models/post.dart';
 import '../../utils/context.dart';
 import '../../widgets/custom_scaffold_body.dart';
 
@@ -37,9 +38,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   late final ValueNotifier<DateTime?> _selectedDateNotifier;
 
   List<RouteModel> _trendingRoutes = [];
-
-  // List<Post> _trendingRoutes = [];
-  // List<Post> _sponsoredRoutes = [];
   List<RouteModel> _sponsoredRoutes = [];
 
   late final PostRouteCubit _trendingRouteBloc;
@@ -60,10 +58,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     print("initStateCalled  :HeroHomeScreen");
     _trendingRouteBloc = PostRouteCubit()
       ..getRoutesByCategory(
-          query: {"categoryType": "trending_routes", "limit": 10});
+          query: APIQuery(categoryType: "trending_routes", limit: 10));
     _sponsoredRouteBloc = PostRouteCubit()
       ..getRoutesByCategory(
-          query: {"categoryType": "trending_routes", "limit": 8});
+          query: APIQuery(categoryType: "trending_routes", limit: 10));
     _selectedDateNotifier = ValueNotifier(DateTime.now());
 
     _scrollController = ScrollController(); // _sponsoredRoute Controller
@@ -84,7 +82,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         print("_isBottom $_isBottom ");
         if (!(_sponsoredRoutes.length > 50)) {
           _sponsoredRouteBloc.getRoutesByCategory(
-              query: {"categoryType": "trending_routes", "limit": 5});
+              query: APIQuery(categoryType: "trending_routes", limit: 5));
         }
       }
     });
@@ -114,10 +112,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           _sponsoredRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.getRoutesByCategory(
-              query: {"categoryType": "trending_routes", "limit": 10});
+              query: APIQuery(categoryType: "trending_routes", limit: 10));
           // Todo: uncomment below
           _sponsoredRouteBloc.getRoutesByCategory(
-              query: {"categoryType": "trending_routes", "limit": 7});
+              query: APIQuery(categoryType: "trending_routes", limit: 10));
         },
         child: _heroBody(context),
       ),
@@ -428,7 +426,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       ),
                       Text(
                         "${route.origin?.name ?? ""} to ${route.destination?.name ?? ""}",
-                      ).styled(fw: FontWeight.bold).expanded(),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ).expanded(),
                     ],
                   ),
 
@@ -442,8 +441,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       const SizedBox(
                         width: AppInsets.inset10,
                       ),
-                      Text(DateTimeUtil.formatDateTime(route.scheduleDate))
-                          .styled(fs: 12)
+                      Text(
+                        DateTimeUtil.formatDateTime(route.scheduleDate),
+                        style: Theme.of(context).textTheme.labelMedium,
+                      )
                     ],
                   ),
 
@@ -495,7 +496,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     //     Size(MediaQuery.of(context).size.width * 0.8, 35)),
                     ),
                 onPressed: () {
-                  print("===> GO TO SPONSORED POST DETAIL");
+                  context.pushNamed(RouteLists.routeDetailPage,
+                      arguments: route);
                 },
                 child: Text(
                   "Book Now",
@@ -524,18 +526,16 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Opacity(
+              Opacity(
                 opacity: 0.7,
                 child: Text(
                   "sponsored",
-                  style: TextStyle(
-                    fontSize: 10,
-                  ),
+                  style: Theme.of(context).textTheme.labelSmall,
                 ),
               ),
               Text(
                 "${(route.pricePerTraveller ?? 38000).toString()} Ks",
-                style: const TextStyle(fontSize: 20),
+                style: Theme.of(context).textTheme.headlineSmall,
               ).expanded(),
             ],
           ),
@@ -602,9 +602,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       child: TextButton.icon(
         onPressed: () {
           // _trendingRouteBloc.updatePage(); // set page value to
-          _trendingRouteBloc.getRoutesByCategory(query: {
-            "categoryType": "trending_routes",
-          });
+          _trendingRouteBloc.getRoutesByCategory(
+              query: APIQuery(categoryType: "trending_routes", limit: 10));
           print("View All Pressed!");
         },
         label: const Text("View All"),
@@ -882,10 +881,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       ElevatedButton(
                           onPressed: () =>
                               // context.pushNamed(RouteLists.postCreatePage),
-                              _trendingRouteBloc.getRoutesByCategory(query: {
-                                "categoryType": "trending_routes",
-                                "limit": 5
-                              }),
+                              _trendingRouteBloc.getRoutesByCategory(
+                                  query: APIQuery(
+                                      categoryType: "trending_routes",
+                                      limit: 5)),
                           child: const Text("Start Creating A Post!"))
                     ],
                   ).padding(padding: const EdgeInsets.all(AppInsets.inset8)),
@@ -1027,12 +1026,18 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             _destinationNotifier.value == null) {
                           return;
                         }
-                        context.pushNamed(RouteLists.searchQueryRoutes,
-                            arguments: {
-                              "origin": _originNotifier.value,
-                              "destination": _destinationNotifier.value,
-                              "date": _selectedDateNotifier.value
-                            });
+                        context.pushNamed(
+                          RouteLists.searchQueryRoutes,
+                          arguments: SearchRoutesQuery(
+                              origin: _originNotifier.value,
+                              destination: _destinationNotifier.value,
+                              date: _selectedDateNotifier.value),
+                          // arguments: {
+                          //   "origin": _originNotifier.value,
+                          //   "destination": _destinationNotifier.value,
+                          //   "date": _selectedDateNotifier.value
+                          // },
+                        );
                       },
                       icon: Icon(
                         color: context.onPrimaryColor,

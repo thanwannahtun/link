@@ -16,6 +16,7 @@ class DarkTheme {
   // static const Color tertiaryText = Color(0xff01070A); // text
 
   static const Color primaryAsset = Color(0xffFFFFFF); // divider , border
+  static const Color greyFilled = Color(0xffD8DFE5); // divider , border
 }
 
 class LightTheme {
@@ -37,6 +38,7 @@ class LightTheme {
   static const Color tertiaryText = Color(0xff01070A);
 
   static const Color primaryAsset = Color(0xffD8DFE5); // divider , border
+  static const Color greyFilled = Color(0xffD8DFE5); // divider , border
 }
 
 /*

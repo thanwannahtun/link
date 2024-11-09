@@ -276,7 +276,6 @@ class Agency {
     _id: new ObjectId('66b8d28d3e1a9b47a2c0e69c'),
     name: 'Asia World',
     profile_description: 'Best travel agency for exotic locations with Fun Moments!',
-    profile_image: 'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=600',
     location: Map(2) { 'lat' => 123.123, 'lon' => 456.456 },
     user_id: new ObjectId('66b8d1926d7f679dbf20c73c'),
     createdAt: 2024-08-11T15:02:37.065Z,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/theme_extension.dart';
-import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 

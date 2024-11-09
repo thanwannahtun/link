@@ -14,7 +14,7 @@ import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel
 import 'package:link/ui/widget_extension.dart';
 
 import '../../core/widgets/cached_image.dart';
-import '../sections/hot_and_trending/hot_and_trending_screen.dart';
+import '../../domain/api_utils/api_query.dart';
 import '../utils/expandable_text.dart';
 import 'package:collection/collection.dart';
 
@@ -207,6 +207,8 @@ class _RouteInfoCardWidgetState extends State<RouteInfoCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Card.filled(
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(1))),
       margin: const EdgeInsets.all(0.0),
       child: InkWell(
         onTap: () => widget.onRoutePressed.call(widget.route),
@@ -229,7 +231,8 @@ class _RouteInfoCardWidgetState extends State<RouteInfoCardWidget> {
             ),
             RouteFooter(
               route: widget.route,
-              onBookPressed: (RouteModel route) {},
+              onBookPressed: (RouteModel route) =>
+                  widget.onRoutePressed.call(route),
             ),
           ],
         ),
@@ -266,16 +269,16 @@ class RouteInfoBodyWithMidpoints extends StatelessWidget {
           if ((route.midpoints ?? []).isNotEmpty)
             Text(
               route.midpoints!
-                      .map((m) => m.city?.name)
-                      .where((name) => name != null)
-                      .join(' - ') ??
-                  '',
+                  .map((m) => m.city?.name)
+                  .where((name) => name != null)
+                  .join(' - '),
               textAlign: TextAlign.start,
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(color: context.greyColor),
             ).fittedBox()
         ],
       ),
@@ -411,13 +414,9 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
         if (route != null) {
           routeId = route.id;
           print("route json ::: ${route.toJson()}");
-          _postRouteCubit.getPostWithRoutes(query: {
-            "categoryType": "post_with_routes",
-            "limit": 10,
-            "post_id": route.post
-          });
+          _postRouteCubit.getPostWithRoutes(
+              query: APIQuery(categoryType: "post_with_routes", limit: 5));
         }
-        // post = ModalRoute.of(context)?.settings.arguments as Post;
       }
       _initial = false;
     }
@@ -428,7 +427,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   Widget build(BuildContext context) {
     print("routeId ::: ${routeId}");
     return Scaffold(
-      backgroundColor: Theme.of(context).cardColor,
+      // backgroundColor: Theme.of(context).cardColor,
       appBar: AppBar(
         title: RouteHeader(route: RouteModel()),
       ),
@@ -451,30 +450,16 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               children: [
                 Expanded(
                     child: SingleChildScrollView(
-                        child:
-                            _routeDetailWidget(route: route ?? RouteModel()))),
+                        child: _routeDetailWidget(
+                            route: route ?? const RouteModel()))),
                 Container(
                   height: 50,
                   color: Theme.of(context).cardColor,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        LikeIcon(
-                          toggleLike: (isLiked) {},
-                        ),
-                        TextButton.icon(
-                            style: AppTheme.elevatedButtonThemeData().style,
-                            onPressed: () {
-                              context.read<ThemeCubit>().toggleTheme();
-                            },
-                            iconAlignment: IconAlignment.end,
-                            icon:
-                                const Icon(Icons.phone_enabled_sharp, size: 20),
-                            label: const Text("Book Now"))
-                      ],
-                    ),
+                  child: RouteFooter(
+                    route: route ?? const RouteModel(),
+                    onBookPressed: (route) {
+                      context.read<ThemeCubit>().toggleTheme();
+                    },
                   ),
                 ),
               ],
@@ -501,14 +486,13 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               height: 180,
               width: double.infinity,
               child: CachedImage(imageUrl: route.image ?? "")),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.all(12.0),
           child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(AppInsets.inset10),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                // border: Border.all(color: Colors.amber),
                 border: const Border(
                     bottom: BorderSide(color: Colors.blue, width: 3)),
                 borderRadius: const BorderRadius.only(
@@ -526,16 +510,14 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           ),
         ),
         if ((route.midpoints ?? []).isNotEmpty) _midpointsBuilder(route),
-        const SizedBox(height: 1),
         _moreRoutesFromAgency(route, suggestedRoutes),
       ],
     );
   }
 
   Card _midpointsBuilder(RouteModel route) {
-    return Card.filled(
+    return Card(
       margin: const EdgeInsets.all(0.0),
-      // color: Colors.amber,
       shape: const BeveledRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(0))),
       child: Column(
@@ -554,9 +536,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               ],
             ),
           ),
-          Card(
-            // shape: const BeveledRectangleBorder(
-            //     borderRadius: BorderRadius.all(Radius.circular(0))),
+          Card.filled(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -573,13 +553,10 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       RouteModel route, List<RouteModel> suggestedRoutes) {
     return SizedBox(
       width: double.infinity,
-      // color: Colors.amber,
       child: Card.filled(
         margin: const EdgeInsets.all(0.0),
-        // color: Colors.amber,
         shape: const BeveledRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(0))),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -587,22 +564,29 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
             suggestedRoutes.isNotEmpty
                 ? Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text("More from ${route.agency?.name ?? "Agency"}")
-                        .styled(fw: FontWeight.bold, color: context.greyColor),
+                    child: Text(
+                      "More from ${route.agency?.name ?? "Agency"}",
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(color: context.greyColor),
+                    ),
                   )
                 : Container(),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                   children: suggestedRoutes
-                      .map((r) => Card(
+                      .map((r) => Card.filled(
+                            semanticContainer: true,
+                            color: context.greyFilled,
                             margin: const EdgeInsets.all(16),
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(16.0),
                               child: RouteInfoBodyWithMidpoints(
                                 route: r,
                                 cardWidth:
-                                    MediaQuery.of(context).size.width - 50,
+                                    MediaQuery.of(context).size.width - 64,
                               ),
                             ),
                           ))
