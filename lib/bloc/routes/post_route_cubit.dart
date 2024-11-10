@@ -8,7 +8,7 @@ import 'package:link/domain/api_utils/api_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/repositories/post_route.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 
 part 'post_route_state.dart';
 
@@ -102,17 +102,13 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       if (routes.isNotEmpty) {
         _page++;
       }
-      Future.delayed(
-        const Duration(seconds: 2),
-        () => emit(
-            state.copyWith(status: BlocStatus.fetched, routeModels: routes)),
-      );
+      emit(state.copyWith(status: BlocStatus.fetched, routeModels: routes));
     } on Exception catch (e, stackTrace) {
-      debugPrint("""====== <Error> >
+      debugPrint("""<Error> >
             (error) - $e
             ====== 
             (staceTrace) - $stackTrace 
-            ====== <Error/>""");
+            <Error/>""");
       emit(state.copyWith(
           routeModels: [],
           status: BlocStatus.fetchFailed,
@@ -133,19 +129,15 @@ class PostRouteCubit extends Cubit<PostRouteState> {
 
       /// Checking success fetchRoutes
       if (posts.isNotEmpty) {
-        print("--------posts is not empty------------");
         _page++;
       }
-      Future.delayed(
-        const Duration(seconds: 2),
-        () => emit(state.copyWith(status: BlocStatus.fetched, routes: posts)),
-      );
+      emit(state.copyWith(status: BlocStatus.fetched, routes: posts));
     } on Exception catch (e, stackTrace) {
-      debugPrint("""====== <Error> >
+      debugPrint("""<Error> >
             (error) - $e
             ====== 
             (staceTrace) - $stackTrace 
-            ====== <Error/>""");
+            <Error/>""");
       emit(state.copyWith(
           routes: [],
           status: BlocStatus.fetchFailed,

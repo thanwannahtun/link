@@ -3,7 +3,6 @@
 import 'dart:io';
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,16 +10,12 @@ import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
-import 'package:link/domain/api_utils/api_service.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/screens/post/upload_new_post_page.dart';
-import 'package:link/ui/screens/post_detail.dart';
 import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
 import 'package:link/ui/sections/upload/post_create/post_create_cubit.dart';
-import 'package:link/ui/sections/upload/route_array_upload/file_util.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';

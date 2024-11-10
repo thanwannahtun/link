@@ -4,7 +4,7 @@ import 'package:link/models/comment.dart';
 import 'package:link/models/like.dart';
 import 'package:link/models/midpoint.dart';
 import 'package:link/models/seat.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 
 class Post {
   Post({

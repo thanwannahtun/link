@@ -17,8 +17,11 @@ class SearchRoutesQuery {
     required this.date,
   });
 
-  Map<String, dynamic> toJson() =>
-      {"origin": origin?.id, "destination": destination?.id, "date": date};
+  Map<String, dynamic> toJson() => {
+        "origin": origin?.id,
+        "destination": destination?.id,
+        "date": date?.toIso8601String()
+      };
 
   factory SearchRoutesQuery.fromJson(Map<String, dynamic> json) =>
       SearchRoutesQuery(

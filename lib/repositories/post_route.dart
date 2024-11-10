@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:link/domain/api_utils/api_service.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:path/path.dart';
 
 class PostRouteRepo extends ApiService {

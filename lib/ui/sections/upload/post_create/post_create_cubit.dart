@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 
-import '../route_array_upload/routemodel/routemodel.dart';
+import '../route_array_upload/route_model/route_model.dart';
 
 part 'post_create_state.dart';
 

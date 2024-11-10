@@ -11,6 +11,7 @@ import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 import '../../../domain/api_utils/api_query.dart';
+import '../../../domain/enums/category_type.dart';
 import '../../../models/app.dart';
 import '../../utils/route_list.dart';
 
@@ -30,7 +31,7 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
     super.initState();
     _trendingRouteBloc = PostRouteCubit()
       ..getRoutesByCategory(
-          query: APIQuery(categoryType: "trending", limit: 5));
+          query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 5));
   }
 
   @override

@@ -17,7 +17,7 @@ import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/screens/profile/route_model_card.dart';
 import 'package:link/ui/screens/route_detail_page.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
@@ -25,6 +25,7 @@ import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../domain/api_utils/api_query.dart';
+import '../../../domain/enums/category_type.dart';
 
 class HotAndTrendingScreen extends StatefulWidget {
   const HotAndTrendingScreen({super.key});
@@ -47,7 +48,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     super.initState();
     _postRouteCubit = PostRouteCubit()
       ..getRoutesByCategory(
-          query: APIQuery(categoryType: "trending_routes", limit: 10));
+          query:
+              APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
     _scrollController = ScrollController();
@@ -96,13 +98,15 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         if (_postRouteCubit.getPage % 4 == 0) {
           // Fetch vertical list
           _postRouteCubit.getRoutesByCategory(
-              query: APIQuery(categoryType: "trending_routes", limit: 5));
+              query: APIQuery(
+                  categoryType: CategoryType.trendingRoutes, limit: 5));
         } else {
           print("fetched for post with routes");
 
           // Fetch horizontal list (posts with routes)
           _postRouteCubit.getPostWithRoutes(
-              query: APIQuery(categoryType: "post_with_routes", limit: 5));
+              query: APIQuery(
+                  categoryType: CategoryType.postWithRoutes, limit: 5));
         }
 
         // _fetchToggle++; // Alternate fetch toggle
@@ -110,7 +114,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
         // Fetch more routes for the vertical list
         // _postRouteCubit.getRoutesByCategory(
-        //     query: {"categoryType": "trending_routes", "limit": 5});
+        //     query: {"categoryType": CategoryType.postWithRoutes, "limit": 5});
         //
         // // Fetch posts for the horizontal list every second scroll
         // if (_postRouteCubit.getPage % 2 == 0) {
@@ -129,7 +133,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       if (_isBottom && (_postRouteCubit.state.status != BlocStatus.fetching)) {
         print("_isBottom $_isBottom ");
         _postRouteCubit.getRoutesByCategory(
-            query: {"categoryType": "trending_routes", "limit": 5});
+            query: {"categoryType": CategoryType.postWithRoutes, "limit": 5});
         if (_postRouteCubit.getPage / 2 == 0) {
           _postRouteCubit.getPostWithRoutes(
               query: {"categoryType": "post_with_routes", "limit": 5});
@@ -158,7 +162,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           _trendingPosts = [];
           _trendingRoutes = [];
           _postRouteCubit.getRoutesByCategory(
-              query: APIQuery(categoryType: "trending_routes", limit: 5));
+              query: APIQuery(
+                  categoryType: CategoryType.trendingRoutes, limit: 5));
         },
         // child: _customScrollViewWidget(),
         child: _body(),
@@ -197,15 +202,17 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           return _buildShimmer(context);
         }
         final newPosts = state.routes;
+        final newRoutes = state.routeModels;
         if (_postRouteCubit.getPage % 4 == 0) {
           _trendingPosts.addAll(newPosts);
         }
-
-        // final newPosts = state.routes;
-        final newRoutes = state.routeModels;
+        if (!(_postRouteCubit.getPage % 4 == 0)) {
+          _trendingRoutes.addAll(newRoutes);
+        }
 
         print("=====> newRoutes ${newRoutes.length}");
-        _trendingRoutes.addAll(newRoutes);
+
+        // final newPosts = state.routes;
         print("=====> _trendingRoutes after fetched ${_trendingRoutes.length}");
 
         return _showPosts();
@@ -287,7 +294,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                       ElevatedButton(
                           onPressed: () => _postRouteCubit.getRoutesByCategory(
                               query: APIQuery(
-                                  categoryType: "trending_routes", limit: 10)),
+                                  categoryType: CategoryType.postWithRoutes,
+                                  limit: 10)),
                           child: const Icon(Icons.refresh_rounded)),
                       const SizedBox(
                         height: 5,
@@ -344,7 +352,14 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
             (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
 
         if (shouldShowHorizontalWidget) {
-          return HorizontalPostWithRoutesWidget(posts: _trendingPosts);
+          return HorizontalPostWithRoutesWidget(
+            posts: _trendingPosts,
+            onFetchAllPressed: () {
+              _postRouteCubit.getPostWithRoutes(
+                  query: APIQuery(
+                      categoryType: CategoryType.postWithRoutes, limit: 5));
+            },
+          );
         }
 
         // Calculate the actual index considering additional horizontal widgets
@@ -353,13 +368,13 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         if (adjustedIndex < _trendingRoutes.length) {
           RouteModel route = _trendingRoutes[adjustedIndex];
 
-          RouteModelCard(
-            route: route,
-            onRoutePressed: (route) {
-              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-              print("--- go to post detail");
-            },
-          );
+          // return RouteModelCard(
+          //   route: route,
+          //   onRoutePressed: (route) {
+          //     context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+          //     print("--- go to post detail");
+          //   },
+          // );
 
           return RouteInfoCardWidget(
             route: route,
@@ -384,6 +399,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     );
   }
 
+  /*
   ListView _postViewBuilders() {
     return ListView.separated(
       controller: _scrollController,
@@ -425,6 +441,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     );
   }
 
+  */
   Future<Object?> goPageDetail(Post post) =>
       context.pushNamed(RouteLists.trendingRouteCardDetail, arguments: post);
 
@@ -586,8 +603,10 @@ class SliverGridWidget extends StatelessWidget {
 
 class HorizontalPostWithRoutesWidget extends StatelessWidget {
   final List<Post> posts;
+  final VoidCallback? onFetchAllPressed;
 
-  const HorizontalPostWithRoutesWidget({super.key, required this.posts});
+  const HorizontalPostWithRoutesWidget(
+      {super.key, required this.posts, this.onFetchAllPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -605,10 +624,23 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
-                      final post = posts[index];
-                      return buildHorizontalRouteCard(context, post);
+                      if (index < posts.length) {
+                        final post = posts[index];
+                        return buildHorizontalRouteCard(context, post);
+                      }
+                      return SizedBox(
+                        width: 200,
+                        height: double.infinity,
+                        child: Card(
+                          child: Center(
+                            child: ElevatedButton(
+                                onPressed: onFetchAllPressed,
+                                child: const Text("See All")),
+                          ),
+                        ),
+                      );
                     },
-                    childCount: posts.length,
+                    childCount: posts.length + 1,
                   ),
                 ),
               ],

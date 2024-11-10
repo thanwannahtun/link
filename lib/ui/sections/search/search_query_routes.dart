@@ -5,7 +5,7 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
@@ -13,6 +13,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/utils/app_insets.dart';
 import '../../../domain/api_utils/api_query.dart';
 import '../../../domain/bloc_utils/bloc_status.dart';
+import '../../../domain/enums/category_type.dart';
 import '../../screens/post_route_card.dart';
 import '../../screens/route_detail_page.dart';
 import '../../utils/route_list.dart';
@@ -47,12 +48,13 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
 }*/
     if (_initial) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
-        Map<String, dynamic> argument =
-            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-        searchRoutesQuery = argument as SearchRoutesQuery;
+        searchRoutesQuery =
+            ModalRoute.of(context)?.settings.arguments as SearchRoutesQuery;
+
         _searchQueryCubit = PostRouteCubit()
           ..getRoutesByCategory(
-              query: APIQuery(categoryType: "filter_searched_routes", limit: 5),
+              query:
+                  APIQuery(categoryType: CategoryType.searchedRoutes, limit: 5),
               body: searchRoutesQuery?.toJson());
       }
       _initial = false;

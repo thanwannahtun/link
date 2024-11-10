@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
@@ -18,13 +17,13 @@ import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/ui/screens/route_detail_page.dart';
 import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../domain/enums/category_type.dart';
 import '../../../models/city.dart';
-import '../../utils/context.dart';
 import '../../widgets/custom_scaffold_body.dart';
 
 class HeroHomeScreen extends StatefulWidget {
@@ -58,10 +57,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     print("initStateCalled  :HeroHomeScreen");
     _trendingRouteBloc = PostRouteCubit()
       ..getRoutesByCategory(
-          query: APIQuery(categoryType: "trending_routes", limit: 10));
+          query:
+              APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
     _sponsoredRouteBloc = PostRouteCubit()
       ..getRoutesByCategory(
-          query: APIQuery(categoryType: "trending_routes", limit: 10));
+          query:
+              APIQuery(categoryType: CategoryType.sponsoredRoutes, limit: 10));
     _selectedDateNotifier = ValueNotifier(DateTime.now());
 
     _scrollController = ScrollController(); // _sponsoredRoute Controller
@@ -82,7 +83,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         print("_isBottom $_isBottom ");
         if (!(_sponsoredRoutes.length > 50)) {
           _sponsoredRouteBloc.getRoutesByCategory(
-              query: APIQuery(categoryType: "trending_routes", limit: 5));
+              query: APIQuery(
+                  categoryType: CategoryType.sponsoredRoutes, limit: 5));
         }
       }
     });
@@ -112,10 +114,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           _sponsoredRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.getRoutesByCategory(
-              query: APIQuery(categoryType: "trending_routes", limit: 10));
+              query: APIQuery(
+                  categoryType: CategoryType.trendingRoutes, limit: 10));
           // Todo: uncomment below
           _sponsoredRouteBloc.getRoutesByCategory(
-              query: APIQuery(categoryType: "trending_routes", limit: 10));
+              query: APIQuery(
+                  categoryType: CategoryType.sponsoredRoutes, limit: 10));
         },
         child: _heroBody(context),
       ),
@@ -238,6 +242,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           return _buildTrendingRoutesShimmer(context);
         }
         final newRoutes = state.routeModels;
+        print("new route first = ${newRoutes.first.toJson()}");
         print(
             "=====> _sponsoredRoutes before fetched ${_sponsoredRoutes.length}");
         print("=====> newRoutes ${newRoutes.length}");
@@ -351,6 +356,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   }
 
   Widget _sponsoredCard(BuildContext context, RouteModel route) {
+    print("route json ::: sponsored ${route.toJson()}");
     return InkWell(
       onTap: () {
         context.pushNamed(RouteLists.routeDetailPage, arguments: route);
@@ -603,7 +609,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         onPressed: () {
           // _trendingRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.getRoutesByCategory(
-              query: APIQuery(categoryType: "trending_routes", limit: 10));
+              query: APIQuery(
+                  categoryType: CategoryType.trendingRoutes, limit: 10));
           print("View All Pressed!");
         },
         label: const Text("View All"),
@@ -618,6 +625,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     BuildContext context,
     RouteModel routeModel,
   ) {
+    print("routeModel ==== > card ${routeModel.toJson()}");
     Card.filled(
       elevation: 0.5,
       color: context.secondaryColor,
@@ -883,7 +891,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               // context.pushNamed(RouteLists.postCreatePage),
                               _trendingRouteBloc.getRoutesByCategory(
                                   query: APIQuery(
-                                      categoryType: "trending_routes",
+                                      categoryType: CategoryType.trendingRoutes,
                                       limit: 5)),
                           child: const Text("Start Creating A Post!"))
                     ],
@@ -1268,53 +1276,4 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   // Set to hold selected hobbies
   Set<String> selectedHobbies = {};
-
-  Future<City?> _chooseCity() async {
-    return await Context.showAlertDialog<City>(
-      context,
-      icon: IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-      headerWidget: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.location_on_outlined),
-            title: const Text("Choose Cities").styled(fw: FontWeight.bold),
-          ),
-          CityAutocomplete(
-            cities: App.cities,
-            controller: CityAutocompleteController(),
-            onSelected: (city) {
-              print(city);
-            },
-            hintText: "Search",
-          )
-        ],
-      ),
-      itemList: App.cities,
-      itemBuilder: (ctx, index) {
-        if (index < 0) {
-          return Center(
-            child: IconButton(
-                onPressed: () {
-                  context.read<CityCubit>().fetchCities();
-                },
-                icon: const Icon(Icons.refresh_rounded)),
-          );
-        }
-        return StatefulBuilder(
-          builder: (BuildContext ctx, void Function(void Function()) setState) {
-            return ListTile(
-              dense: true,
-              onTap: () {
-                setState(() {});
-                Navigator.pop(context, App.cities[index]);
-              },
-              // leading: const Icon(Icons.add_circle_outlined),
-              title: Text(App.cities[index].name ?? ""),
-            );
-          },
-        );
-      },
-    );
-  }
 }

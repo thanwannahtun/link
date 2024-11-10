@@ -1,7 +1,5 @@
 import 'package:link/models/user.dart';
 
-import 'package:link/ui/sections/profile/setting_screen.dart';
-
 class Agency {
   Agency({
     this.id,

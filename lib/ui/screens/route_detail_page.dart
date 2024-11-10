@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
-import 'package:link/core/styles/app_theme.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
+import 'package:link/domain/enums/category_type.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/screens/profile/route_model_card.dart';
-import 'package:link/ui/sections/upload/route_array_upload/routemodel/routemodel.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/widget_extension.dart';
 
 import '../../core/widgets/cached_image.dart';
@@ -18,173 +17,6 @@ import '../../domain/api_utils/api_query.dart';
 import '../utils/expandable_text.dart';
 import 'package:collection/collection.dart';
 
-/*
-class RouteDetailPage extends StatefulWidget {
-  const RouteDetailPage({super.key});
-
-  @override
-  State<RouteDetailPage> createState() => _RouteDetailPageState();
-}
-
-class _RouteDetailPageState extends State<RouteDetailPage> {
-  Post? post;
-  late PostRouteCubit _postRouteCubit;
-  List<Routemodel> _routeModels = [];
-  List<Post> posts = [];
-  bool _initial = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _postRouteCubit = PostRouteCubit();
-  }
-
-  @override
-  void didChangeDependencies() {
-    if (_initial) {
-      if (ModalRoute.of(context)?.settings.arguments != null) {
-        final route = ModalRoute.of(context)?.settings.arguments as Routemodel?;
-        if (route != null) {
-          print("route json ::: ${route.toJson()}");
-          _postRouteCubit.getPostWithRoutes(query: {
-            "categoryType": "post_with_routes",
-            "limit": 10,
-            // "post_id": route.post
-          });
-        }
-        // post = ModalRoute.of(context)?.settings.arguments as Post;
-      }
-      _initial = false;
-    }
-    super.didChangeDependencies();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        // leading: Container(),
-        // leadingWidth: 0,
-        title: RouteHeader(
-            route: post == null
-                ? Routemodel()
-                : post?.routes?.first ?? Routemodel()),
-      ),
-      body: BlocConsumer<PostRouteCubit, PostRouteState>(
-        bloc: _postRouteCubit,
-        builder: (context, state) {
-          if (state.status == BlocStatus.fetched) {
-            post = state.routes.last;
-            posts = state.routes;
-            _routeModels = post?.routes ?? [];
-            print("post json :::: ${post?.toJson()}");
-            final heroRoute = _routeModels.last;
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RouteInfo(route: heroRoute),
-                        Column(
-                          children: heroRoute.midpoints!
-                              .map((mp) => MidpointItem(midpoint: mp))
-                              .toList(),
-                        ),
-                        ExpandableText(
-                          text: heroRoute.description ?? "",
-                          textStyle: TextStyle(color: context.greyColor),
-                          maxLines: 2,
-                        ),
-                        if (heroRoute.image != null)
-                          SizedBox(
-                              width: double.infinity,
-                              height: 120,
-                              child:
-                                  CachedImage(imageUrl: heroRoute.image ?? "")),
-                        const SizedBox(height: 5),
-                        // RouteMidpoints(midpoints: _routeModels[0].midpoints ?? [])
-                      ],
-                    ),
-                  ),
-                  Container(
-                    color: Theme.of(context).cardColor.withOpacity(0.3),
-                    height: 350,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("More from Agency:"),
-                            IconButton(
-                                onPressed: () {},
-                                icon: Icon(Icons.keyboard_arrow_right))
-                          ],
-                        ),
-                        SizedBox(
-                          height: 300,
-                          child: HorizontalPostWithRoutesWidget(posts: posts),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    // height: 200,
-                    color: Colors.amberAccent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              RouteCardDetailScreen(routeParam: heroRoute),
-                        ));
-                      },
-                      child: RouteInfoCardWidget(
-                        route: heroRoute,
-                        onAgencyPressed: (route) {},
-                        onRoutePressed: (route) {},
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 1),
-                  Container(
-                    color: Colors.amber,
-                    child: RouteTimelineWidget(
-                        origin: heroRoute.origin?.name ?? "",
-                        destination: heroRoute.destination?.name ?? "",
-                        scheduleDate: heroRoute.scheduleDate ?? DateTime.now(),
-                        price: heroRoute.pricePerTraveller ?? 0.0,
-                        midpoints: heroRoute.midpoints ?? []),
-                  ),
-                  SizedBox(height: 1),
-                  Container(
-                      color: Colors.amber,
-                      child: RouteCardWidget(
-                        route: heroRoute,
-                      )),
-                  SizedBox(height: 1),
-                  Container(
-                    color: Colors.amber,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: RouteModelCard(route: heroRoute),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator.adaptive());
-          }
-        },
-        listener: (context, state) {},
-      ),
-    );
-  }
-}
-*/
 typedef RouteCallback = void Function(RouteModel route);
 
 class RouteInfoCardWidget extends StatefulWidget {
@@ -415,7 +247,10 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           routeId = route.id;
           print("route json ::: ${route.toJson()}");
           _postRouteCubit.getPostWithRoutes(
-              query: APIQuery(categoryType: "post_with_routes", limit: 5));
+              query: APIQuery(
+                  categoryType: CategoryType.postWithRoutes,
+                  limit: 5,
+                  postId: route.post));
         }
       }
       _initial = false;
