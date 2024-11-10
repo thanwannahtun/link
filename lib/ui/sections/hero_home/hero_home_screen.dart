@@ -281,12 +281,15 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            "Trending Search",
+            "Sponsored Search",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           IconButton(
               onPressed: () {
-                context.pushNamed(RouteLists.trendingRouteCards);
+                APIQuery query = APIQuery(
+                    categoryType: CategoryType.sponsoredRoutes, limit: 10);
+                context.pushNamed(RouteLists.hotAndTrendingScreen,
+                    arguments: {"query": query});
               },
               icon: const Icon(Icons.keyboard_arrow_right_sharp)),
         ],
@@ -329,7 +332,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           ),
           IconButton(
               onPressed: () {
-                // context.pushNamed(RouteLists.trendingRouteCards);
+                APIQuery query = APIQuery(
+                    categoryType: CategoryType.suggestedRoutes, limit: 10);
+                context.pushNamed(RouteLists.hotAndTrendingScreen,
+                    arguments: {"query": query});
               },
               icon: const Icon(Icons.keyboard_arrow_right_sharp)),
         ],

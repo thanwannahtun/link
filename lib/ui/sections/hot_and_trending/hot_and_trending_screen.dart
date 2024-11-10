@@ -42,14 +42,22 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   late final ScrollController _scrollController;
   Timer? _debounceTimer;
 
+  bool _initial = true;
+  bool _pushedRoutePage = false;
+  APIQuery? query;
+  late APIQuery initialQuery;
+  late APIQuery getPostWithRouteQuery;
+
   @override
   void initState() {
     print("initStateCalled  :HotAndTrendingScreen");
     super.initState();
-    _postRouteCubit = PostRouteCubit()
-      ..getRoutesByCategory(
-          query:
-              APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
+    initialQuery =
+        APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10);
+    getPostWithRouteQuery =
+        APIQuery(categoryType: CategoryType.postWithRoutes, limit: 10);
+
+    _postRouteCubit = PostRouteCubit();
     context.read<CityCubit>().fetchCities();
     // context.read<PostRouteCubit>().fetchRoutes();
     _scrollController = ScrollController();
@@ -59,6 +67,20 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
   @override
   void didChangeDependencies() {
+    if (_initial) {
+      if (ModalRoute.of(context)?.settings.arguments != null) {
+        final arguments =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+        query = arguments['query'];
+        _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
+
+        _pushedRoutePage = true;
+      } else if (ModalRoute.of(context)?.settings.arguments == null) {
+        _postRouteCubit.getRoutesByCategory(query: initialQuery);
+      }
+      _initial = false;
+    }
+
     super.didChangeDependencies();
   }
 
@@ -97,16 +119,12 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         // if (_fetchToggle % 2 == 0) {
         if (_postRouteCubit.getPage % 4 == 0) {
           // Fetch vertical list
-          _postRouteCubit.getRoutesByCategory(
-              query: APIQuery(
-                  categoryType: CategoryType.trendingRoutes, limit: 5));
+          _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
         } else {
           print("fetched for post with routes");
 
           // Fetch horizontal list (posts with routes)
-          _postRouteCubit.getPostWithRoutes(
-              query: APIQuery(
-                  categoryType: CategoryType.postWithRoutes, limit: 5));
+          _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
         }
 
         // _fetchToggle++; // Alternate fetch toggle
@@ -126,22 +144,6 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     });
   }
 
-  /*
-  void _onScroll() {
-    if (_debounceTimer?.isActive ?? false) return; // Prevent further processing
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      if (_isBottom && (_postRouteCubit.state.status != BlocStatus.fetching)) {
-        print("_isBottom $_isBottom ");
-        _postRouteCubit.getRoutesByCategory(
-            query: {"categoryType": CategoryType.postWithRoutes, "limit": 5});
-        if (_postRouteCubit.getPage / 2 == 0) {
-          _postRouteCubit.getPostWithRoutes(
-              query: {"categoryType": "post_with_routes", "limit": 5});
-        }
-      }
-    });
-  }
-*/
   bool get _isBottom {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
@@ -158,16 +160,19 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
-          _postRouteCubit.updatePage(); // set page to default
+          // _postRouteCubit.updatePage(); // set page to default
           _trendingPosts = [];
           _trendingRoutes = [];
-          _postRouteCubit.getRoutesByCategory(
-              query: APIQuery(
-                  categoryType: CategoryType.trendingRoutes, limit: 5));
+          _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
         },
         // child: _customScrollViewWidget(),
         child: _body(),
       ),
+      backButton: _pushedRoutePage
+          ? BackButton(
+              onPressed: () => context.pop(),
+            )
+          : null,
       title: Text(
         "Trending Packages",
         style: TextStyle(
@@ -293,9 +298,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                     children: [
                       ElevatedButton(
                           onPressed: () => _postRouteCubit.getRoutesByCategory(
-                              query: APIQuery(
-                                  categoryType: CategoryType.postWithRoutes,
-                                  limit: 10)),
+                              query: query ?? initialQuery),
                           child: const Icon(Icons.refresh_rounded)),
                       const SizedBox(
                         height: 5,
@@ -355,9 +358,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           return HorizontalPostWithRoutesWidget(
             posts: _trendingPosts,
             onFetchAllPressed: () {
-              _postRouteCubit.getPostWithRoutes(
-                  query: APIQuery(
-                      categoryType: CategoryType.postWithRoutes, limit: 5));
+              _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
             },
           );
         }
