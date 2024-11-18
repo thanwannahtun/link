@@ -20,6 +20,7 @@ import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
+import 'package:link/ui/widgets/route_card_vertical_widget.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../domain/enums/category_type.dart';
@@ -46,7 +47,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   final ValueNotifier<City?> _destinationNotifier = ValueNotifier(null);
 
   late final ScrollController _scrollController;
+  late final ScrollController _trendingScrollController;
   Timer? _debounceTimer;
+  Timer? _trendingDebounceTimer;
 
   final _originAutoCompleteController = CityAutocompleteController();
   final _destinationAutoCompleteController = CityAutocompleteController();
@@ -66,7 +69,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     _selectedDateNotifier = ValueNotifier(DateTime.now());
 
     _scrollController = ScrollController(); // _sponsoredRoute Controller
+    _trendingScrollController =
+        ScrollController(); // _sponsoredRoute Controller
     _scrollController.addListener(_onScroll);
+    _trendingScrollController.addListener(_onRightScroll);
   }
 
   @override
@@ -90,10 +96,37 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     });
   }
 
+  void _onRightScroll() {
+    if (_trendingDebounceTimer?.isActive ?? false)
+      return; // Prevent further processing
+    _trendingDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (_isRightEnd &&
+          (_trendingRouteBloc.state.status != BlocStatus.fetching)) {
+        print("_isRightEnd $_isRightEnd ");
+        if (!(_trendingRoutes.length > 50)) {
+          _trendingRouteBloc.getRoutesByCategory(
+              query: APIQuery(
+                  categoryType: CategoryType.trendingRoutes, limit: 5));
+        }
+      }
+    });
+  }
+
   bool get _isBottom {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
+    final threshold = maxScroll * 0.02; // Set a threshold of 2%
+    // Check if the user is within the last 2% of the scrollable area
+    return (maxScroll - currentScroll <= threshold);
+    // return currentScroll >=
+    //     (maxScroll * 0.98); // Trigger when scrolled 90% of the way
+  }
+
+  bool get _isRightEnd {
+    if (!_trendingScrollController.hasClients) return false;
+    final maxScroll = _trendingScrollController.position.maxScrollExtent;
+    final currentScroll = _trendingScrollController.position.pixels;
     final threshold = maxScroll * 0.02; // Set a threshold of 2%
     // Check if the user is within the last 2% of the scrollable area
     return (maxScroll - currentScroll <= threshold);
@@ -154,26 +187,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /*
             _originDestinationCard(context),
-            // Date Choice field
             _dateChoiceActionCard(),
-            */
-            // Container(
-            //   padding: const EdgeInsets.only(bottom: AppInsets.inset5),
-            //   margin: const EdgeInsets.all(0.0),
-            //   color: Theme.of(context).cardColor.withOpacity(0.5),
-            //   child: Column(
-            //     children: [
-            _originDestinationCard(context),
-            // Date Choice field
-            _dateChoiceActionCard(),
-            //   ],
-            // ).padding(padding: const EdgeInsets.all(5)),
-            // ),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
+            const SizedBox(height: AppInsets.inset8),
             Container(
               padding: const EdgeInsets.only(bottom: AppInsets.inset5),
               margin: const EdgeInsets.all(0.0),
@@ -261,16 +277,22 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         bloc: _trendingRouteBloc,
         listener: (BuildContext context, Object? state) {},
         builder: (BuildContext context, state) {
-          if (state.status == BlocStatus.fetchFailed ||
-              state.status == BlocStatus.fetching) {
+          debugPrint("::::::::::::: ${state.status}");
+          if (state.status == BlocStatus.fetchFailed &&
+              _trendingRoutes.isEmpty) {
             return _buildTrendingRoutesShimmer(context);
-          } else if (state.status == BlocStatus.fetched) {
-            _trendingRoutes = state.routeModels;
-            print("_trendingRoutes :::: ${_trendingRoutes.length}");
-            return _buildTrendingRoutesCard(context);
-          } else {
+          } else if (state.status == BlocStatus.fetching &&
+              _trendingRoutes.isEmpty) {
             return _buildTrendingRoutesShimmer(context);
           }
+          final newRoutes = state.routeModels;
+          print("new route first = ${newRoutes.first.toJson()}");
+          print(
+              "=====> _trendingRoutes before fetched ${_trendingRoutes.length}");
+          print("=====> newRoutes ${newRoutes.length}");
+          _trendingRoutes.addAll(newRoutes);
+
+          return _buildTrendingRoutesCard(context);
         });
   }
 
@@ -281,13 +303,13 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            "Sponsored Search",
+            "Trending & Hot",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           IconButton(
               onPressed: () {
                 APIQuery query = APIQuery(
-                    categoryType: CategoryType.sponsoredRoutes, limit: 10);
+                    categoryType: CategoryType.trendingRoutes, limit: 10);
                 context.pushNamed(RouteLists.hotAndTrendingScreen,
                     arguments: {"query": query});
               },
@@ -299,7 +321,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   Widget _sponsoredViewAllAction(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        _viewAllSponosoredRoutes();
+      },
       child: Opacity(
         opacity: 0.5,
         child: Row(
@@ -351,13 +375,18 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       scrollDirection: Axis.horizontal,
       controller: _scrollController,
       itemBuilder: (context, index) {
-        // if (index < _sponsoredRoutes.length) {
-        return _sponsoredCard(context, _sponsoredRoutes[index]);
-        // } else {
-        // return _showEmptyTrendingCard(context);
-        // }
+        if (index < _sponsoredRoutes.length) {
+          return _sponsoredCard(context, _sponsoredRoutes[index]);
+        } else {
+          return _showEmptySponsoredCard(context,
+              maxExtend: (!(_sponsoredRouteBloc.state.status ==
+                      BlocStatus.fetching)) &&
+                  _sponsoredRoutes.length > 50);
+        }
       },
-      itemCount: _sponsoredRoutes.length,
+      itemCount: _sponsoredRoutes.length +
+          1 +
+          (_sponsoredRouteBloc.state.status == BlocStatus.fetching ? 3 : 0),
     );
   }
 
@@ -381,212 +410,20 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               width: 0.01,
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              /// header
-              Expanded(
-                child: _sponsorHeader(route),
-              ),
-
-              Expanded(
-                flex: 5,
-                child: _sponsorBody(route, context),
-              ),
-              const SizedBox(
-                height: 10,
-              )
-            ],
+          // child: _routeCardTemp(route, context),
+          child: RouteCardVerticalWidget(
+            route: route,
+            onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+            },
+            onAgencyPressed: (route) {
+              context.pushNamed(
+                RouteLists.publicAgencyProfile,
+                arguments: route.agency,
+              );
+            },
           ),
         ),
-      ),
-    );
-  }
-
-  Padding _sponsorBody(RouteModel route, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset20),
-      child: Card.filled(
-        shape: const BeveledRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.zero)),
-        margin: const EdgeInsets.all(0.0),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            children: [
-              /// Images
-              SizedBox(
-                width: double.infinity,
-                child: CachedImage(imageUrl: route.image ?? "")
-                    .clipRRect(borderRadius: BorderRadius.circular(5)),
-              ).expanded(flex: 2),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  /// ORIGIN & DESTINATION
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.pin_drop,
-                        color:
-                            Theme.of(context).iconTheme.color?.withOpacity(0.7),
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(
-                        "${route.origin?.name ?? ""} to ${route.destination?.name ?? ""}",
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ).expanded(),
-                    ],
-                  ),
-
-                  /// DATE
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.date_range_rounded,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(
-                        DateTimeUtil.formatDateTime(route.scheduleDate),
-                        style: Theme.of(context).textTheme.labelMedium,
-                      )
-                    ],
-                  ),
-
-                  /// MIDPOINTS
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.business_rounded,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(
-                        route.midpoints
-                                ?.map((m) => m.city?.name)
-                                .where((name) => name != null)
-                                .join(' - ') ??
-                            '',
-                        style: const TextStyle(fontSize: 12),
-                        textAlign: TextAlign.start,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        softWrap: true,
-                      ).expanded(),
-                    ],
-                  ),
-
-                  /// DESCRIPTION
-                  Text(
-                    route.description ?? "",
-                    style: const TextStyle(fontSize: 12),
-                    textAlign: TextAlign.start,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                    softWrap: true,
-                  ).padding(padding: const EdgeInsets.all(AppInsets.inset5))
-                ],
-              )
-                  .padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppInsets.inset5))
-                  .expanded(flex: 3),
-
-              /// Action Button
-              ElevatedButton(
-                style: AppTheme.elevatedButtonThemeData().style?.copyWith(
-                    // minimumSize: WidgetStatePropertyAll(
-                    //     Size(MediaQuery.of(context).size.width * 0.8, 35)),
-                    ),
-                onPressed: () {
-                  context.pushNamed(RouteLists.routeDetailPage,
-                      arguments: route);
-                },
-                child: Text(
-                  "Book Now",
-                  style: TextStyle(color: context.onPrimaryColor),
-                ),
-              )
-                  .padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppInsets.inset8))
-                  .expanded(),
-
-              /// short description
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Padding _sponsorHeader(RouteModel route) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Opacity(
-                opacity: 0.7,
-                child: Text(
-                  "sponsored",
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ),
-              Text(
-                "${(route.pricePerTraveller ?? 38000).toString()} Ks",
-                style: Theme.of(context).textTheme.headlineSmall,
-              ).expanded(),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(50),
-                onTap: () {
-                  print("===> go to Agency Detail");
-                  context.pushNamed(
-                    RouteLists.publicAgencyProfile,
-                    arguments: route.agency,
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: 25,
-                    height: 25,
-                    child:
-                        CachedImage(imageUrl: route.agency?.profileImage ?? "")
-                            .clipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(
-                width: AppInsets.inset8,
-              ),
-              IconButton(
-                  onPressed: () {
-                    print("hello");
-                  },
-                  icon: const Icon(Icons.more_vert_rounded)),
-            ],
-          )
-        ],
       ),
     );
   }
@@ -597,34 +434,52 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     }
     return ListView.builder(
       scrollDirection: Axis.horizontal,
+      controller: _trendingScrollController,
       itemBuilder: (context, index) {
         if (index < _trendingRoutes.length) {
           RouteModel routeModel = _trendingRoutes[index];
           print("routeMOdel json = ${routeModel.toJson()}");
           return _trendingRouteCard(context, routeModel);
         }
-        return _navigateToAllTrendingRoutes();
+        return _navigateToAllTrendingRoutes(
+            maxExtend:
+                (!(_trendingRouteBloc.state.status == BlocStatus.fetching)) &&
+                    _trendingRoutes.length > 50);
       },
-      itemCount: _trendingRoutes.length + 1,
+      itemCount: _trendingRoutes.length +
+          1 +
+          (_trendingRouteBloc.state.status == BlocStatus.fetching ? 3 : 0),
     );
   }
 
-  Card _navigateToAllTrendingRoutes() {
-    return Card.filled(
-      child: TextButton.icon(
-        onPressed: () {
-          // _trendingRouteBloc.updatePage(); // set page value to
-          _trendingRouteBloc.getRoutesByCategory(
-              query: APIQuery(
-                  categoryType: CategoryType.trendingRoutes, limit: 10));
-          print("View All Pressed!");
-        },
-        label: const Text("View All"),
-        iconAlignment: IconAlignment.end,
-        icon: const Icon(Icons.double_arrow_rounded),
-      ).padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5)),
-    );
+  Widget _navigateToAllTrendingRoutes({required bool maxExtend}) {
+    if (maxExtend) {
+      return Card.filled(
+        child: TextButton.icon(
+          onPressed: () {
+            APIQuery query = APIQuery(
+                categoryType: CategoryType.trendingRoutes,
+                limit: 10,
+                page: _trendingRouteBloc.getPage);
+            context.pushNamed(RouteLists.hotAndTrendingScreen,
+                arguments: {"query": query});
+          },
+          label: const Text("View All"),
+          iconAlignment: IconAlignment.end,
+          icon: const Icon(Icons.double_arrow_rounded),
+        ).padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5)),
+      );
+    }
+    return Shimmer.fromColors(
+        baseColor: Colors.grey,
+        highlightColor: Colors.greenAccent,
+        child: Card.filled(
+          child: SizedBox(
+            height: double.infinity,
+            width: MediaQuery.sizeOf(context).width - 50,
+          ),
+        ));
   }
 
   Widget _trendingRouteCard(
@@ -1040,12 +895,21 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             _destinationNotifier.value == null) {
                           return;
                         }
+
+                        SearchRoutesQuery searchedRouteQuery =
+                            SearchRoutesQuery(
+                                origin: _originNotifier.value,
+                                destination: _destinationNotifier.value,
+                                date: _selectedDateNotifier.value);
+
+                        APIQuery query = APIQuery(
+                            categoryType: CategoryType.searchedRoutes,
+                            searchedRouteQuery: searchedRouteQuery);
+
                         context.pushNamed(
-                          RouteLists.searchQueryRoutes,
-                          arguments: SearchRoutesQuery(
-                              origin: _originNotifier.value,
-                              destination: _destinationNotifier.value,
-                              date: _selectedDateNotifier.value),
+                          // RouteLists.searchQueryRoutes,
+                          RouteLists.searchRoutesScreen,
+                          arguments: {"query": query},
                           // arguments: {
                           //   "origin": _originNotifier.value,
                           //   "destination": _destinationNotifier.value,
@@ -1282,4 +1146,61 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   // Set to hold selected hobbies
   Set<String> selectedHobbies = {};
+
+  Widget _showEmptySponsoredCard(BuildContext context,
+      {bool maxExtend = false}) {
+    if (maxExtend) {
+      return Card.filled(
+        child: Container(
+          margin: const EdgeInsets.all(AppInsets.inset10),
+          padding: const EdgeInsets.all(AppInsets.inset10),
+          color: context.greyFilled,
+          width: MediaQuery.sizeOf(context).width - 100,
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Center(
+                child: Icon(
+                  Icons.content_paste_search,
+                  size: 50,
+                ),
+              ).expanded(),
+              TextButton.icon(
+                onPressed: () {
+                  _viewAllSponosoredRoutes();
+                },
+                label: const Text("View All"),
+                style: Theme.of(context).elevatedButtonTheme.style,
+                iconAlignment: IconAlignment.end,
+                icon: const Icon(Icons.double_arrow_rounded),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Shimmer.fromColors(
+          baseColor: context.greyColor,
+          highlightColor: context.greyFilled,
+          child: Card.filled(
+            child: Container(
+              padding: const EdgeInsets.all(AppInsets.inset10),
+              color: context.greyFilled,
+              width: MediaQuery.sizeOf(context).width - 100,
+              height: double.infinity,
+            ),
+          ));
+    }
+  }
+
+  void _viewAllSponosoredRoutes() {
+    APIQuery query = APIQuery(
+        categoryType: CategoryType.sponsoredRoutes,
+        limit: 10,
+        page: _sponsoredRouteBloc.getPage);
+    context.pushNamed(RouteLists.hotAndTrendingScreen,
+        arguments: {"query": query});
+  }
 }

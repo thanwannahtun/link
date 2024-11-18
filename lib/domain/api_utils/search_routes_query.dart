@@ -12,9 +12,9 @@ class SearchRoutesQuery {
   final DateTime? date;
 
   SearchRoutesQuery({
-    required this.origin,
-    required this.destination,
-    required this.date,
+    this.origin,
+    this.destination,
+    this.date,
   });
 
   Map<String, dynamic> toJson() => {
@@ -28,4 +28,15 @@ class SearchRoutesQuery {
           origin: json["origin"],
           destination: json["destination"],
           date: json["date"]);
+
+  SearchRoutesQuery copyWith({
+    City? origin,
+    City? destination,
+    DateTime? date,
+  }) {
+    return SearchRoutesQuery(
+        origin: origin ?? this.origin,
+        destination: destination ?? this.destination,
+        date: date ?? this.date);
+  }
 }

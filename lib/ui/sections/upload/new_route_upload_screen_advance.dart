@@ -97,11 +97,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
           ),
         ),
         title: const Text('Create New Post'),
-        action: IconButton.filled(
-            onPressed: () {
-              context.read<ThemeCubit>().toggleTheme();
-            },
-            icon: const Icon(Icons.sunny)),
+        action: null,
         backButton: BackButton(
           onPressed: () => context.pop(),
         ));
@@ -764,94 +760,101 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-          top: AppInsets.inset15,
-          left: AppInsets.inset15,
-          right: AppInsets.inset15,
-          bottom: 3),
-      child: Column(
-        children: [
-          SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Column(
-                    // crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      resizeToAvoidBottomInset: true, // Adjust screen for keyboard
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(
+              top: AppInsets.inset15,
+              left: AppInsets.inset15,
+              right: AppInsets.inset15,
+              bottom: 3),
+          child: Column(
+            children: [
+              SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
                     children: [
-                      Text(
-                        widget.route != null ? 'Edit Route' : 'Add New Route',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      CityAutocomplete(
-                        cities: App.cities,
-                        controller: originController,
-                        initialValue: origin?.name,
-                        onSelected: (value) {
-                          origin = value;
-                          setState(() {});
-                        },
-                        labelText: "Origin",
-                        validator: (value) =>
-                            (value!.isEmpty || !originController.isValid)
+                      Column(
+                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.route != null
+                                ? 'Edit Route'
+                                : 'Add New Route',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 16),
+                          CityAutocomplete(
+                            cities: App.cities,
+                            controller: originController,
+                            initialValue: origin?.name,
+                            onSelected: (value) {
+                              origin = value;
+                              setState(() {});
+                            },
+                            labelText: "Origin",
+                            validator: (value) =>
+                                (value!.isEmpty || !originController.isValid)
+                                    ? ''
+                                    : null,
+                          ),
+
+                          const SizedBox(height: 8),
+                          CityAutocomplete(
+                            cities: App.cities,
+                            controller: destinationController,
+                            initialValue: destination?.name,
+                            onSelected: (value) {
+                              destination = value;
+                              setState(() {});
+                            },
+                            labelText: "Destination",
+                            validator: (value) => (value!.isEmpty ||
+                                    !destinationController.isValid)
                                 ? ''
                                 : null,
-                      ),
+                          ),
 
-                      const SizedBox(height: 8),
-                      CityAutocomplete(
-                        cities: App.cities,
-                        controller: destinationController,
-                        initialValue: destination?.name,
-                        onSelected: (value) {
-                          destination = value;
-                          setState(() {});
-                        },
-                        labelText: "Destination",
-                        validator: (value) =>
-                            (value!.isEmpty || !destinationController.isValid)
-                                ? ''
-                                : null,
+                          const SizedBox(height: 8),
+                          _buildDatePicker(),
+                          const SizedBox(height: 8),
+                          _buildTextField(
+                              label: 'Price Per Traveller',
+                              initialValue: pricePerTraveller != null
+                                  ? pricePerTraveller.toString()
+                                  : '',
+                              keyboardType: TextInputType.number,
+                              onSaved: (value) {
+                                setState(() {
+                                  pricePerTraveller =
+                                      double.tryParse(value ?? "0.0");
+                                });
+                              }),
+                          const SizedBox(height: 8),
+                          _buildRouteDescriptionInput(context),
+                          const SizedBox(height: 16),
+                          _buildMidpointsSection(),
+                          const SizedBox(height: 16),
+                          // _buildImagePicker(), // Add image picker here
+                          const SizedBox(height: 16),
+                          _buildImageCarousel(), // Add image carousel here
+                          const SizedBox(height: AppInsets.inset5),
+                          const SizedBox(height: AppInsets.inset5),
+                          _buildServiceOffer(),
+                          const SizedBox(height: AppInsets.inset5),
+                        ],
                       ),
-
-                      const SizedBox(height: 8),
-                      _buildDatePicker(),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                          label: 'Price Per Traveller',
-                          initialValue: pricePerTraveller != null
-                              ? pricePerTraveller.toString()
-                              : '',
-                          keyboardType: TextInputType.number,
-                          onSaved: (value) {
-                            setState(() {
-                              pricePerTraveller =
-                                  double.tryParse(value ?? "0.0");
-                            });
-                          }),
-                      const SizedBox(height: 8),
-                      _buildRouteDescriptionInput(context),
-                      const SizedBox(height: 16),
-                      _buildMidpointsSection(),
-                      const SizedBox(height: 16),
-                      // _buildImagePicker(), // Add image picker here
-                      const SizedBox(height: 16),
-                      _buildImageCarousel(), // Add image carousel here
-                      const SizedBox(height: AppInsets.inset5),
-                      const SizedBox(height: AppInsets.inset5),
-                      _buildServiceOffer(),
-                      const SizedBox(height: AppInsets.inset5),
                     ],
                   ),
-                ],
-              ),
-            ),
-          ).expanded(),
-          const SizedBox(height: AppInsets.inset5),
-          SizedBox(width: double.infinity, child: _buildSaveButton()),
-        ],
+                ),
+              ).expanded(),
+              const SizedBox(height: AppInsets.inset5),
+              SizedBox(width: double.infinity, child: _buildSaveButton()),
+            ],
+          ),
+        ),
       ),
     );
   }

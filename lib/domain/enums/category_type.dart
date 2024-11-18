@@ -6,13 +6,14 @@
 /// "post_with_routes";
 
 enum CategoryType {
-  trendingRoutes("trending_routes"),
-  sponsoredRoutes("sponsored_routes"),
-  suggestedRoutes("suggested_routes"),
-  searchedRoutes("searched_routes"),
-  postWithRoutes("post_with_routes");
+  trendingRoutes("trending_routes", "Trending"),
+  sponsoredRoutes("sponsored_routes", "Sponsored"),
+  suggestedRoutes("suggested_routes", "Suggested For You"),
+  searchedRoutes("searched_routes", "Available Routes"),
+  postWithRoutes("post_with_routes", "Available Posts");
 
   final String name;
+  final String title;
 
-  const CategoryType(this.name);
+  const CategoryType(this.name, this.title);
 }

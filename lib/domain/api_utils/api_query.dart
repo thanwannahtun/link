@@ -2,6 +2,8 @@
 // limit : 5
 // page : 2
 
+import 'package:link/domain/api_utils/search_routes_query.dart';
+
 import '../enums/category_type.dart';
 
 class APIQuery {
@@ -9,16 +11,28 @@ class APIQuery {
   final int? limit;
   final int? page;
   final String? postId;
+  final SearchRoutesQuery? searchedRouteQuery;
 
-  APIQuery({this.categoryType, this.limit, this.page, this.postId});
+  APIQuery(
+      {this.categoryType,
+      this.limit,
+      this.page,
+      this.postId,
+      this.searchedRouteQuery});
 
   APIQuery copyWith(
-      {CategoryType? categoryType, int? limit, int? page, String? postId}) {
+      {CategoryType? categoryType,
+      int? limit,
+      int? page,
+      String? postId,
+      SearchRoutesQuery? searchedRouteQuery}) {
     return APIQuery(
-        categoryType: categoryType ?? this.categoryType,
-        limit: limit ?? this.limit,
-        postId: postId ?? this.postId,
-        page: page ?? this.page);
+      categoryType: categoryType ?? this.categoryType,
+      limit: limit ?? this.limit,
+      postId: postId ?? this.postId,
+      page: page ?? this.page,
+      searchedRouteQuery: searchedRouteQuery ?? this.searchedRouteQuery,
+    );
   }
 
   factory APIQuery.fromJson(Map<String, dynamic> json) => APIQuery(
@@ -28,10 +42,17 @@ class APIQuery {
       postId: json["post_id"],
       page: json["page"]);
 
-  Map<String, dynamic> toJson() => {
-        "categoryType": categoryType?.name,
-        "limit": limit,
-        "page": page,
-        "post_id": postId,
-      };
+  Map<String, dynamic> toJson() {
+    var searchedQuery = searchedRouteQuery?.toJson();
+    return {
+      "categoryType": categoryType?.name,
+      "limit": limit,
+      "page": page,
+      "post_id": postId,
+
+      /// for searchedRouteQuery query
+      if (searchedQuery != null) ...searchedQuery,
+      // Spread searchedQuery if not null
+    };
+  }
 }

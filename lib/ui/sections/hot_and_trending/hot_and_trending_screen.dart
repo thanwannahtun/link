@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/bloc/city/city_cubit.dart';
@@ -25,7 +27,9 @@ import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../domain/api_utils/api_query.dart';
+import '../../../domain/api_utils/search_routes_query.dart';
 import '../../../domain/enums/category_type.dart';
+import '../../../models/city.dart';
 
 class HotAndTrendingScreen extends StatefulWidget {
   const HotAndTrendingScreen({super.key});
@@ -45,6 +49,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   bool _initial = true;
   bool _pushedRoutePage = false;
   APIQuery? query;
+
+  /// For initial Hot & Trending Tab query
   late APIQuery initialQuery;
   late APIQuery getPostWithRouteQuery;
 
@@ -59,7 +65,6 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
     _postRouteCubit = PostRouteCubit();
     context.read<CityCubit>().fetchCities();
-    // context.read<PostRouteCubit>().fetchRoutes();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
     context.read<BottomSelectCubit>().stream.listen(_onBottomDoubleSelect);
@@ -72,12 +77,14 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         final arguments =
             ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
         query = arguments['query'];
+        if (query?.page != null) _postRouteCubit.updatePage(value: query?.page);
         _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
 
         _pushedRoutePage = true;
       } else if (ModalRoute.of(context)?.settings.arguments == null) {
         _postRouteCubit.getRoutesByCategory(query: initialQuery);
       }
+
       _initial = false;
     }
 
@@ -174,7 +181,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
             )
           : null,
       title: Text(
-        "Trending Packages",
+        (query?.categoryType?.title) ??
+            (initialQuery.categoryType?.title ?? ""),
         style: TextStyle(
             color: context.onPrimaryColor,
             fontSize: AppInsets.font25,
@@ -182,8 +190,18 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       ),
       action: IconButton(
           onPressed: () {
-            _scrollController.animateTo(0,
-                duration: const Duration(seconds: 1), curve: Curves.bounceIn);
+            // _scrollController.animateTo(0,
+            //     duration: const Duration(seconds: 1), curve: Curves.bounceIn);
+            SearchRoutesQuery searchedRouteQuery = SearchRoutesQuery(
+              origin: getRandomCity(),
+              destination: getRandomCity(),
+            );
+            query = APIQuery(
+                limit: 5,
+                categoryType: CategoryType.searchedRoutes,
+                searchedRouteQuery: searchedRouteQuery);
+            context.pushNamed(RouteLists.searchRoutesScreen,
+                arguments: {"query": query});
           },
           icon: Icon(
             Icons.search,
@@ -193,12 +211,19 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     );
   }
 
+  /// For Temporary Purpose
+  City getRandomCity() {
+    final random = Random();
+    int randomIndex =
+        random.nextInt(App.cities.length); // Generate a random index
+    return App.cities[randomIndex]; // Return the random City object
+  }
+
   BlocConsumer<PostRouteCubit, PostRouteState> _body() {
     return BlocConsumer<PostRouteCubit, PostRouteState>(
       bloc: _postRouteCubit,
       builder: (context, state) {
         debugPrint("::::::::::::: ${state.status}");
-        // if (state.status == BlocStatus.fetchFailed && _trendingPosts.isEmpty) {
         if (state.status == BlocStatus.fetchFailed && _trendingRoutes.isEmpty) {
           return _buildShimmer(context);
         } else if (state.status == BlocStatus.fetching &&
@@ -305,7 +330,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                       ),
                       ElevatedButton(
                           onPressed: () =>
-                              context.pushNamed(RouteLists.postCreatePage),
+                              context.pushNamed(RouteLists.uploadNewPost),
                           child: const Text("Start Creating A Post!")),
                     ],
                   )
@@ -350,7 +375,59 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return ListView.separated(
       controller: _scrollController,
       itemBuilder: (context, index) {
-        // Insert widget every 5 items or based on other conditions
+        // Insert widget every 15 items or based on other conditions
+        final shouldShowHorizontalWidget =
+            (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
+
+        if (shouldShowHorizontalWidget) {
+          return HorizontalPostWithRoutesWidget(
+            posts: _trendingPosts,
+            onFetchAllPressed: () {
+              _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
+            },
+          );
+        }
+
+        // Calculate the actual index considering additional horizontal widgets
+        final adjustedIndex = index - (index ~/ 15);
+
+        if (adjustedIndex >= 0 && adjustedIndex < _trendingRoutes.length) {
+          RouteModel route = _trendingRoutes[adjustedIndex];
+          return RouteInfoCardWidget(
+            route: route,
+            onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+            },
+            onAgencyPressed: (route) {
+              context.pushNamed(RouteLists.publicAgencyProfile,
+                  arguments: route.agency);
+            },
+          );
+        }
+
+        // Fallback for invalid index
+        return Container(
+          color: Colors.red,
+          width: double.infinity,
+          height: 200,
+          child: Center(child: Text('Invalid Index: $index')),
+        );
+      },
+      itemCount: _trendingRoutes.isNotEmpty
+          ? _trendingRoutes.length + (_trendingRoutes.length ~/ 15)
+          : 0,
+      separatorBuilder: (BuildContext context, int index) => const SizedBox(
+        height: AppInsets.inset8,
+      ),
+    );
+  }
+
+/*
+  ListView _postViewBuilder() {
+    return ListView.separated(
+      controller: _scrollController,
+      itemBuilder: (context, index) {
+// Determine if a horizontal widget should be shown
         final shouldShowHorizontalWidget =
             (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
 
@@ -368,23 +445,14 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
         if (adjustedIndex < _trendingRoutes.length) {
           RouteModel route = _trendingRoutes[adjustedIndex];
-
-          // return RouteModelCard(
-          //   route: route,
-          //   onRoutePressed: (route) {
-          //     context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-          //     print("--- go to post detail");
-          //   },
-          // );
-
           return RouteInfoCardWidget(
             route: route,
             onRoutePressed: (route) {
               context.pushNamed(RouteLists.routeDetailPage, arguments: route);
             },
             onAgencyPressed: (route) {
-              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-              print("--- go to post detail");
+              context.pushNamed(RouteLists.publicAgencyProfile,
+                  arguments: route.agency);
             },
           );
         }
@@ -399,7 +467,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       ),
     );
   }
-
+*/
   /*
   ListView _postViewBuilders() {
     return ListView.separated(
@@ -617,10 +685,11 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
           ? Container(
               color: Colors.amber,
               height: double.infinity,
-              width: double.infinity,
+              width: MediaQuery.sizeOf(context).width - 10,
             )
           : CustomScrollView(
               scrollDirection: Axis.horizontal,
+              key: const PageStorageKey('HorizontalPostWithRoutesWidget'),
               slivers: [
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
@@ -657,75 +726,96 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RouteHeader(route: post.routes?.first ?? const RouteModel()),
+            RouteHeader(
+              route: post.routes?.firstOrNull ?? const RouteModel(),
+              onAgencyPressed: (route) {
+                context.pushNamed(RouteLists.publicAgencyProfile,
+                    arguments: route.agency);
+              },
+            ),
             Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Text(
-                      post.title ?? "Post Title",
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: (post.routes?.isNotEmpty ?? false)
-                        ? Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CustomScrollView(
-                              scrollDirection: Axis.horizontal,
-                              slivers: [
-                                SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (BuildContext context, int routeIndex) {
-                                      final route =
-                                          post.routes![routeIndex]; // Safe
-                                      return Card(
-                                        color: context.greyFilled,
-                                        margin: const EdgeInsets.symmetric(
-                                            horizontal: 5),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: RouteInfoBodyWithMidpoints(
-                                              cardWidth: 260, route: route),
-                                        ),
-                                      );
-                                    },
-                                    childCount: post.routes!
-                                        .length, // Use the actual length
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : const Center(
-                            child: Text('No routes available',
-                                style: TextStyle(color: Colors.grey)),
-                          ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Text(
-                        post.description ?? "",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: context.greyColor),
-                        textAlign: TextAlign.start,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+              child: GestureDetector(
+                onTap: () {
+                  context.pushNamed(RouteLists.routeDetailPage,
+                      arguments: post.routes?.firstOrNull);
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          post.title ?? "Post Title",
+                          style: Theme.of(context).textTheme.titleSmall,
+                          textAlign: TextAlign.start,
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 2,
+                          softWrap: true,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      flex: 3,
+                      child: (post.routes?.isNotEmpty ?? false)
+                          ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CustomScrollView(
+                                scrollDirection: Axis.horizontal,
+                                slivers: [
+                                  SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                      (BuildContext context, int routeIndex) {
+                                        final route =
+                                            post.routes![routeIndex]; // Safe
+                                        return Card.filled(
+                                          color: context.greyFilled,
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: RouteInfoBodyWithMidpoints(
+                                                cardWidth: 260, route: route),
+                                          ),
+                                        );
+                                      },
+                                      childCount: post.routes!
+                                          .length, // Use the actual length
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.green)),
+                              child: CachedImage(
+                                  imageUrl: post.agency?.profileImage ?? ""),
+                            ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          post.description ?? "",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: context.greyColor),
+                          textAlign: TextAlign.start,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             RouteFooter(
-              route: post.routes?.first ?? const RouteModel(),
+              route: post.routes?.firstOrNull ?? const RouteModel(),
               onBookPressed: (RouteModel route) {
                 context.pushNamed(RouteLists.routeDetailPage, arguments: route);
               },

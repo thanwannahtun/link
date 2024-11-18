@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
@@ -16,6 +19,8 @@ import '../../core/widgets/cached_image.dart';
 import '../../domain/api_utils/api_query.dart';
 import '../utils/expandable_text.dart';
 import 'package:collection/collection.dart';
+
+import '../utils/route_list.dart';
 
 typedef RouteCallback = void Function(RouteModel route);
 
@@ -226,6 +231,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   Post? post;
   late PostRouteCubit _postRouteCubit;
   List<RouteModel> _routes = [];
+  RouteModel? _route;
 
   // List<Post> posts = [];
   bool _initial = true;
@@ -242,15 +248,14 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   void didChangeDependencies() {
     if (_initial) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
-        final route = ModalRoute.of(context)?.settings.arguments as RouteModel?;
-        if (route != null) {
-          routeId = route.id;
-          print("route json ::: ${route.toJson()}");
+        _route = ModalRoute.of(context)?.settings.arguments as RouteModel?;
+        if (_route != null) {
+          routeId = _route?.id;
           _postRouteCubit.getPostWithRoutes(
               query: APIQuery(
                   categoryType: CategoryType.postWithRoutes,
                   limit: 5,
-                  postId: route.post));
+                  postId: _route?.post));
         }
       }
       _initial = false;
@@ -260,11 +265,18 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("routeId ::: ${routeId}");
     return Scaffold(
-      // backgroundColor: Theme.of(context).cardColor,
       appBar: AppBar(
-        title: RouteHeader(route: RouteModel()),
+        backgroundColor: Theme.of(context).cardColor,
+        title: RouteHeader(
+          route: _route ?? const RouteModel(),
+          onAgencyPressed: (route) {
+            context.pushNamed(
+              RouteLists.publicAgencyProfile,
+              arguments: route.agency,
+            );
+          },
+        ),
       ),
       body: BlocConsumer<PostRouteCubit, PostRouteState>(
         bloc: _postRouteCubit,
@@ -274,12 +286,9 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
             // final route = state.routes.first.routes?.firstOrNull;
             // _routes = state.routeModels;
             _routes = state.routes.first.routes!;
-            print("_routes length ::: ${_routes.length}");
             final route = _routes.firstWhereOrNull(
               (r) => r.id == routeId,
             );
-
-            print("route Hero match ::: ${route?.toJson()}");
 
             return Column(
               children: [
@@ -287,23 +296,47 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                     child: SingleChildScrollView(
                         child: _routeDetailWidget(
                             route: route ?? const RouteModel()))),
-                Container(
-                  height: 50,
-                  color: Theme.of(context).cardColor,
-                  child: RouteFooter(
-                    route: route ?? const RouteModel(),
-                    onBookPressed: (route) {
-                      context.read<ThemeCubit>().toggleTheme();
-                    },
-                  ),
-                ),
+                _buildFooterWidget(context, route),
               ],
             );
           } else {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator.adaptive(),
             );
           }
+        },
+      ),
+    );
+  }
+
+  Container _buildFooterWidget(BuildContext context, RouteModel? route) {
+    return Container(
+      height: 50,
+      color: Theme.of(context).cardColor,
+      child: RouteFooter(
+        route: route ?? const RouteModel(),
+        onBookPressed: (route) {
+          // context.read<ThemeCubit>().toggleTheme();
+          showDialog(
+            context: context,
+            builder: (context) => const AlertDialog(
+              title: Text("Coming Soon❗"),
+              content: Card(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: Icon(Icons.add_shopping_cart_sharp),
+                      title: Text("Connect with Payment API!"),
+                      dense: true,
+                      shape: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5))),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
         },
       ),
     );
@@ -317,10 +350,15 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (route.image != null)
-          SizedBox(
-              height: 180,
-              width: double.infinity,
-              child: CachedImage(imageUrl: route.image ?? "")),
+          GestureDetector(
+            onTap: () {
+              context.push(MaterialPageRoute(
+                builder: (context) =>
+                    FullscreenImagePage(imageUrl: route.image ?? ""),
+              ));
+            },
+            child: DynamicImageWidget(imageUrl: route.image ?? ""),
+          ),
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.all(12.0),
@@ -350,6 +388,21 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     );
   }
 
+  Future<Size> _getImageSize(String imageUrl) async {
+    final Completer<Size> completer = Completer();
+    final Image image = Image.network(imageUrl);
+    image.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo info, bool _) {
+        final mySize = Size(
+          info.image.width.toDouble(),
+          info.image.height.toDouble(),
+        );
+        completer.complete(mySize);
+      }),
+    );
+    return completer.future;
+  }
+
   Card _midpointsBuilder(RouteModel route) {
     return Card(
       margin: const EdgeInsets.all(0.0),
@@ -362,12 +415,16 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Midpoints").styled(
-                    fw: FontWeight.bold,
-                    fs: AppInsets.font20,
-                    color: context.greyColor),
-                Text("${(route.midpoints ?? []).length} stops")
-                    .styled(fw: FontWeight.bold, color: context.greyColor),
+                Text("Midpoints",
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.copyWith(color: context.greyColor)),
+                Text("${(route.midpoints ?? []).length} stops",
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.copyWith(color: context.greyColor)),
               ],
             ),
           ),
@@ -388,49 +445,72 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       RouteModel route, List<RouteModel> suggestedRoutes) {
     return SizedBox(
       width: double.infinity,
-      child: Card.filled(
-        margin: const EdgeInsets.all(0.0),
-        shape: const BeveledRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(0))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            suggestedRoutes.isNotEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "More from ${route.agency?.name ?? "Agency"}",
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(color: context.greyColor),
-                    ),
-                  )
-                : Container(),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                  children: suggestedRoutes
-                      .map((r) => Card.filled(
-                            semanticContainer: true,
-                            color: context.greyFilled,
-                            margin: const EdgeInsets.all(16),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: RouteInfoBodyWithMidpoints(
-                                route: r,
-                                cardWidth:
-                                    MediaQuery.of(context).size.width - 64,
-                              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          suggestedRoutes.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "More from ${route.agency?.name ?? "Agency"}",
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: context.greyColor,
+                        ),
+                  ),
+                )
+              : Container(),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+                children: suggestedRoutes
+                    .map((r) => Card.filled(
+                          semanticContainer: true,
+                          color: context.greyFilled,
+                          margin: const EdgeInsets.all(16),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: RouteInfoBodyWithMidpoints(
+                              route: r,
+                              cardWidth: MediaQuery.of(context).size.width - 64,
                             ),
-                          ))
-                      .toList()),
-            ),
-          ],
-        ),
+                          ),
+                        ))
+                    .toList()),
+          ),
+        ],
       ),
     );
+  }
+}
+
+class DynamicImageWidget extends StatelessWidget {
+  const DynamicImageWidget({super.key, required this.imageUrl, this.maxHeight});
+
+  final String imageUrl;
+  final double? maxHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      return ClipRect(
+        child: SizedBox(
+          width: double.infinity,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxHeight:
+                    maxHeight ?? MediaQuery.of(context).size.height * 0.6),
+            child: InteractiveViewer(
+              panEnabled: true,
+              minScale: 1,
+              maxScale: 4,
+              child: CachedImage(imageUrl: imageUrl),
+            ),
+          ),
+        ),
+      );
+    });
   }
 }
 
@@ -470,5 +550,33 @@ class RouteMidpointDetailWidget extends StatelessWidget {
         ],
       ).expanded(),
     ]).padding(padding: const EdgeInsets.only(bottom: AppInsets.inset15));
+  }
+}
+
+class FullscreenImagePage extends StatelessWidget {
+  final String imageUrl;
+
+  const FullscreenImagePage({super.key, required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          panEnabled: true,
+          minScale: 1,
+          maxScale: 4,
+          child: CachedImage(imageUrl: imageUrl, fit: BoxFit.contain),
+        ),
+      ),
+    );
   }
 }

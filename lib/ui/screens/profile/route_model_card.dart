@@ -109,12 +109,7 @@ class RouteHeader extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: () {
-                context.pushNamed(
-                  RouteLists.publicAgencyProfile,
-                  arguments: route.agency,
-                );
-              },
+              onTap: () => onAgencyPressed?.call(route),
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               hoverColor: Colors.transparent,
@@ -295,7 +290,7 @@ class RouteFooter extends StatelessWidget {
             onPressed: () => onBookPressed.call(route),
             iconAlignment: IconAlignment.end,
             icon: Icon(Icons.phone_enabled_sharp, size: 20),
-            label: Text("Book Now")),
+            label: Text("Book")),
       ],
     );
   }

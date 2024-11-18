@@ -15,6 +15,7 @@ class RouteModel extends Equatable {
   final List<RouteMidpoint>? midpoints;
   final DateTime? createdAt;
   final String? description;
+  final bool? isSponsored;
 
   // final List<dynamic>? seats;
   final String? image;
@@ -31,7 +32,8 @@ class RouteModel extends Equatable {
       this.createdAt,
       // this.seats,
       this.image,
-      this.description});
+      this.description,
+      this.isSponsored});
 
   factory RouteModel.fromJson(Map<String, dynamic> json) {
     print("json- ${json} ----- json");
@@ -61,6 +63,7 @@ class RouteModel extends Equatable {
           : DateTime.parse(json['createdAt'] as String),
       // seats: json['seats'] as List<dynamic>?,
       description: json['description'],
+      isSponsored: json['isSponsored'],
       image: json['image'] != null ? '${App.baseImgUrl}${json['image']}' : null,
     );
   }
@@ -76,7 +79,8 @@ class RouteModel extends Equatable {
         'midpoints': midpoints?.map((m) => m.toJson()).toList(),
         // 'createdAt': createdAt?.toIso8601String(),
         // 'seats': seats,
-        'description': description
+        'description': description,
+        'isSponsored': isSponsored
       };
 
   RouteModel copyWith({
@@ -91,6 +95,7 @@ class RouteModel extends Equatable {
     DateTime? createdAt,
     // List<dynamic>? seats,
     String? description,
+    bool? isSponsored,
     String? image,
   }) {
     return RouteModel(
@@ -105,6 +110,7 @@ class RouteModel extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       // seats: seats ?? this.seats,
       description: description ?? this.description,
+      isSponsored: isSponsored ?? this.isSponsored,
       image: image ?? this.image,
     );
   }
@@ -123,6 +129,7 @@ class RouteModel extends Equatable {
       createdAt,
       // seats,
       description,
+      isSponsored,
       image
     ];
   }

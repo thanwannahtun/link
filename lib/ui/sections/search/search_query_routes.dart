@@ -53,9 +53,10 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
 
         _searchQueryCubit = PostRouteCubit()
           ..getRoutesByCategory(
-              query:
-                  APIQuery(categoryType: CategoryType.searchedRoutes, limit: 5),
-              body: searchRoutesQuery?.toJson());
+              query: APIQuery(
+                  categoryType: CategoryType.searchedRoutes,
+                  limit: 5,
+                  searchedRouteQuery: searchRoutesQuery));
       }
       _initial = false;
     }

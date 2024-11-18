@@ -16,6 +16,7 @@ import 'package:link/ui/utils/route_list.dart';
 import '../screens/profile/public_agency_profile_screen.dart';
 import '../screens/route_detail_page.dart';
 import '../sections/hero_home/hero_home_screen.dart';
+import '../sections/search/search_routes_screen.dart';
 import '../sections/upload/new_route_upload_screen_advance.dart';
 import '../sections/upload/post_create/post_create_cubit.dart';
 
@@ -65,6 +66,13 @@ class RouteGenerator {
           settings: settings,
           builder: (context) {
             return const SearchQueryRoutes();
+          },
+        );
+      case RouteLists.searchRoutesScreen:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return const SearchRoutesScreen();
           },
         );
       case RouteLists.heroHomeScreen:
