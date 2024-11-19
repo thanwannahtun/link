@@ -114,6 +114,8 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
         child: Padding(
           padding: const EdgeInsets.all(15),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               /// Images
               SizedBox(
@@ -122,7 +124,6 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
                     .clipRRect(borderRadius: BorderRadius.circular(5)),
               ).expanded(flex: 2),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   /// ORIGIN & DESTINATION
@@ -139,10 +140,13 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
                       ),
                       Text(
                         "${route.origin?.name ?? ""} to ${route.destination?.name ?? ""}",
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(fontSize: 13),
                       ).expanded(),
                     ],
-                  ),
+                  ).padding(padding: const EdgeInsets.only(bottom: 5)),
 
                   /// DATE
                   Row(
@@ -154,12 +158,17 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
                       const SizedBox(
                         width: AppInsets.inset10,
                       ),
-                      Text(
-                        DateTimeUtil.formatDateTime(route.scheduleDate),
-                        style: Theme.of(context).textTheme.labelMedium,
+                      Expanded(
+                        child: Text(
+                          DateTimeUtil.formatDateTime(route.scheduleDate),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(fontSize: 12),
+                        ),
                       )
                     ],
-                  ),
+                  ).padding(padding: const EdgeInsets.only(bottom: 5)),
 
                   /// MIDPOINTS
                   Row(
@@ -177,14 +186,17 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
                                 .where((name) => name != null)
                                 .join(' - ') ??
                             '',
-                        style: const TextStyle(fontSize: 12),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(fontSize: 12),
                         textAlign: TextAlign.start,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         softWrap: true,
                       ).expanded(),
                     ],
-                  ),
+                  ).padding(padding: const EdgeInsets.only(bottom: 5)),
 
                   /// DESCRIPTION
                   Text(
@@ -194,7 +206,7 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                     softWrap: true,
-                  ).padding(padding: const EdgeInsets.all(AppInsets.inset5))
+                  ).expanded()
                 ],
               )
                   .padding(
@@ -204,20 +216,12 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
 
               /// Action Button
               ElevatedButton(
-                style: AppTheme.elevatedButtonThemeData().style?.copyWith(
-                    // minimumSize: WidgetStatePropertyAll(
-                    //     Size(MediaQuery.of(context).size.width * 0.8, 35)),
-                    ),
                 onPressed: () => widget.onRoutePressed.call(route),
                 child: Text(
                   "Book Now",
                   style: TextStyle(color: context.onPrimaryColor),
                 ),
-              )
-                  .padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppInsets.inset8))
-                  .expanded(),
+              ),
 
               /// short description
             ],

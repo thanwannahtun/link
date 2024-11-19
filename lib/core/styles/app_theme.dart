@@ -89,6 +89,11 @@ class AppTheme {
       // outlinedButtonTheme: outlinedButtonThemeData,
       colorScheme: colorScheme,
       // [important]
+      iconTheme: const IconThemeData(
+        color: Colors.black87, // Slightly darker black for visibility
+        size: 24.0, // Default size
+        opacity: 1.0, // Fully opaque
+      ),
       bottomNavigationBarTheme: bottomNavigationBarThemeData,
     );
   }
@@ -175,6 +180,12 @@ class AppTheme {
       elevatedButtonTheme: elevatedButtonThemeData(),
       // textButtonTheme: textButtonThemeData,
       // outlinedButtonTheme: outlinedButtonThemeData,
+      iconTheme: const IconThemeData(
+        color: Colors.white70, // White for visibility in dark backgrounds
+        size: 24.0, // Default size
+        opacity: 1.0, // Fully opaque
+      ),
+
       colorScheme: colorScheme,
       // [important]
       bottomNavigationBarTheme: bottomNavigationBarThemeData,
