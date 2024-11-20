@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
-import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
@@ -169,6 +168,72 @@ class RouteTimelineWidget extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class RouteInfoBodyWithImage extends StatelessWidget {
+  const RouteInfoBodyWithImage({
+    super.key,
+    required this.route,
+    this.onBookPressed,
+  });
+
+  final RouteModel route;
+  final RouteCallback? onBookPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card.filled(
+      color: context.greyFilled,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+              flex: 4,
+              child: SizedBox(
+                  width: double.infinity,
+                  child: CachedImage(imageUrl: route.image ?? ""))),
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("${route.origin?.name ?? ""} To ${route.destination?.name ?? ""} ")
+                          .fittedBox(),
+                      // Text(DateTimeUtil.formatDateTime(route.scheduleDate)),
+                      Text(
+                        "\$${route.pricePerTraveller?.toStringAsFixed(2)}",
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.copyWith(color: Colors.grey),
+                      ).fittedBox(),
+                    ],
+                  ).expanded(),
+                  TextButton.icon(
+                      style: ButtonStyle(
+                          minimumSize:
+                              const WidgetStatePropertyAll(Size(30, 20)),
+                          shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5))),
+                          foregroundColor: WidgetStatePropertyAll(Colors.white),
+                          backgroundColor: WidgetStatePropertyAll(Colors.blue)),
+                      onPressed: () => onBookPressed?.call(route),
+                      iconAlignment: IconAlignment.end,
+                      label: const Text("Book now")),
+                ],
+              ),
+            ),
+          )
+        ],
       ),
     );
   }

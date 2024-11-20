@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/widget_extension.dart';
@@ -7,7 +6,6 @@ import 'package:link/ui/widget_extension.dart';
 import '../../../core/utils/date_time_util.dart';
 import '../../../core/widgets/cached_image.dart';
 import '../../utils/expandable_text.dart';
-import '../../utils/route_list.dart';
 import '../post_route_card.dart';
 
 typedef RouteCallback = void Function(RouteModel route);
@@ -192,10 +190,9 @@ class RouteMidpoints extends StatelessWidget {
       children: [
         Text(
           midpoints
-                  .map((m) => m.city?.name)
-                  .where((name) => name != null)
-                  .join(' - ') ??
-              '',
+              .map((m) => m.city?.name)
+              .where((name) => name != null)
+              .join(' - '),
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
@@ -283,14 +280,15 @@ class RouteFooter extends StatelessWidget {
         ),
         TextButton.icon(
             style: ButtonStyle(
+                minimumSize: const WidgetStatePropertyAll(Size(30, 30)),
                 shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5))),
-                foregroundColor: WidgetStatePropertyAll(Colors.white),
-                backgroundColor: WidgetStatePropertyAll(Colors.blue)),
+                foregroundColor: const WidgetStatePropertyAll(Colors.white),
+                backgroundColor: const WidgetStatePropertyAll(Colors.blue)),
             onPressed: () => onBookPressed.call(route),
             iconAlignment: IconAlignment.end,
-            icon: Icon(Icons.phone_enabled_sharp, size: 20),
-            label: Text("Book")),
+            icon: const Icon(Icons.phone_enabled_sharp, size: 20),
+            label: const Text("Book")),
       ],
     );
   }

@@ -170,7 +170,8 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           // _postRouteCubit.updatePage(); // set page to default
           _trendingPosts = [];
           _trendingRoutes = [];
-          _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
+          _postRouteCubit.fetchRoutesByCategoryWithThrottle(
+              query: query ?? initialQuery);
         },
         // child: _customScrollViewWidget(),
         child: _body(),
@@ -680,7 +681,7 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 300, // Height of the horizontal list
+      height: 400, // Height of the horizontal list
       child: posts.isEmpty
           ? Container(
               color: Colors.amber,
@@ -720,6 +721,9 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
 
   Widget buildHorizontalRouteCard(BuildContext context, Post post) {
     return Card(
+      margin: EdgeInsets.zero,
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(1))),
       child: SizedBox(
         width: 300,
         height: double.infinity,
@@ -747,17 +751,19 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(5.0),
                         child: Text(
-                          post.title ?? "Post Title",
-                          style: Theme.of(context).textTheme.titleSmall,
+                          post.description ?? "",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: context.greyColor),
                           textAlign: TextAlign.start,
                           overflow: TextOverflow.ellipsis,
-                          // maxLines: 2,
-                          softWrap: true,
+                          maxLines: 2,
                         ),
                       ),
                     ),
                     Expanded(
-                      flex: 3,
+                      flex: 5,
                       child: (post.routes?.isNotEmpty ?? false)
                           ? Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -769,17 +775,31 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
                                       (BuildContext context, int routeIndex) {
                                         final route =
                                             post.routes![routeIndex]; // Safe
-                                        return Card.filled(
+                                        return Center(
+                                          child: SizedBox(
+                                            width: 250,
+                                            height: double.infinity,
+                                            child: RouteInfoBodyWithImage(
+                                                onBookPressed: (route) {
+                                                  context.pushNamed(
+                                                      RouteLists
+                                                          .routeDetailPage,
+                                                      arguments: route);
+                                                },
+                                                route: route),
+                                          ),
+                                        );
+                                        /*
+                                          Card.filled(
                                           color: context.greyFilled,
                                           margin: const EdgeInsets.symmetric(
                                               horizontal: 5),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: RouteInfoBodyWithMidpoints(
-                                                cardWidth: 260, route: route),
-                                          ),
+                                          child: RouteInfoBodyWithImage(
+                                              route: route),
                                         );
+                                        */
                                       },
+
                                       childCount: post.routes!
                                           .length, // Use the actual length
                                     ),
@@ -788,27 +808,12 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
                               ),
                             )
                           : Container(
-                              width: double.infinity,
+                              width: 250,
                               decoration: BoxDecoration(
                                   border: Border.all(color: Colors.green)),
                               child: CachedImage(
                                   imageUrl: post.agency?.profileImage ?? ""),
                             ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Text(
-                          post.description ?? "",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: context.greyColor),
-                          textAlign: TextAlign.start,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                        ),
-                      ),
                     ),
                   ],
                 ),
