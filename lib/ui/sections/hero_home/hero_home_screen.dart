@@ -6,11 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
-import 'package:link/core/styles/app_theme.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
-import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/api_utils/api_query.dart';
 import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
@@ -53,6 +51,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   final _originAutoCompleteController = CityAutocompleteController();
   final _destinationAutoCompleteController = CityAutocompleteController();
+
+  final _originDestinationFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -140,6 +140,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     print("Equality ${_trendingRouteBloc == _sponsoredRouteBloc}");
 
     return CustomScaffoldBody(
+      resizeToAvoidBottomInset: false,
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
           _sponsoredRoutes = [];
@@ -149,7 +150,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           _trendingRouteBloc.getRoutesByCategory(
               query: APIQuery(
                   categoryType: CategoryType.trendingRoutes, limit: 10));
-          // Todo: uncomment below
           _sponsoredRouteBloc.getRoutesByCategory(
               query: APIQuery(
                   categoryType: CategoryType.sponsoredRoutes, limit: 10));
@@ -201,16 +201,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
-            /*
-            _trendingSearchTitleField(context),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
-            SizedBox(height: 130, child: _trendingRoutesList()),
-            const SizedBox(
-              height: 5,
-            ),
-            */
             const SizedBox(
               height: AppInsets.inset8,
             ),
@@ -229,13 +219,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
-            /*
-            _sponsoredPostsTitleField(context),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
-            SizedBox(height: 350, child: _sponsoredRoutesList()),
-          */
             const SizedBox(
               height: AppInsets.inset8,
             ),
@@ -889,33 +872,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        print(
-                            "${_originNotifier.value?.toJson()} - ${_destinationNotifier.value?.toJson()} ");
-                        if (_originNotifier.value == null ||
-                            _destinationNotifier.value == null) {
-                          return;
-                        }
-
-                        SearchRoutesQuery searchedRouteQuery =
-                            SearchRoutesQuery(
-                                origin: _originNotifier.value,
-                                destination: _destinationNotifier.value,
-                                date: _selectedDateNotifier.value);
-
-                        APIQuery query = APIQuery(
-                            categoryType: CategoryType.searchedRoutes,
-                            searchedRouteQuery: searchedRouteQuery);
-
-                        context.pushNamed(
-                          // RouteLists.searchQueryRoutes,
-                          RouteLists.searchRoutesScreen,
-                          arguments: {"query": query},
-                          // arguments: {
-                          //   "origin": _originNotifier.value,
-                          //   "destination": _destinationNotifier.value,
-                          //   "date": _selectedDateNotifier.value
-                          // },
-                        );
+                        _navigateToSearchedRoutesScreen();
                       },
                       icon: Icon(
                         color: context.onPrimaryColor,
@@ -933,204 +890,180 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
+  _navigateToSearchedRoutesScreen() {
+    if (_originDestinationFormKey.currentState?.validate() ?? false) {
+      _originDestinationFormKey.currentState?.save();
+
+      print(
+          "${_originNotifier.value?.toJson()} - ${_destinationNotifier.value?.toJson()} ");
+      if (_originNotifier.value == null || _destinationNotifier.value == null) {
+        return;
+      }
+
+      SearchRoutesQuery searchedRouteQuery = SearchRoutesQuery(
+          origin: _originNotifier.value,
+          destination: _destinationNotifier.value,
+          date: _selectedDateNotifier.value);
+
+      APIQuery query = APIQuery(
+          categoryType: CategoryType.searchedRoutes,
+          searchedRouteQuery: searchedRouteQuery);
+
+      context.pushNamed(
+        // RouteLists.searchQueryRoutes,
+        RouteLists.searchRoutesScreen,
+        arguments: {"query": query},
+        // arguments: {
+        //   "origin": _originNotifier.value,
+        //   "destination": _destinationNotifier.value,
+        //   "date": _selectedDateNotifier.value
+        // },
+      );
+    }
+  }
+
   Widget _originDestinationCard(BuildContext context) {
     return Card.filled(
       shape: const BeveledRectangleBorder(
           borderRadius: BorderRadius.all(Radius.zero)),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            /// from & to
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                /// FROM
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_rounded),
-                    const SizedBox(
-                      width: AppInsets.inset25,
-                    ),
-                    Expanded(
-                      child: ValueListenableBuilder(
-                        valueListenable: _originNotifier,
-                        builder:
-                            (BuildContext context, City? value, Widget? child) {
-                          return CityAutocomplete(
-                            cities: App.cities,
-                            controller: _originAutoCompleteController,
-                            onSelected: (city) {
-                              _originNotifier.value = city;
-                            },
-                            border: InputBorder.none,
-                            labelText: "Origin",
-                            hintText: "From",
-                          );
-                          /*
-                          return InkWell(
-                            onTap: () async {
-                              // City? city = await _chooseCity();
-
-                              // if (city != null) {
-                              //   _originNotifier.value = city;
-                              // }
-                            },
-                            splashColor:
-                                Colors.transparent, // Removes the splash effect
-                            highlightColor: Colors
-                                .transparent, // Removes the highlight effect
-                            hoverColor: Colors.transparent,
-                            child: Text(
-                              value == null ? "Origin" : value.name.toString(),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ), // Removes the hover effect
-                          );
-                          */
-                        },
-                      ),
-                      // child: TextField(
-                      //   style: TextStyle(
-                      //     fontWeight: FontWeight.bold,
-                      //   ),
-                      //   decoration: InputDecoration(
-                      //     border: InputBorder.none,
-                      //   ),
-                      // ),
-                    ),
-                  ],
-                ),
-
-                /// DIVIDER
-                Row(
-                  children: [
-                    const Icon(Icons.keyboard_double_arrow_down),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      child: const Divider(
-                        indent: AppInsets.inset20,
-                        thickness: 0.2,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: AppInsets.inset5,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        City? origin = _originNotifier.value;
-                        City? destination = _destinationNotifier.value;
-                        _originNotifier.value = destination;
-                        _destinationNotifier.value = origin;
-                        _destinationAutoCompleteController.text =
-                            _originAutoCompleteController.text;
-                        _originAutoCompleteController.text =
-                            _destinationAutoCompleteController.text;
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _originDestinationFormKey,
+          child: Column(
+            children: [
+              /// FROM
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: ValueListenableBuilder(
+                      valueListenable: _originNotifier,
+                      builder:
+                          (BuildContext context, City? value, Widget? child) {
+                        return CityAutocomplete(
+                          cities: App.cities,
+                          controller: _originAutoCompleteController,
+                          onSelected: (city) {
+                            _originNotifier.value = city;
+                          },
+                          // border: InputBorder.none,
+                          labelText: "Origin",
+                          hintText: "From",
+                          validator: (value) => (value!.isEmpty ||
+                                  !_originAutoCompleteController.isValid)
+                              ? ''
+                              : null,
+                        );
                       },
-                      child: const Icon(
-                        Icons.swap_vert_circle,
-                        size: AppInsets.inset30,
-                      ),
-                    )
-                  ],
-                ),
-
-                /// TO
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined),
-                    const SizedBox(
-                      width: AppInsets.inset25,
                     ),
-                    Expanded(
-                      child: ValueListenableBuilder(
-                        valueListenable: _destinationNotifier,
-                        builder:
-                            (BuildContext context, City? value, Widget? child) {
-                          return CityAutocomplete(
-                            cities: App.cities,
-                            controller: _destinationAutoCompleteController,
-                            onSelected: (city) {
-                              _destinationNotifier.value = city;
-                            },
-                            border: InputBorder.none,
-                            labelText: "Destination",
-                            hintText: "To",
-                          );
-                          /*
-                          return InkWell(
-                            splashColor:
-                                Colors.transparent, // Removes the splash effect
-                            highlightColor: Colors
-                                .transparent, // Removes the highlight effect
-                            hoverColor: Colors.transparent,
-                            onTap: () async {
-                              City? city = await _chooseCity();
+                  ),
+                ],
+              ),
+              const Divider(
+                color: Colors.grey,
+                thickness: 0.1,
+              ),
 
-                              if (city != null) {
-                                _destinationNotifier.value = city;
-                              }
-                            },
-                            child: Text(
-                              value == null
-                                  ? "Destination"
-                                  : value.name.toString(),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+              /// REMOVE SWAP LOCATIONS IN HOME SCREEN
+              /*
+              /// DIVIDER
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.keyboard_double_arrow_down,
+                      color: Colors.grey, size: AppInsets.inset30),
+                  const Divider(color: Colors.grey, height: 1, thickness: 0.1)
+                      .expanded(),
+                  InkWell(
+                    onTap: () {
+                      City? origin = _originNotifier.value;
+                      City? destination = _destinationNotifier.value;
+                      _originNotifier.value = destination;
+                      _destinationNotifier.value = origin;
+                      _destinationAutoCompleteController.text =
+                          _originAutoCompleteController.text;
+                      _originAutoCompleteController.text =
+                          _destinationAutoCompleteController.text;
+                    },
+                    child: const Icon(
+                      Icons.swap_vert_circle,
+                      size: AppInsets.inset30,
+                    ),
+                  )
+                ],
+              ),
+          */
+
+              /// TO
+              Row(
+                children: [
+                  Expanded(
+                    child: ValueListenableBuilder(
+                      valueListenable: _destinationNotifier,
+                      builder:
+                          (BuildContext context, City? value, Widget? child) {
+                        return CityAutocomplete(
+                          cities: App.cities,
+                          controller: _destinationAutoCompleteController,
+                          onSelected: (city) {
+                            _destinationNotifier.value = city;
+                          },
+                          // border: InputBorder.none,
+                          labelText: "Destination",
+                          hintText: "To",
+                          validator: (value) => (value!.isEmpty ||
+                                  !_destinationAutoCompleteController.isValid)
+                              ? ''
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              /// FILTER
+
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: selections.map((value) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: StatefulBuilder(
+                          builder: (BuildContext context,
+                              void Function(void Function()) rebuild) {
+                            return FilterChip(
+                              color:
+                                  WidgetStatePropertyAll(context.primaryColor),
+                              label: Text(
+                                value,
+                                style: TextStyle(color: context.secondaryColor),
                               ),
-                            ),
-                          );
-                          */
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-
-            /// filter
-
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppInsets.inset10),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: selections.map((value) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: StatefulBuilder(
-                        builder: (BuildContext context,
-                            void Function(void Function()) rebuild) {
-                          return FilterChip(
-                            color: WidgetStatePropertyAll(context.primaryColor),
-                            label: Text(
-                              value,
-                              style: TextStyle(color: context.secondaryColor),
-                            ),
-                            selected: selectedHobbies.contains(value),
-                            onSelected: (bool isSelected) {
-                              print("selected");
-                              rebuild(() {
-                                if (isSelected) {
-                                  selectedHobbies.add(value);
-                                } else {
-                                  selectedHobbies.remove(value);
-                                }
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    );
-                  }).toList(),
+                              selected: selectedHobbies.contains(value),
+                              onSelected: (bool isSelected) {
+                                print("selected");
+                                rebuild(() {
+                                  if (isSelected) {
+                                    selectedHobbies.add(value);
+                                  } else {
+                                    selectedHobbies.remove(value);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

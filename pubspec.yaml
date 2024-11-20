@@ -64,6 +64,8 @@ dependencies:
   flutter_launcher_icons: ^0.14.1
 
 
+  # bloc_concurrency provides an opinionated set of event transformers
+  bloc_concurrency: ^0.2.5
 dev_dependencies:
   flutter_test:
     sdk: flutter

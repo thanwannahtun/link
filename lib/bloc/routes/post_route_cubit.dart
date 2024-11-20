@@ -10,7 +10,21 @@ import 'package:link/models/post.dart';
 import 'package:link/repositories/post_route.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 
+import 'package:stream_transform/stream_transform.dart';
+
+import 'package:bloc_concurrency/bloc_concurrency.dart';
+
 part 'post_route_state.dart';
+
+String handleErrorMessage(Exception e) => ApiErrorHandler.handle(e).message;
+
+const throttleDuration = Duration(milliseconds: 100);
+
+EventTransformer<E> _throttleDroppable<E>(Duration duration) {
+  return (events, mapper) {
+    return droppable<E>().call(events.throttle(duration), mapper);
+  };
+}
 
 class PostRouteCubit extends Cubit<PostRouteState> {
   final _postApiRepo = PostRouteRepo();
@@ -30,6 +44,7 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       : super(const PostRouteState(
             status: BlocStatus.initial, routes: [], routeModels: []));
 
+  /// TEMPORARY FUNCTION
   fetchRoutes({Object? body, Map<String, dynamic>? query}) async {
     if (state.status == BlocStatus.fetching) return;
     emit(state.copyWith(status: BlocStatus.fetching));
@@ -82,8 +97,7 @@ class PostRouteCubit extends Cubit<PostRouteState> {
             ====== <Error/>""");
 
       emit(state.copyWith(
-          status: BlocStatus.uploadFailed,
-          error: ApiErrorHandler.handle(e).message));
+          status: BlocStatus.uploadFailed, error: handleErrorMessage(e)));
     }
   }
 
@@ -112,7 +126,7 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       emit(state.copyWith(
           routeModels: [],
           status: BlocStatus.fetchFailed,
-          error: ApiErrorHandler.handle(e).message));
+          error: handleErrorMessage(e)));
     }
   }
 
@@ -141,7 +155,75 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       emit(state.copyWith(
           routes: [],
           status: BlocStatus.fetchFailed,
-          error: ApiErrorHandler.handle(e).message));
+          error: handleErrorMessage(e)));
     }
   }
+
+// 09777001841
+//
+  /// Throttling
+  /// Fetch routes by category with throttling applied
+  void fetchRoutesByCategoryWithThrottle(
+      {Object? body, APIQuery? query}) async {
+    // Ensure only one fetch process is running
+    if (state.status == BlocStatus.fetching) return;
+
+    /// Throttling applied here
+    _throttleDroppable(throttleDuration)(
+      Stream.fromFuture(Future(() async {
+        emit(state.copyWith(status: BlocStatus.fetching));
+        try {
+          APIQuery? queryParams = query?.copyWith(page: _page);
+
+          List<RouteModel> routes = await _postApiRepo.fetchRoutesByCategory(
+            query: queryParams?.toJson(),
+            body: body,
+          );
+
+          // Update state if routes are fetched
+          if (routes.isNotEmpty) {
+            _page++;
+          }
+
+          emit(state.copyWith(
+            status: BlocStatus.fetched,
+            routeModels: routes,
+          ));
+        } on Exception catch (e, stackTrace) {
+          debugPrint("""<Error> >
+            (error) - $e
+            ====== 
+            (stackTrace) - $stackTrace 
+            <Error/>""");
+          emit(state.copyWith(
+              routeModels: [],
+              status: BlocStatus.fetchFailed,
+              error: ApiErrorHandler.handle(e).message));
+        }
+      })),
+      (event) => event,
+    );
+  }
+/*
+  // Usage example:
+  Future<void> fetchRoutess({Object? body, Map<String, dynamic>? query}) async {
+    _throttleDroppable(Duration(milliseconds: 300)).call(Stream.fromFuture(fetchRoutesAPI()), (event) {});
+  }
+  */
+
+  /// Throttling
+
+/*
+  Future<T> _safeApiCall<T>(
+      Future<T> Function() apiCall, {
+        required void Function(Exception e, StackTrace stackTrace) onError,
+      }) async {
+    try {
+      return await apiCall();
+    } catch (e, stackTrace) {
+      onError(e as Exception, stackTrace);
+      rethrow; // Optional: Rethrow if you want caller-side handling
+    }
+  }
+*/
 }
