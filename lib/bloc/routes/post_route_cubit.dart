@@ -22,7 +22,9 @@ const throttleDuration = Duration(milliseconds: 100);
 
 EventTransformer<E> _throttleDroppable<E>(Duration duration) {
   return (events, mapper) {
-    return droppable<E>().call(events.throttle(duration), mapper);
+    // return droppable<E>().call(events.throttle(duration), mapper);
+    return droppable<E>().call(
+        events.throttle(duration).where((event) => event != null), mapper);
   };
 }
 
@@ -44,8 +46,8 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       : super(const PostRouteState(
             status: BlocStatus.initial, routes: [], routeModels: []));
 
-  /// TEMPORARY FUNCTION
-  fetchRoutes({Object? body, Map<String, dynamic>? query}) async {
+  // ignore: unused_element
+  _fetchRoutes({Object? body, Map<String, dynamic>? query}) async {
     if (state.status == BlocStatus.fetching) return;
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
@@ -101,8 +103,9 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     }
   }
 
-  getRoutesByCategory({Object? body, APIQuery? query}) async {
-    if (state.status == BlocStatus.fetching) return;
+  Future _getRoutesByCategoryFutureTask({Object? body, APIQuery? query}) async {
+    // await Future. delayed(const Duration(seconds: 5));
+    // return 'Future complete';
     emit(state.copyWith(status: BlocStatus.fetching));
     try {
       APIQuery? queryParams = query?.copyWith(page: _page);
@@ -116,7 +119,11 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       if (routes.isNotEmpty) {
         _page++;
       }
-      emit(state.copyWith(status: BlocStatus.fetched, routeModels: routes));
+
+      final List<RouteModel> fetchedRoutes = [...state.routeModels, ...routes];
+
+      emit(state.copyWith(
+          status: BlocStatus.fetched, routeModels: fetchedRoutes));
     } on Exception catch (e, stackTrace) {
       debugPrint("""<Error> >
             (error) - $e
@@ -128,6 +135,16 @@ class PostRouteCubit extends Cubit<PostRouteState> {
           status: BlocStatus.fetchFailed,
           error: handleErrorMessage(e)));
     }
+  }
+
+  getRoutesByCategory({Object? body, APIQuery? query}) async {
+    if (state.status == BlocStatus.fetching) return;
+    _throttleDroppable(throttleDuration)(
+      Stream.fromFuture(
+              _getRoutesByCategoryFutureTask(body: body, query: query))
+          .where((event) => event != null), // optional
+      (event) => event,
+    );
   }
 
   getPostWithRoutes({Object? body, APIQuery? query}) async {
@@ -145,7 +162,9 @@ class PostRouteCubit extends Cubit<PostRouteState> {
       if (posts.isNotEmpty) {
         _page++;
       }
-      emit(state.copyWith(status: BlocStatus.fetched, routes: posts));
+      final List<Post> fetchedPosts = [...state.routes, ...posts];
+
+      emit(state.copyWith(status: BlocStatus.fetched, routes: fetchedPosts));
     } on Exception catch (e, stackTrace) {
       debugPrint("""<Error> >
             (error) - $e
@@ -159,11 +178,10 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     }
   }
 
-// 09777001841
-//
   /// Throttling
   /// Fetch routes by category with throttling applied
-  void fetchRoutesByCategoryWithThrottle(
+  // ignore: unused_element
+  void _fetchRoutesByCategoryWithThrottle(
       {Object? body, APIQuery? query}) async {
     // Ensure only one fetch process is running
     if (state.status == BlocStatus.fetching) return;
@@ -189,29 +207,13 @@ class PostRouteCubit extends Cubit<PostRouteState> {
             status: BlocStatus.fetched,
             routeModels: routes,
           ));
-        } on Exception catch (e, stackTrace) {
-          debugPrint("""<Error> >
-            (error) - $e
-            ====== 
-            (stackTrace) - $stackTrace 
-            <Error/>""");
-          emit(state.copyWith(
-              routeModels: [],
-              status: BlocStatus.fetchFailed,
-              error: ApiErrorHandler.handle(e).message));
+        } on Exception catch (e) {
+          throw Exception(e);
         }
       })),
       (event) => event,
     );
   }
-/*
-  // Usage example:
-  Future<void> fetchRoutess({Object? body, Map<String, dynamic>? query}) async {
-    _throttleDroppable(Duration(milliseconds: 300)).call(Stream.fromFuture(fetchRoutesAPI()), (event) {});
-  }
-  */
-
-  /// Throttling
 
 /*
   Future<T> _safeApiCall<T>(

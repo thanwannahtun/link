@@ -239,16 +239,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         } else if (state.status == BlocStatus.fetching &&
             _sponsoredRoutes.isEmpty) {
           return _buildTrendingRoutesShimmer(context);
+        } else if (state.status == BlocStatus.fetched) {
+          _sponsoredRoutes = state.routeModels;
         }
-        final newRoutes = state.routeModels;
-        print("new route first = ${newRoutes.first.toJson()}");
-        print(
-            "=====> _sponsoredRoutes before fetched ${_sponsoredRoutes.length}");
-        print("=====> newRoutes ${newRoutes.length}");
-        _sponsoredRoutes.addAll(newRoutes);
-        print(
-            "=====> _sponsoredRoutes afeter fetched ${_sponsoredRoutes.length}");
-
         return _buildSponsoredRoutesCard(context);
       },
       listener: (BuildContext context, PostRouteState state) {},
@@ -267,13 +260,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           } else if (state.status == BlocStatus.fetching &&
               _trendingRoutes.isEmpty) {
             return _buildTrendingRoutesShimmer(context);
+          } else if (state.status == BlocStatus.fetched) {
+            _trendingRoutes = state.routeModels;
           }
-          final newRoutes = state.routeModels;
-          print("new route first = ${newRoutes.first.toJson()}");
-          print(
-              "=====> _trendingRoutes before fetched ${_trendingRoutes.length}");
-          print("=====> newRoutes ${newRoutes.length}");
-          _trendingRoutes.addAll(newRoutes);
 
           return _buildTrendingRoutesCard(context);
         });

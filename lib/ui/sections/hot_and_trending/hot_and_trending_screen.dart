@@ -170,8 +170,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           // _postRouteCubit.updatePage(); // set page to default
           _trendingPosts = [];
           _trendingRoutes = [];
-          _postRouteCubit.fetchRoutesByCategoryWithThrottle(
-              query: query ?? initialQuery);
+          _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
         },
         // child: _customScrollViewWidget(),
         child: _body(),
@@ -231,22 +230,28 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
             // _trendingPosts.isEmpty) {
             _trendingRoutes.isEmpty) {
           return _buildShimmer(context);
+        } else if (state.status == BlocStatus.fetched) {
+          _trendingPosts = state.routes;
+          _trendingRoutes = state.routeModels;
         }
-        final newPosts = state.routes;
-        final newRoutes = state.routeModels;
-        if (_postRouteCubit.getPage % 4 == 0) {
-          _trendingPosts.addAll(newPosts);
-        }
-        if (!(_postRouteCubit.getPage % 4 == 0)) {
-          _trendingRoutes.addAll(newRoutes);
-        }
-
-        print("=====> newRoutes ${newRoutes.length}");
-
-        // final newPosts = state.routes;
-        print("=====> _trendingRoutes after fetched ${_trendingRoutes.length}");
 
         return _showPosts();
+
+        // final newPosts = state.routes;
+        // final newRoutes = state.routeModels;
+        // if (_postRouteCubit.getPage % 4 == 0) {
+        //   _trendingPosts.addAll(newPosts);
+        // }
+        // if (!(_postRouteCubit.getPage % 4 == 0)) {
+        //   _trendingRoutes.addAll(newRoutes);
+        // }
+        //
+        // print("=====> newRoutes ${newRoutes.length}");
+        //
+        // // final newPosts = state.routes;
+        // print("=====> _trendingRoutes after fetched ${_trendingRoutes.length}");
+        //
+        // return _showPosts();
       },
       listener: (context, state) {
         if (state.status == BlocStatus.fetchFailed &&
@@ -407,15 +412,20 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
         }
 
         // Fallback for invalid index
-        return Container(
-          color: Colors.red,
-          width: double.infinity,
-          height: 200,
-          child: Center(child: Text('Invalid Index: $index')),
+        return Shimmer.fromColors(
+          baseColor: context.greyColor,
+          highlightColor: context.greyFilled,
+          child: const SizedBox(
+            width: double.infinity,
+            height: 250,
+            child: Card(),
+          ),
         );
       },
       itemCount: _trendingRoutes.isNotEmpty
-          ? _trendingRoutes.length + (_trendingRoutes.length ~/ 15)
+          ? _trendingRoutes.length +
+              (_trendingRoutes.length ~/ 15) +
+              (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0)
           : 0,
       separatorBuilder: (BuildContext context, int index) => const SizedBox(
         height: AppInsets.inset8,
