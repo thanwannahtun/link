@@ -19,6 +19,8 @@ extension TextThemeExtensions on BuildContext {
 
   Color get successColor => Colors.blue;
 
+  Color get dangerColor => Colors.red;
+
   Color get greyColor => Colors.grey;
 
   Color get greyFilled => Theme.of(this).colorScheme.onSecondary;

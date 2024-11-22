@@ -30,7 +30,7 @@ void main() async {
 
   runApp(MultiBlocProvider(providers: [
     BlocProvider<ThemeCubit>(
-      create: (context) => ThemeCubit(),
+      create: (context) => ThemeCubit()..getTheme(),
     ),
   ], child: const LinkApplication()));
 }
@@ -86,22 +86,8 @@ class _LinkApplicationState extends State<LinkApplication>
           create: (context) => AgencyCubit(),
         ),
       ],
-      child: BlocBuilder<ThemeCubit, ThemeState>(
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, state) {
-          debugPrint(state.toString());
-          final brightness = MediaQuery.of(context).platformBrightness;
-          ThemeMode themeMode;
-
-          if (state == ThemeState.system) {
-            themeMode = brightness == Brightness.dark
-                ? ThemeMode.dark
-                : ThemeMode.light;
-          } else if (state == ThemeState.dark) {
-            themeMode = ThemeMode.dark;
-          } else {
-            themeMode = ThemeMode.light;
-          }
-
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             onGenerateRoute: RouteGenerator.onGenerateRoute,
@@ -109,7 +95,7 @@ class _LinkApplicationState extends State<LinkApplication>
             title: 'Link',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
+            themeMode: state,
           );
         },
       ),

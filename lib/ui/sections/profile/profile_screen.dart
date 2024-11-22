@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
-import 'package:link/ui/screens/post/upload_new_post_page.dart';
+
+// import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
@@ -47,6 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          /*
                           ListTile(
                               title: const Text("Upload New Post")
                                   .styled(fw: FontWeight.bold),
@@ -54,8 +56,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               onTap: () => context
                                   .pushNamed(RouteLists.postCreatePage)
                                   .then((value) => context.pop())),
+                          */
                           ListTile(
-                              title: const Text("Make Sponsorship")
+                              title: const Text("Upload New Route")
                                   .styled(fw: FontWeight.bold),
                               trailing: const Icon(Icons.add_box_rounded),
                               onTap: () => context

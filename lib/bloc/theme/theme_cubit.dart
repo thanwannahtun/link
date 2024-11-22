@@ -1,61 +1,60 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-// Define ThemeState
-enum ThemeState { light, dark, system }
-
-class ThemeCubit extends Cubit<ThemeState> {
-  ThemeCubit() : super(ThemeState.light);
-
-  void toggleTheme() {
-    if (state == ThemeState.light) {
-      emit(ThemeState.dark);
-    } else {
-      emit(ThemeState.light);
-    }
-  }
-
-  void setSystemTheme() {
-    emit(ThemeState.system);
-  }
-}
-
-/*
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/data/hive/hive_util.dart';
 
-enum ThemeState { light, dark, system }
+import '../../core/utils/hive_box_name.dart';
 
 class ThemeCubit extends Cubit<ThemeMode> {
-  ThemeState _currentThemeState = ThemeState.system;
+  ThemeCubit() : super(ThemeMode.light);
 
-  ThemeCubit() : super(ThemeMode.system);
+  final _hiveUtil = HiveUtil();
 
-  void toggleTheme(ThemeState themeState) {
-    _currentThemeState = themeState;
-    _emitThemeMode();
+  _saveToHive(ThemeMode themeMode) async {
+    await _hiveUtil.addValue<String>(
+        HiveBoxName.themeMode, themeMode.name, HiveKeys.themeKey);
   }
 
-  void updateSystemBrightness(Brightness brightness) {
-    if (_currentThemeState == ThemeState.system) {
-      final themeMode = brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
-      emit(themeMode);
+  void toggleTheme() async {
+    if (kDebugMode) {
+      print(
+          "toggleTheme : previous Theme : (${state.toString()} : ${state.name})");
     }
-  }
-
-  void _emitThemeMode() {
-    if (_currentThemeState == ThemeState.system) {
-      final brightness = WidgetsBinding.instance.window.platformBrightness;
-      final themeMode = brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
-      emit(themeMode);
-    } else if (_currentThemeState == ThemeState.dark) {
+    if (state == ThemeMode.light) {
+      await _saveToHive(ThemeMode.dark);
       emit(ThemeMode.dark);
     } else {
       emit(ThemeMode.light);
+      await _saveToHive(ThemeMode.light);
     }
   }
+
+  void setSystemTheme() async {
+    await _saveToHive(ThemeMode.system);
+    emit(ThemeMode.system);
+  }
+
+  getTheme() async {
+    ThemeMode themeMode = await _getThemeMode();
+    if (kDebugMode) {
+      print("getTheme : (${themeMode.toString()} : ${themeMode.name})");
+    }
+    emit(themeMode);
+  }
+
+  /// Retrieve ThemeMode from a String
+  Future<ThemeMode> _getThemeMode() async {
+    final themeModeString = await _hiveUtil.getValueByKey<String>(
+        HiveKeys.themeKey,
+        boxName: HiveBoxName.themeMode,
+        defaultValue: ThemeMode.system.name);
+    return ThemeMode.values.firstWhere(
+      (e) => e.name == themeModeString,
+      orElse: () => ThemeMode.system, // Default fallback
+    );
+  }
 }
-
-
+/*
 class SystemThemeObserver extends WidgetsBindingObserver {
   final ThemeCubit themeCubit;
 

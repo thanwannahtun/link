@@ -44,6 +44,8 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -105,43 +107,50 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
   Widget _buildFormFields() {
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // _buildImageCarousel(),
-          const SizedBox(height: 8),
-          _titleField(),
-          const SizedBox(height: 16),
-          _descriptionField(context),
-          const SizedBox(height: 16),
-          _buildRoutesListView(),
-          const SizedBox(height: 16),
-        ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // _buildImageCarousel(),
+            const SizedBox(height: 8),
+            _titleField(),
+            const SizedBox(height: 16),
+            _descriptionField(context),
+            const SizedBox(height: 16),
+            _buildRoutesListView(),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 
   /// START
 
-  TextField _titleField() {
-    return TextField(
-        focusNode: _titleFocusNode,
-        autocorrect: true,
-        maxLines: null,
-        minLines: 1,
-        onTapOutside: (event) => _titleFocusNode.unfocus(),
-        style: Theme.of(context).textTheme.headlineMedium,
-        controller: _titleController,
-        decoration: const InputDecoration(
-          hintText: "Title",
-          hintStyle: TextStyle(
-              fontWeight: FontWeight.bold, fontSize: AppInsets.font20),
-          border: InputBorder.none,
-        ));
+  Widget _titleField() {
+    return TextFormField(
+      validator: (value) => (value!.isEmpty) ? 'Title is required!' : null,
+      focusNode: _titleFocusNode,
+      autocorrect: true,
+      maxLines: null,
+      minLines: 1,
+      onTapOutside: (event) => _titleFocusNode.unfocus(),
+      style: Theme.of(context).textTheme.headlineMedium,
+      controller: _titleController,
+      decoration: const InputDecoration(
+        hintText: "Title",
+        hintStyle:
+            TextStyle(fontWeight: FontWeight.bold, fontSize: AppInsets.font20),
+        border: InputBorder.none,
+      ),
+    );
   }
 
-  TextField _descriptionField(BuildContext context) {
-    return TextField(
+  Widget _descriptionField(BuildContext context) {
+    return TextFormField(
+        validator: (value) =>
+            (value!.isEmpty) ? 'Description is required!' : null,
         focusNode: _descriptionFocusNode,
         autocorrect: true,
         maxLines: null,
@@ -430,17 +439,32 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   }
 
   _uploadRoute() async {
-    List<File?> files = routes
-        .where((r) => r.image != null)
-        .map((r) => File(r.image ?? ""))
-        .toList();
+    final SnackBar requiredRouteSnackBar = SnackBar(
+      content: const Text("Add Routes"),
+      backgroundColor: context.dangerColor,
+      margin: const EdgeInsets.symmetric(
+          vertical: (AppInsets.inset30) * 2, horizontal: AppInsets.inset8),
+      behavior: SnackBarBehavior.floating,
+    );
 
-    final post = Post(
-        agency: Agency(id: "66b8d28d3e1a9b47a2c0e69c"),
-        title: _titleController.text,
-        description: _descriptionController.text,
-        routes: routes);
-    context.read<PostRouteCubit>().uploadNewPost(post: post, files: files);
+    if (_formKey.currentState?.validate() ?? false) {
+      _formKey.currentState?.save();
+      if (routes.isEmpty) {
+        context.showSnackBar(requiredRouteSnackBar);
+        return;
+      }
+      List<File?> files = routes
+          .where((r) => r.image != null)
+          .map((r) => File(r.image ?? ""))
+          .toList();
+
+      final post = Post(
+          agency: Agency(id: "66b8d28d3e1a9b47a2c0e69c"),
+          title: _titleController.text,
+          description: _descriptionController.text,
+          routes: routes);
+      context.read<PostRouteCubit>().uploadNewPost(post: post, files: files);
+    }
   }
 }
 

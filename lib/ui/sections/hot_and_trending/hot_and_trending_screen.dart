@@ -287,8 +287,71 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       return _showEmptyTrendingWidget();
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
-      child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            _buildSliverAppBar(context),
+            SliverList(
+                delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // Insert widget every 15 items or based on other conditions
+                final shouldShowHorizontalWidget = (index % 15 == 0) &&
+                    index != 0 &&
+                    _trendingPosts.isNotEmpty;
+
+                if (shouldShowHorizontalWidget) {
+                  return HorizontalPostWithRoutesWidget(
+                    posts: _trendingPosts,
+                    onFetchAllPressed: () {
+                      _postRouteCubit.getPostWithRoutes(
+                          query: getPostWithRouteQuery);
+                    },
+                  );
+                }
+
+                // Calculate the actual index considering additional horizontal widgets
+                final adjustedIndex = index - (index ~/ 15);
+
+                if (adjustedIndex >= 0 &&
+                    adjustedIndex < _trendingRoutes.length) {
+                  RouteModel route = _trendingRoutes[adjustedIndex];
+                  return RouteInfoCardWidget(
+                    route: route,
+                    onRoutePressed: (route) {
+                      context.pushNamed(RouteLists.routeDetailPage,
+                          arguments: route);
+                    },
+                    onAgencyPressed: (route) {
+                      context.pushNamed(RouteLists.publicAgencyProfile,
+                          arguments: route.agency);
+                    },
+                  );
+                }
+
+                // Fallback for invalid index
+                return Shimmer.fromColors(
+                  baseColor: context.greyColor,
+                  highlightColor: context.greyFilled,
+                  child: const SizedBox(
+                    width: double.infinity,
+                    height: 250,
+                    child: Card(),
+                  ),
+                );
+              },
+              childCount: _trendingRoutes.isNotEmpty
+                  ? _trendingRoutes.length +
+                      (_trendingRoutes.length ~/ 15) +
+                      (_postRouteCubit.state.status == BlocStatus.fetching
+                          ? 3
+                          : 0)
+                  : 0,
+            )),
+          ],
+        )
+        /*
+      Column(
         children: [
           SizedBox(
             height: 45,
@@ -301,6 +364,34 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           )),
         ],
       ),
+      */
+        );
+  }
+
+  SliverAppBar _buildSliverAppBar(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      // pinned: true,
+      // expandedHeight: 20.0,
+      automaticallyImplyLeading: false,
+      backgroundColor: Theme.of(context).cardColor,
+      flexibleSpace: FlexibleSpaceBar(
+          titlePadding: EdgeInsets.zero,
+          title: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) => Chip(
+              label: Text(
+                "Yangon to ${index + 1}",
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              labelPadding: EdgeInsets.zero,
+              color: WidgetStatePropertyAll(context.greyFilled),
+            ),
+            itemCount: 10,
+            separatorBuilder: (BuildContext context, int index) =>
+                const SizedBox(width: 5),
+          )),
     );
   }
 
@@ -731,7 +822,6 @@ class HorizontalPostWithRoutesWidget extends StatelessWidget {
 
   Widget buildHorizontalRouteCard(BuildContext context, Post post) {
     return Card(
-      margin: EdgeInsets.zero,
       shape: const BeveledRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(1))),
       child: SizedBox(

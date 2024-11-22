@@ -137,7 +137,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   @override
   Widget build(BuildContext context) {
     print("rebuild");
-    print("Equality ${_trendingRouteBloc == _sponsoredRouteBloc}");
 
     return CustomScaffoldBody(
       resizeToAvoidBottomInset: false,
