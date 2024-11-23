@@ -41,6 +41,7 @@ class _SearchRoutesScreenState extends State<SearchRoutesScreen> {
   void initState() {
     super.initState();
     _searchedRouteCubit = PostRouteCubit();
+
     print("initStateCalled  :HeroHomeScreen");
     _scrollController = ScrollController(); // _sponsoredRoute Controller
     _scrollController.addListener(_onScroll);
