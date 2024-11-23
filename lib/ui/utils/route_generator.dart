@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
 import 'package:link/ui/screens/app.dart';
 import 'package:link/ui/screens/post/upload_new_post_page.dart';
+
 import 'package:link/ui/sections/hot_and_trending/trending_route_card_detail.dart';
 import 'package:link/ui/screens/post_detail.dart';
 import 'package:link/ui/sections/hot_and_trending/hot_and_trending_screen.dart';
@@ -15,10 +17,17 @@ import 'package:link/ui/utils/route_list.dart';
 
 import '../screens/profile/public_agency_profile_screen.dart';
 import '../screens/route_detail_page.dart';
+import '../sections/auth/create_password_screen.dart';
+import '../sections/auth/email_code_enter_screen.dart';
+import '../sections/auth/enter_date_of_birth_screen.dart';
+import '../sections/auth/sign_up_screen.dart';
+import '../sections/auth/sing_in_with_email_screen.dart';
 import '../sections/hero_home/hero_home_screen.dart';
 import '../sections/search/search_routes_screen.dart';
 import '../sections/upload/new_route_upload_screen_advance.dart';
 import '../sections/upload/post_create/post_create_cubit.dart';
+
+final _authenticationCubit = AuthenticationCubit();
 
 class RouteGenerator {
   static Route<T>? onGenerateRoute<T>(RouteSettings settings) {
@@ -146,6 +155,67 @@ class RouteGenerator {
             );
           },
         );
+
+      /// Auth
+      case RouteLists.signInWithEmail:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return const SignInWithEmailScreen();
+          },
+        );
+      case RouteLists.signUp:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<AuthenticationCubit>.value(
+                    value: _authenticationCubit),
+              ],
+              child: const SignUpScreen(),
+            );
+          },
+        );
+      case RouteLists.emailCodeEnterScreen:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<AuthenticationCubit>.value(
+                    value: _authenticationCubit),
+              ],
+              child: const EmailCodeEnterScreen(),
+            );
+          },
+        );
+      case RouteLists.createPasswordScreen:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<AuthenticationCubit>.value(
+                    value: _authenticationCubit),
+              ],
+              child: const CreatePasswordScreen(),
+            );
+          },
+        );
+      case RouteLists.enterDateOfBirthScreen:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<AuthenticationCubit>.value(
+                    value: _authenticationCubit),
+              ],
+              child: const EnterDateOfBirthScreen(),
+            );
+          },
+        );
       default:
         return _navigateRoute(
           settings: settings,
@@ -165,6 +235,24 @@ class NoRouteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(title: const Text("Oop!..")),
+      body: Center(
+        child: Card.filled(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("Something went wrong!",
+                  style: TextStyle(color: Colors.red)),
+              ListTile(
+                title: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text("Back")),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

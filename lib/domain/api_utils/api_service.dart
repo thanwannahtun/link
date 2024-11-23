@@ -14,11 +14,11 @@ class ApiService {
   // static const String _baseUrl = 'http://192.7:3000/api/v1';
   // static const String _baseUrl = 'http://192.168.100.7:3000/api';
   // static const String _baseUrl = 'http://192.168.1.11:3000/api/v1';
-  static const String _baseUrl = 'http://192.168.43.13:3000/api/v1';
+  // static const String _baseUrl = 'http://192.168.43.13:3000/api/v1';
 
   // static const String _baseUrl = 'http://192.168.100.7:3000/api/v1';
 
-  // static const String _baseUrl = 'http://localhost:3000/api/v1';
+  static const String _baseUrl = 'http://localhost:3000/api/v1';
 
   /// Render URL
   // static const String _baseUrl =

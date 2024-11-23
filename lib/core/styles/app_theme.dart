@@ -168,7 +168,7 @@ class AppTheme {
         backgroundColor: DarkTheme.tertiaryBg,
         titleTextStyle: TextStyle(
             color: LightTheme.onPrimary,
-            fontSize: AppInsets.font25,
+            fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),
 
@@ -194,15 +194,15 @@ class AppTheme {
 
   static ElevatedButtonThemeData elevatedButtonThemeData() {
     return ElevatedButtonThemeData(
-        style: ButtonStyle(
-      textStyle: const WidgetStatePropertyAll(
-          TextStyle(color: DarkTheme.primaryText, fontWeight: FontWeight.bold)),
-      backgroundColor: const WidgetStatePropertyAll(LightTheme.secondaryBg),
-      foregroundColor: const WidgetStatePropertyAll(LightTheme.primaryBg),
-      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppInsets.inset5))),
-      overlayColor:
-          WidgetStatePropertyAll(LightTheme.secondaryBg.withBlue(255)),
+        style: ElevatedButton.styleFrom(
+      textStyle: const TextStyle(
+          color: DarkTheme.primaryText, fontWeight: FontWeight.bold),
+      backgroundColor: LightTheme.secondaryBg,
+      foregroundColor: LightTheme.primaryBg,
+      // disabledBackgroundColor: Colors.grey,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppInsets.inset5)),
+      overlayColor: LightTheme.secondaryBg.withBlue(255),
     ));
   }
 }

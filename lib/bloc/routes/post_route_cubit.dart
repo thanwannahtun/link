@@ -16,7 +16,7 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 
 part 'post_route_state.dart';
 
-String handleErrorMessage(Exception e) => ApiErrorHandler.handle(e).message;
+// String handleErrorMessage(Exception e) => ApiErrorHandler.handle(e).message;
 
 const throttleDuration = Duration(milliseconds: 100);
 

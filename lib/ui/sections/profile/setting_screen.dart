@@ -4,6 +4,7 @@ import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/models/agency.dart';
+import 'package:link/ui/utils/route_list.dart';
 
 import '../../../core/utils/app_insets.dart';
 import '../../widgets/custom_scaffold_body.dart';
@@ -46,6 +47,22 @@ class _SettingScreenState extends State<SettingScreen> {
             title: const Text("Theme"),
             leading: const Icon(Icons.sunny),
             onTap: () => context.read<ThemeCubit>().toggleTheme(),
+          ),
+        ),
+
+        /// Temp UI Sketch
+        Card(
+          child: ListTile(
+            title: const Text("Sign Up Screen (Sketch)"),
+            leading: const Icon(Icons.person),
+            onTap: () => context.pushNamed(RouteLists.signUp),
+          ),
+        ),
+        Card(
+          child: ListTile(
+            title: const Text("Sign In With Email Screen (Sketch)"),
+            leading: const Icon(Icons.email_outlined),
+            onTap: () => context.pushNamed(RouteLists.signInWithEmail),
           ),
         ),
       ],

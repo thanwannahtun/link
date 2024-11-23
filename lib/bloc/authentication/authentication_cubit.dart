@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/domain/api_utils/api_error_handler.dart';
 import 'package:link/models/user.dart';
@@ -10,10 +11,14 @@ part 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   AuthenticationCubit()
-      : super(const AuthenticationState(status: AutnenticationStatus.initial));
+      : super(const AuthenticationState(status: AuthenticationStatus.initial));
+
+  // final _userRepo = UserRepo();
+  final _authRepo = AuthenticationRepo();
+
   signUpUser({required User user}) async {
     emit(state.copyWith(
-      status: AutnenticationStatus.singingUp,
+      status: AuthenticationStatus.singingUp,
       message: "Signing Up.../n Please Wait a moment!",
     ));
     try {
@@ -22,17 +27,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await UserRepo().insertUser(appUser);
 
       emit(state.copyWith(
-          status: AutnenticationStatus.signUpSuccess,
+          status: AuthenticationStatus.signUpSuccess,
           message: "Successfully Signed Up!",
           user: appUser));
     } on DioException catch (e) {
       emit(state.copyWith(
-          status: AutnenticationStatus.signUpFailed,
+          status: AuthenticationStatus.signUpFailed,
           error: ApiErrorHandler.handle(e).message,
           message: "Sign Up Failed due to Network Connection!"));
     } catch (e) {
       emit(state.copyWith(
-          status: AutnenticationStatus.signUpFailed,
+          status: AuthenticationStatus.signUpFailed,
           error: e.toString(),
           message: "SignUp Failed!"));
     }
@@ -40,25 +45,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   signInUser({required User user}) async {
     emit(state.copyWith(
-        status: AutnenticationStatus.signIning, message: "Signing In..."));
+        status: AuthenticationStatus.signIning, message: "Signing In..."));
     try {
       User appUser = await AuthenticationRepo().signInUser(user: user);
 
       await UserRepo().insertUser(appUser);
 
       emit(state.copyWith(
-        status: AutnenticationStatus.signInSuccess,
+        status: AuthenticationStatus.signInSuccess,
         user: appUser,
         message: "Successfully Signed In!",
       ));
     } on DioException catch (e) {
       emit(state.copyWith(
-          status: AutnenticationStatus.signInFailed,
+          status: AuthenticationStatus.signInFailed,
           error: ApiErrorHandler.handle(e).message,
           message: "Sign Ip Failed due to Network Connection!"));
     } catch (e) {
       emit(state.copyWith(
-          status: AutnenticationStatus.signInFailed,
+          status: AuthenticationStatus.signInFailed,
           error: e.toString(),
           message: "Sign In Failed!"));
     }
@@ -66,25 +71,89 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   logOutUser({required User user}) async {
     emit(state.copyWith(
-        status: AutnenticationStatus.singingOut, message: "Loging Out..."));
+        status: AuthenticationStatus.singingOut, message: "Loging Out..."));
     try {
       /// notice delete all user data
       await UserRepo().deleteUser();
 
       emit(state.copyWith(
-        status: AutnenticationStatus.signingOutSuccess,
+        status: AuthenticationStatus.signingOutSuccess,
         message: "Good Bye!",
       ));
     } on DioException catch (e) {
       emit(state.copyWith(
-        status: AutnenticationStatus.signingOutFailed,
+        status: AuthenticationStatus.signingOutFailed,
         error: ApiErrorHandler.handle(e).message,
       ));
     } catch (e) {
       emit(state.copyWith(
-        status: AutnenticationStatus.signingOutFailed,
+        status: AuthenticationStatus.signingOutFailed,
         error: e.toString(),
       ));
+    }
+  }
+
+  changeState(
+      {AuthenticationStatus? status,
+      String? error,
+      String? message,
+      User? user}) {
+    print("[[changed State]]");
+    emit(state.copyWith(
+        status: status, error: error, user: user, message: message));
+  }
+
+  sendCode({required String email, bool resend = false}) async {
+    try {
+      Response response =
+          await _authRepo.sendCode(email: email, resend: resend);
+      if (response.statusCode == 200) {
+        emit(state.copyWith(
+            status: AuthenticationStatus.sendEmailCodeSuccess,
+            message: "Verification code sent!"));
+        return;
+      }
+      emit(state.copyWith(
+          status: AuthenticationStatus.sendEmailCodeFailed,
+          error: "Something went wrong!",
+          message: response.data["message"] ?? ""));
+    } on Exception catch (e, s) {
+      debugPrint("""====== <Error> >
+            (error) - $e
+            ====== 
+            (staceTrace) - $s 
+            ====== <Error/>""");
+
+      emit(state.copyWith(
+          status: AuthenticationStatus.sendEmailCodeFailed,
+          error: handleErrorMessage(e)));
+    }
+  }
+
+  verifyCode({required String email, required String code}) async {
+    try {
+      Response response = await _authRepo.verifyCode(email: email, code: code);
+      if (response.statusCode == 200) {
+        emit(state.copyWith(
+            status: AuthenticationStatus.verificationCodeAddedSuccess,
+            message: "Success"));
+        return;
+      }
+      emit(state.copyWith(
+          status: AuthenticationStatus.verificationCodeAddFailed,
+          error: "Something went wrong!",
+          message: response.data["message"] ?? "Invalid Code!"));
+    } on Exception catch (e, s) {
+      debugPrint("""====== <Error> >
+            (error) - $e
+            ====== 
+            (staceTrace) - $s 
+            ====== <Error/>""");
+
+      emit(state.copyWith(
+          status: AuthenticationStatus.verificationCodeAddFailed,
+          error: handleErrorMessage(e),
+          message: "Invalid Code!"));
     }
   }
 }

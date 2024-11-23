@@ -2,8 +2,13 @@ class RouteLists {
   static const String hotAndTrendingScreen = "/hot_and_trending_screen";
   static const String splashScreen = "/splash_screen";
   static const String app = "/base_app";
-  static const String signUp = "/sign_up";
+  static const String signUp = "/sign_up"; // email sign up
   static const String signIn = "/sign_in";
+  static const String signInWithEmail = "/sign_in_with_email";
+  static const String emailCodeEnterScreen = "/email_code_enter_screen";
+  static const String createPasswordScreen = "/create_password_screen";
+  static const String enterDateOfBirthScreen = "/enter_date_of_birth";
+  static const String signInWithPhone = "/sign_in_with_phone";
   static const String signOut = "/sign_out";
 
   static const String publicAgencyProfile = "/public_agency_profile";
