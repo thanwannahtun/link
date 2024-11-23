@@ -6,11 +6,12 @@ import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
+import '../../../domain/api_utils/api_query.dart';
+import '../../../domain/enums/category_type.dart';
 import '../../../models/app.dart';
 import '../../utils/route_list.dart';
 
@@ -24,13 +25,13 @@ class TrendingRoutesCard extends StatefulWidget {
 class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
   late final PostRouteCubit _trendingRouteBloc;
   List<Post> _trendingRoutes = [];
+
   @override
   void initState() {
     super.initState();
     _trendingRouteBloc = PostRouteCubit()
-      ..fetchRoutes(query: {
-        "categoryType": "trending",
-      });
+      ..getRoutesByCategory(
+          query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 5));
   }
 
   @override

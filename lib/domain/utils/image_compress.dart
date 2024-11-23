@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
@@ -5,7 +7,7 @@ import 'dart:io';
 class ImageCompress {
   static File compressImageSync(String path) {
     debugPrint(
-        "-----------------------running in a new Isolate!---------$path");
+        "-----------------------running in a new Isolate! ${Isolate.current.debugName}---------$path");
 
     File file = File(path);
 

@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/bloc/city/city_cubit.dart';
@@ -10,15 +12,24 @@ import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
+import 'package:link/core/widgets/cached_image.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
+import 'package:link/ui/screens/profile/route_model_card.dart';
+import 'package:link/ui/screens/route_detail_page.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
+
+import '../../../domain/api_utils/api_query.dart';
+import '../../../domain/api_utils/search_routes_query.dart';
+import '../../../domain/enums/category_type.dart';
+import '../../../models/city.dart';
 
 class HotAndTrendingScreen extends StatefulWidget {
   const HotAndTrendingScreen({super.key});
@@ -29,19 +40,31 @@ class HotAndTrendingScreen extends StatefulWidget {
 
 class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   List<Post> _trendingPosts = [];
+  List<RouteModel> _trendingRoutes = [];
   late PostRouteCubit _postRouteCubit;
 
   late final ScrollController _scrollController;
   Timer? _debounceTimer;
 
+  bool _initial = true;
+  bool _pushedRoutePage = false;
+  APIQuery? query;
+
+  /// For initial Hot & Trending Tab query
+  late APIQuery initialQuery;
+  late APIQuery getPostWithRouteQuery;
+
   @override
   void initState() {
     print("initStateCalled  :HotAndTrendingScreen");
     super.initState();
-    _postRouteCubit = PostRouteCubit()
-      ..fetchRoutes(query: {"categoryType": "suggested", "limit": 10});
+    initialQuery =
+        APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10);
+    getPostWithRouteQuery =
+        APIQuery(categoryType: CategoryType.postWithRoutes, limit: 10);
+
+    _postRouteCubit = PostRouteCubit();
     context.read<CityCubit>().fetchCities();
-    // context.read<PostRouteCubit>().fetchRoutes();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
     context.read<BottomSelectCubit>().stream.listen(_onBottomDoubleSelect);
@@ -49,6 +72,22 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
 
   @override
   void didChangeDependencies() {
+    if (_initial) {
+      if (ModalRoute.of(context)?.settings.arguments != null) {
+        final arguments =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+        query = arguments['query'];
+        if (query?.page != null) _postRouteCubit.updatePage(value: query?.page);
+        _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
+
+        _pushedRoutePage = true;
+      } else if (ModalRoute.of(context)?.settings.arguments == null) {
+        _postRouteCubit.getRoutesByCategory(query: initialQuery);
+      }
+
+      _initial = false;
+    }
+
     super.didChangeDependencies();
   }
 
@@ -73,13 +112,41 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     }
   }
 
+  // int _fetchToggle = 0; // Counter to alternate between fetches
+
   void _onScroll() {
-    if (_debounceTimer?.isActive ?? false) return; // Prevent further processing
+    if (_debounceTimer?.isActive ?? false) {
+      return; // Prevent multiple calls in quick succession
+    }
+
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       if (_isBottom && (_postRouteCubit.state.status != BlocStatus.fetching)) {
         print("_isBottom $_isBottom ");
-        _postRouteCubit
-            .fetchRoutes(query: {"categoryType": "trending", "limit": 5});
+
+        // if (_fetchToggle % 2 == 0) {
+        if (_postRouteCubit.getPage % 4 == 0) {
+          // Fetch vertical list
+          _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
+        } else {
+          print("fetched for post with routes");
+
+          // Fetch horizontal list (posts with routes)
+          _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
+        }
+
+        // _fetchToggle++; // Alternate fetch toggle
+        // _postRouteCubit.updatePage(value: (_postRouteCubit.getPage + 1));
+
+        // Fetch more routes for the vertical list
+        // _postRouteCubit.getRoutesByCategory(
+        //     query: {"categoryType": CategoryType.postWithRoutes, "limit": 5});
+        //
+        // // Fetch posts for the horizontal list every second scroll
+        // if (_postRouteCubit.getPage % 2 == 0) {
+        //   print("------------------ getPostWithRoutes------------");
+        //   _postRouteCubit.getPostWithRoutes(
+        //       query: {"categoryType": "post_with_routes", "limit": 5});
+        // }
       }
     });
   }
@@ -100,16 +167,22 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
-          _postRouteCubit.updatePage(); // set page to default
+          // _postRouteCubit.updatePage(); // set page to default
           _trendingPosts = [];
-          _postRouteCubit
-              .fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
+          _trendingRoutes = [];
+          _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
         },
         // child: _customScrollViewWidget(),
         child: _body(),
       ),
+      backButton: _pushedRoutePage
+          ? BackButton(
+              onPressed: () => context.pop(),
+            )
+          : null,
       title: Text(
-        "Trending Packages",
+        (query?.categoryType?.title) ??
+            (initialQuery.categoryType?.title ?? ""),
         style: TextStyle(
             color: context.onPrimaryColor,
             fontSize: AppInsets.font25,
@@ -117,8 +190,18 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
       ),
       action: IconButton(
           onPressed: () {
-            _scrollController.animateTo(0,
-                duration: const Duration(seconds: 1), curve: Curves.bounceIn);
+            // _scrollController.animateTo(0,
+            //     duration: const Duration(seconds: 1), curve: Curves.bounceIn);
+            SearchRoutesQuery searchedRouteQuery = SearchRoutesQuery(
+              origin: getRandomCity(),
+              destination: getRandomCity(),
+            );
+            query = APIQuery(
+                limit: 5,
+                categoryType: CategoryType.searchedRoutes,
+                searchedRouteQuery: searchedRouteQuery);
+            context.pushNamed(RouteLists.searchRoutesScreen,
+                arguments: {"query": query});
           },
           icon: Icon(
             Icons.search,
@@ -128,28 +211,52 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     );
   }
 
+  /// For Temporary Purpose
+  City getRandomCity() {
+    final random = Random();
+    int randomIndex =
+        random.nextInt(App.cities.length); // Generate a random index
+    return App.cities[randomIndex]; // Return the random City object
+  }
+
   BlocConsumer<PostRouteCubit, PostRouteState> _body() {
     return BlocConsumer<PostRouteCubit, PostRouteState>(
       bloc: _postRouteCubit,
       builder: (context, state) {
         debugPrint("::::::::::::: ${state.status}");
-        if (state.status == BlocStatus.fetchFailed && _trendingPosts.isEmpty) {
+        if (state.status == BlocStatus.fetchFailed && _trendingRoutes.isEmpty) {
           return _buildShimmer(context);
         } else if (state.status == BlocStatus.fetching &&
-            _trendingPosts.isEmpty) {
+            // _trendingPosts.isEmpty) {
+            _trendingRoutes.isEmpty) {
           return _buildShimmer(context);
+        } else if (state.status == BlocStatus.fetched) {
+          _trendingPosts = state.routes;
+          _trendingRoutes = state.routeModels;
         }
-        final newPosts = state.routes;
-        print("=====> _trendingPosts before fetched ${_trendingPosts.length}");
-        print("=====> newPosts ${newPosts.length}");
-        _trendingPosts.addAll(newPosts);
-        print("=====> _trendingPosts afeter fetched ${_trendingPosts.length}");
 
         return _showPosts();
+
+        // final newPosts = state.routes;
+        // final newRoutes = state.routeModels;
+        // if (_postRouteCubit.getPage % 4 == 0) {
+        //   _trendingPosts.addAll(newPosts);
+        // }
+        // if (!(_postRouteCubit.getPage % 4 == 0)) {
+        //   _trendingRoutes.addAll(newRoutes);
+        // }
+        //
+        // print("=====> newRoutes ${newRoutes.length}");
+        //
+        // // final newPosts = state.routes;
+        // print("=====> _trendingRoutes after fetched ${_trendingRoutes.length}");
+        //
+        // return _showPosts();
       },
       listener: (context, state) {
         if (state.status == BlocStatus.fetchFailed &&
-            _trendingPosts.isNotEmpty) {
+            // _trendingPosts.isNotEmpty) {
+            _trendingRoutes.isNotEmpty) {
           context.showSnackBar(SnackBar(
             content: Text(state.error ?? "Internet Connection Error!"),
           ));
@@ -175,12 +282,76 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   }
 
   Widget _showPosts() {
-    if (_trendingPosts.isEmpty) {
+    // if (_trendingPosts.isEmpty) {
+    if (_trendingRoutes.isEmpty) {
       return _showEmptyTrendingWidget();
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
-      child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            _buildSliverAppBar(context),
+            SliverList(
+                delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // Insert widget every 15 items or based on other conditions
+                final shouldShowHorizontalWidget = (index % 15 == 0) &&
+                    index != 0 &&
+                    _trendingPosts.isNotEmpty;
+
+                if (shouldShowHorizontalWidget) {
+                  return HorizontalPostWithRoutesWidget(
+                    posts: _trendingPosts,
+                    onFetchAllPressed: () {
+                      _postRouteCubit.getPostWithRoutes(
+                          query: getPostWithRouteQuery);
+                    },
+                  );
+                }
+
+                // Calculate the actual index considering additional horizontal widgets
+                final adjustedIndex = index - (index ~/ 15);
+
+                if (adjustedIndex >= 0 &&
+                    adjustedIndex < _trendingRoutes.length) {
+                  RouteModel route = _trendingRoutes[adjustedIndex];
+                  return RouteInfoCardWidget(
+                    route: route,
+                    onRoutePressed: (route) {
+                      context.pushNamed(RouteLists.routeDetailPage,
+                          arguments: route);
+                    },
+                    onAgencyPressed: (route) {
+                      context.pushNamed(RouteLists.publicAgencyProfile,
+                          arguments: route.agency);
+                    },
+                  );
+                }
+
+                // Fallback for invalid index
+                return Shimmer.fromColors(
+                  baseColor: context.greyColor,
+                  highlightColor: context.greyFilled,
+                  child: const SizedBox(
+                    width: double.infinity,
+                    height: 250,
+                    child: Card(),
+                  ),
+                );
+              },
+              childCount: _trendingRoutes.isNotEmpty
+                  ? _trendingRoutes.length +
+                      (_trendingRoutes.length ~/ 15) +
+                      (_postRouteCubit.state.status == BlocStatus.fetching
+                          ? 3
+                          : 0)
+                  : 0,
+            )),
+          ],
+        )
+        /*
+      Column(
         children: [
           SizedBox(
             height: 45,
@@ -193,6 +364,34 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
           )),
         ],
       ),
+      */
+        );
+  }
+
+  SliverAppBar _buildSliverAppBar(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      // pinned: true,
+      // expandedHeight: 20.0,
+      automaticallyImplyLeading: false,
+      backgroundColor: Theme.of(context).cardColor,
+      flexibleSpace: FlexibleSpaceBar(
+          titlePadding: EdgeInsets.zero,
+          title: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) => Chip(
+              label: Text(
+                "Yangon to ${index + 1}",
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              labelPadding: EdgeInsets.zero,
+              color: WidgetStatePropertyAll(context.greyFilled),
+            ),
+            itemCount: 10,
+            separatorBuilder: (BuildContext context, int index) =>
+                const SizedBox(width: 5),
+          )),
     );
   }
 
@@ -220,15 +419,15 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton(
-                          onPressed: () => _postRouteCubit.fetchRoutes(
-                              query: {"categoryType": "trending", "limit": 10}),
+                          onPressed: () => _postRouteCubit.getRoutesByCategory(
+                              query: query ?? initialQuery),
                           child: const Icon(Icons.refresh_rounded)),
                       const SizedBox(
                         height: 5,
                       ),
                       ElevatedButton(
                           onPressed: () =>
-                              context.pushNamed(RouteLists.postCreatePage),
+                              context.pushNamed(RouteLists.uploadNewPost),
                           child: const Text("Start Creating A Post!")),
                     ],
                   )
@@ -273,35 +472,150 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     return ListView.separated(
       controller: _scrollController,
       itemBuilder: (context, index) {
-        if (index < _trendingPosts.length) {
-          Post post = _trendingPosts[index];
-          return PostRouteCard(
-              post: post,
-              onStarPressed: (isLiked) {
-                isLiked != isLiked;
-                // update LikeCounts
-              },
-              // isLike: true,
-              onCommentPressed: () => goPageDetail(post),
-              onPhotoPressed: () => goPageDetail(post),
-              onAgencyPressed: () => goAgencyPage(post));
-        } else {
-          return PostRouteCard(
-            post: Post(),
-            loading: true,
+        // Insert widget every 15 items or based on other conditions
+        final shouldShowHorizontalWidget =
+            (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
+
+        if (shouldShowHorizontalWidget) {
+          return HorizontalPostWithRoutesWidget(
+            posts: _trendingPosts,
+            onFetchAllPressed: () {
+              _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
+            },
           );
         }
+
+        // Calculate the actual index considering additional horizontal widgets
+        final adjustedIndex = index - (index ~/ 15);
+
+        if (adjustedIndex >= 0 && adjustedIndex < _trendingRoutes.length) {
+          RouteModel route = _trendingRoutes[adjustedIndex];
+          return RouteInfoCardWidget(
+            route: route,
+            onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+            },
+            onAgencyPressed: (route) {
+              context.pushNamed(RouteLists.publicAgencyProfile,
+                  arguments: route.agency);
+            },
+          );
+        }
+
+        // Fallback for invalid index
+        return Shimmer.fromColors(
+          baseColor: context.greyColor,
+          highlightColor: context.greyFilled,
+          child: const SizedBox(
+            width: double.infinity,
+            height: 250,
+            child: Card(),
+          ),
+        );
       },
-      itemCount: _trendingPosts.length +
-          (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0),
+      itemCount: _trendingRoutes.isNotEmpty
+          ? _trendingRoutes.length +
+              (_trendingRoutes.length ~/ 15) +
+              (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0)
+          : 0,
       separatorBuilder: (BuildContext context, int index) => const SizedBox(
         height: AppInsets.inset8,
       ),
     );
   }
 
+/*
+  ListView _postViewBuilder() {
+    return ListView.separated(
+      controller: _scrollController,
+      itemBuilder: (context, index) {
+// Determine if a horizontal widget should be shown
+        final shouldShowHorizontalWidget =
+            (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
+
+        if (shouldShowHorizontalWidget) {
+          return HorizontalPostWithRoutesWidget(
+            posts: _trendingPosts,
+            onFetchAllPressed: () {
+              _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
+            },
+          );
+        }
+
+        // Calculate the actual index considering additional horizontal widgets
+        final adjustedIndex = index - (index ~/ 15);
+
+        if (adjustedIndex < _trendingRoutes.length) {
+          RouteModel route = _trendingRoutes[adjustedIndex];
+          return RouteInfoCardWidget(
+            route: route,
+            onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+            },
+            onAgencyPressed: (route) {
+              context.pushNamed(RouteLists.publicAgencyProfile,
+                  arguments: route.agency);
+            },
+          );
+        }
+
+        // Placeholder for loading or other widgets
+        return Container(
+            color: Colors.amber, width: double.infinity, height: 200);
+      },
+      itemCount: _trendingRoutes.length + (_trendingRoutes.length ~/ 15),
+      separatorBuilder: (BuildContext context, int index) => const SizedBox(
+        height: AppInsets.inset8,
+      ),
+    );
+  }
+*/
+  /*
+  ListView _postViewBuilders() {
+    return ListView.separated(
+      controller: _scrollController,
+      itemBuilder: (context, index) {
+        // Decide where to show HorizontalPostWithRoutesWidget
+        const insertAtIndex = 2; // Display after the 2nd item
+
+        // Show HorizontalPostWithRoutesWidget if index matches insertAtIndex and _trendingPosts has data
+        if (index == insertAtIndex && _trendingPosts.isNotEmpty) {
+          return HorizontalPostWithRoutesWidget(posts: _trendingPosts);
+        }
+
+        // Adjust index to skip the widget position if it was inserted before
+        final actualIndex = index > insertAtIndex ? index - 1 : index;
+
+        // Display RouteModelCard for trending routes based on adjusted index
+        if (actualIndex < _trendingRoutes.length) {
+          RouteModel route = _trendingRoutes[actualIndex];
+          return RouteModelCard(route: route);
+        }
+
+        // Placeholder for loading or other widgets
+        return Container(
+            color: Colors.amber, width: double.infinity, height: 200);
+      },
+      itemCount: _trendingRoutes.length +
+          (_trendingPosts.isNotEmpty
+              ? 1
+              : 0) + // Add 1 if _trendingPosts is not empty
+          (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0),
+      separatorBuilder: (BuildContext context, int index) => const SizedBox(
+        height: AppInsets.inset8,
+      ),
+      // itemCount: _trendingRoutes.length +
+      //     (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0),
+      // separatorBuilder: (BuildContext context, int index) => const SizedBox(
+      //   height: AppInsets.inset8,
+      // ),
+    );
+  }
+
+  */
   Future<Object?> goPageDetail(Post post) =>
       context.pushNamed(RouteLists.trendingRouteCardDetail, arguments: post);
+
   Future<Object?> goAgencyPage(Post post) =>
       context.pushNamed(RouteLists.publicAgencyProfile, arguments: post.agency);
 
@@ -321,7 +635,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                   baseColor: context.primaryColor,
                   highlightColor: context.onPrimaryColor,
                   child: const Chip(
-                    label: Text(" suggesstion "),
+                    label: Text(" suggestion "),
                     deleteIcon: Icon(Icons.search),
                   ),
                 ),
@@ -354,25 +668,17 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
   }
 }
 
-final List<String> images = [
-  "https://images.pexels.com/photos/1051072/pexels-photo-1051072.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/1051078/pexels-photo-1051078.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/3943882/pexels-photo-3943882.jpeg?auto=compress&cs=tinysrgb&w=600",
-  "https://images.pexels.com/photos/54380/pexels-photo-54380.jpeg?auto=compress&cs=tinysrgb&w=600"
-];
+final List<String> images = [];
 
-class ImagePageView extends StatelessWidget {
-  const ImagePageView({super.key});
+class ImagePageViewBuilder extends StatelessWidget {
+  const ImagePageViewBuilder({super.key});
 
   @override
   Widget build(BuildContext context) {
     return PageView.builder(
       itemCount: images.length,
       itemBuilder: (context, index) {
-        return Image.network(
-          images[index],
-          fit: BoxFit.contain,
-        );
+        return CachedImage(imageUrl: images[index]);
       },
     );
   }
@@ -422,12 +728,7 @@ class ThumbnailWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         return Stack(
           children: [
-            Image.network(
-              images[index],
-              fit: BoxFit.cover,
-              width: double.infinity, // Ensure image takes full width
-              height: double.infinity, // Ensure image takes full height
-            ),
+            CachedImage(imageUrl: images[index]),
             const Positioned(
               bottom: 8.0,
               right: 8.0,
@@ -450,10 +751,7 @@ class SliverGridWidget extends StatelessWidget {
         SliverAppBar(
           expandedHeight: 200.0,
           flexibleSpace: FlexibleSpaceBar(
-            background: Image.network(
-              'https://images.pexels.com/photos/1051072/pexels-photo-1051072.jpeg?auto=compress&cs=tinysrgb&w=600',
-              fit: BoxFit.cover,
-            ),
+            background: CachedImage(imageUrl: ""),
           ),
         ),
         SliverGrid(
@@ -474,117 +772,162 @@ class SliverGridWidget extends StatelessWidget {
   }
 }
 
+class HorizontalPostWithRoutesWidget extends StatelessWidget {
+  final List<Post> posts;
+  final VoidCallback? onFetchAllPressed;
 
-
-/*
-
-
-
-// Custom delegate to create a persistent header with pinned behavior
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  _SliverAppBarDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
+  const HorizontalPostWithRoutesWidget(
+      {super.key, required this.posts, this.onFetchAllPressed});
 
   @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
-  }
-}
-
-
-  // ignore: unused_element
-  BlocConsumer<PostRouteCubit, PostRouteState> _customScrollViewWidget() {
-    return BlocConsumer<PostRouteCubit, PostRouteState>(
-      bloc: _postRouteCubit,
-      listener: (BuildContext context, PostRouteState state) {},
-      builder: (BuildContext context, PostRouteState state) {
-        if (state.status == BlocStatus.fetchFailed) {
-          return _buildShimmer(context);
-        } else if (state.status == BlocStatus.fetching) {
-          return _buildShimmer(context);
-        }
-        posts = state.routes;
-
-        return Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: CustomScrollView(
-            slivers: [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _SliverAppBarDelegate(
-                  minHeight: 40.0, // Minimum height when collapsed
-                  maxHeight: 40.0, // Maximum height when expanded
-                  child: Container(
-                    color: Colors.white, // Background color
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) {
-                          final city = App.cities[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 5),
-                            child: Chip(
-                              label: Text(city.name ?? ""),
-                              deleteIcon: const Icon(Icons.search),
-                              onDeleted: () => print("Hello"),
-                            ),
-                          );
-                        },
-                        separatorBuilder: (context, index) => const SizedBox(
-                          width: 5,
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 400, // Height of the horizontal list
+      child: posts.isEmpty
+          ? Container(
+              color: Colors.amber,
+              height: double.infinity,
+              width: MediaQuery.sizeOf(context).width - 10,
+            )
+          : CustomScrollView(
+              scrollDirection: Axis.horizontal,
+              key: const PageStorageKey('HorizontalPostWithRoutesWidget'),
+              slivers: [
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      if (index < posts.length) {
+                        final post = posts[index];
+                        return buildHorizontalRouteCard(context, post);
+                      }
+                      return SizedBox(
+                        width: 200,
+                        height: double.infinity,
+                        child: Card(
+                          child: Center(
+                            child: ElevatedButton(
+                                onPressed: onFetchAllPressed,
+                                child: const Text("See All")),
+                          ),
                         ),
-                        itemCount: App.cities.length,
-                      ),
-                    ),
+                      );
+                    },
+                    childCount: posts.length + 1,
                   ),
                 ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    Post post = posts[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppInsets.inset5),
-                      child: PostRouteCard(
-                        post: post,
-                        onStarPressed: () => goPageDetail(post),
-                        onCommentPressed: () => goPageDetail(post),
-                        onAgencyPressed: () => context.pushNamed(
-                            RouteLists.trendingRouteCardDetail,
-                            arguments: post),
-                      ),
-                    );
-                  },
-                  childCount: App.cities.length, // Number of main list items
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
     );
   }
 
- */
+  Widget buildHorizontalRouteCard(BuildContext context, Post post) {
+    return Card(
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(1))),
+      child: SizedBox(
+        width: 300,
+        height: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RouteHeader(
+              route: post.routes?.firstOrNull ?? const RouteModel(),
+              onAgencyPressed: (route) {
+                context.pushNamed(RouteLists.publicAgencyProfile,
+                    arguments: route.agency);
+              },
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  context.pushNamed(RouteLists.routeDetailPage,
+                      arguments: post.routes?.firstOrNull);
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          post.description ?? "",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: context.greyColor),
+                          textAlign: TextAlign.start,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 5,
+                      child: (post.routes?.isNotEmpty ?? false)
+                          ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CustomScrollView(
+                                scrollDirection: Axis.horizontal,
+                                slivers: [
+                                  SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                      (BuildContext context, int routeIndex) {
+                                        final route =
+                                            post.routes![routeIndex]; // Safe
+                                        return Center(
+                                          child: SizedBox(
+                                            width: 250,
+                                            height: double.infinity,
+                                            child: RouteInfoBodyWithImage(
+                                                onBookPressed: (route) {
+                                                  context.pushNamed(
+                                                      RouteLists
+                                                          .routeDetailPage,
+                                                      arguments: route);
+                                                },
+                                                route: route),
+                                          ),
+                                        );
+                                        /*
+                                          Card.filled(
+                                          color: context.greyFilled,
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          child: RouteInfoBodyWithImage(
+                                              route: route),
+                                        );
+                                        */
+                                      },
+
+                                      childCount: post.routes!
+                                          .length, // Use the actual length
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(
+                              width: 250,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.green)),
+                              child: CachedImage(
+                                  imageUrl: post.agency?.profileImage ?? ""),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            RouteFooter(
+              route: post.routes?.firstOrNull ?? const RouteModel(),
+              onBookPressed: (RouteModel route) {
+                context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+              },
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}

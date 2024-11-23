@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/styles/app_style.dart';
+import 'package:link/core/theme_extension.dart';
 
 class ExpandableText extends StatefulWidget {
   final String text;
@@ -22,11 +24,15 @@ class _ExpandableTextState extends State<ExpandableText> {
       children: [
         Text(
           widget.text,
-          style: widget.textStyle,
+          // style: widget.textStyle,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: context.greyColor),
           maxLines: isExpanded ? null : widget.maxLines,
           overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
         ),
-        if (widget.text.length > widget.maxLines)
+        if (widget.text.length > 100 && widget.text.length > widget.maxLines)
           GestureDetector(
             onTap: () {
               setState(() {
@@ -34,8 +40,8 @@ class _ExpandableTextState extends State<ExpandableText> {
               });
             },
             child: Text(
-              isExpanded ? "See less" : "See more...",
-              style: const TextStyle(color: Colors.blue),
+              isExpanded ? "...seeLess" : "...seeMore",
+              style: TextStyle(color: Colors.grey.shade300),
             ),
           ),
       ],

@@ -111,7 +111,7 @@ class Context {
           content: Stack(children: [
             SizedBox(
               // color: Colors.amber,
-              height: MediaQuery.of(context).size.height * 0.5,
+              height: MediaQuery.of(context).size.height * 0.7,
               width: MediaQuery.of(context).size.height * 0.8,
               child: Column(
                 children: [

@@ -1,27 +1,28 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
-import 'package:link/core/widgets/cached_image.dart';
+import 'package:link/domain/api_utils/api_query.dart';
+import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
+import 'package:link/ui/screens/route_detail_page.dart';
+import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
+import 'package:link/ui/widgets/route_card_vertical_widget.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../domain/enums/category_type.dart';
 import '../../../models/city.dart';
-import '../../../models/post.dart';
-import '../../screens/post_route_card.dart';
-import '../../utils/context.dart';
 import '../../widgets/custom_scaffold_body.dart';
 
 class HeroHomeScreen extends StatefulWidget {
@@ -34,8 +35,8 @@ class HeroHomeScreen extends StatefulWidget {
 class _HeroHomeScreenState extends State<HeroHomeScreen> {
   late final ValueNotifier<DateTime?> _selectedDateNotifier;
 
-  List<Post> _trendingRoutes = [];
-  List<Post> _sponsoredRoutes = [];
+  List<RouteModel> _trendingRoutes = [];
+  List<RouteModel> _sponsoredRoutes = [];
 
   late final PostRouteCubit _trendingRouteBloc;
   late final PostRouteCubit _sponsoredRouteBloc;
@@ -44,20 +45,34 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   final ValueNotifier<City?> _destinationNotifier = ValueNotifier(null);
 
   late final ScrollController _scrollController;
+  late final ScrollController _trendingScrollController;
   Timer? _debounceTimer;
+  Timer? _trendingDebounceTimer;
+
+  final _originAutoCompleteController = CityAutocompleteController();
+  final _destinationAutoCompleteController = CityAutocompleteController();
+
+  final _originDestinationFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     print("initStateCalled  :HeroHomeScreen");
     _trendingRouteBloc = PostRouteCubit()
-      ..fetchRoutes(query: {"categoryType": "trending", "limit": 10});
+      ..getRoutesByCategory(
+          query:
+              APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
     _sponsoredRouteBloc = PostRouteCubit()
-      ..fetchRoutes(query: {"categoryType": "suggested", "limit": 8});
+      ..getRoutesByCategory(
+          query:
+              APIQuery(categoryType: CategoryType.sponsoredRoutes, limit: 10));
     _selectedDateNotifier = ValueNotifier(DateTime.now());
 
     _scrollController = ScrollController(); // _sponsoredRoute Controller
+    _trendingScrollController =
+        ScrollController(); // _sponsoredRoute Controller
     _scrollController.addListener(_onScroll);
+    _trendingScrollController.addListener(_onRightScroll);
   }
 
   @override
@@ -73,8 +88,25 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           (_sponsoredRouteBloc.state.status != BlocStatus.fetching)) {
         print("_isBottom $_isBottom ");
         if (!(_sponsoredRoutes.length > 50)) {
-          _sponsoredRouteBloc
-              .fetchRoutes(query: {"categoryType": "suggested", "limit": 5});
+          _sponsoredRouteBloc.getRoutesByCategory(
+              query: APIQuery(
+                  categoryType: CategoryType.sponsoredRoutes, limit: 5));
+        }
+      }
+    });
+  }
+
+  void _onRightScroll() {
+    if (_trendingDebounceTimer?.isActive ?? false)
+      return; // Prevent further processing
+    _trendingDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (_isRightEnd &&
+          (_trendingRouteBloc.state.status != BlocStatus.fetching)) {
+        print("_isRightEnd $_isRightEnd ");
+        if (!(_trendingRoutes.length > 50)) {
+          _trendingRouteBloc.getRoutesByCategory(
+              query: APIQuery(
+                  categoryType: CategoryType.trendingRoutes, limit: 5));
         }
       }
     });
@@ -91,22 +123,35 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     //     (maxScroll * 0.98); // Trigger when scrolled 90% of the way
   }
 
+  bool get _isRightEnd {
+    if (!_trendingScrollController.hasClients) return false;
+    final maxScroll = _trendingScrollController.position.maxScrollExtent;
+    final currentScroll = _trendingScrollController.position.pixels;
+    final threshold = maxScroll * 0.02; // Set a threshold of 2%
+    // Check if the user is within the last 2% of the scrollable area
+    return (maxScroll - currentScroll <= threshold);
+    // return currentScroll >=
+    //     (maxScroll * 0.98); // Trigger when scrolled 90% of the way
+  }
+
   @override
   Widget build(BuildContext context) {
     print("rebuild");
-    print("Equality ${_trendingRouteBloc == _sponsoredRouteBloc}");
 
     return CustomScaffoldBody(
+      resizeToAvoidBottomInset: false,
       body: RefreshIndicator.adaptive(
         onRefresh: () async {
           _sponsoredRoutes = [];
           _trendingRoutes = [];
           _sponsoredRouteBloc.updatePage(); // set page value to
           _trendingRouteBloc.updatePage(); // set page value to
-          _trendingRouteBloc
-              .fetchRoutes(query: {"categoryType": "trending", "limit": 10});
-          _sponsoredRouteBloc
-              .fetchRoutes(query: {"categoryType": "sponsored", "limit": 7});
+          _trendingRouteBloc.getRoutesByCategory(
+              query: APIQuery(
+                  categoryType: CategoryType.trendingRoutes, limit: 10));
+          _sponsoredRouteBloc.getRoutesByCategory(
+              query: APIQuery(
+                  categoryType: CategoryType.sponsoredRoutes, limit: 10));
         },
         child: _heroBody(context),
       ),
@@ -141,26 +186,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /* 
             _originDestinationCard(context),
-            // Date Choice field
             _dateChoiceActionCard(),
-            */
-            // Container(
-            //   padding: const EdgeInsets.only(bottom: AppInsets.inset5),
-            //   margin: const EdgeInsets.all(0.0),
-            //   color: Theme.of(context).cardColor.withOpacity(0.5),
-            //   child: Column(
-            //     children: [
-            _originDestinationCard(context),
-            // Date Choice field
-            _dateChoiceActionCard(),
-            //   ],
-            // ).padding(padding: const EdgeInsets.all(5)),
-            // ),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
+            const SizedBox(height: AppInsets.inset8),
             Container(
               padding: const EdgeInsets.only(bottom: AppInsets.inset5),
               margin: const EdgeInsets.all(0.0),
@@ -168,20 +196,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               child: Column(
                 children: [
                   _trendingSearchTitleField(context),
-                  SizedBox(height: 130, child: _trendingRoutesList()),
+                  SizedBox(height: 200, child: _trendingRoutesList()),
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
-            /*
-            _trendingSearchTitleField(context),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
-            SizedBox(height: 130, child: _trendingRoutesList()),
-            const SizedBox(
-              height: 5,
-            ),
-            */
             const SizedBox(
               height: AppInsets.inset8,
             ),
@@ -200,13 +218,6 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
-            /*
-            _sponsoredPostsTitleField(context),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
-            SizedBox(height: 350, child: _sponsoredRoutesList()),
-          */
             const SizedBox(
               height: AppInsets.inset8,
             ),
@@ -227,15 +238,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         } else if (state.status == BlocStatus.fetching &&
             _sponsoredRoutes.isEmpty) {
           return _buildTrendingRoutesShimmer(context);
+        } else if (state.status == BlocStatus.fetched) {
+          _sponsoredRoutes = state.routeModels;
         }
-        final newPosts = state.routes;
-        print(
-            "=====> _sponsoredRoutes before fetched ${_sponsoredRoutes.length}");
-        print("=====> newPosts ${newPosts.length}");
-        _sponsoredRoutes.addAll(newPosts);
-        print(
-            "=====> _sponsoredRoutes afeter fetched ${_sponsoredRoutes.length}");
-
         return _buildSponsoredRoutesCard(context);
       },
       listener: (BuildContext context, PostRouteState state) {},
@@ -247,16 +252,18 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         bloc: _trendingRouteBloc,
         listener: (BuildContext context, Object? state) {},
         builder: (BuildContext context, state) {
-          if (state.status == BlocStatus.fetchFailed ||
-              state.status == BlocStatus.fetching) {
+          debugPrint("::::::::::::: ${state.status}");
+          if (state.status == BlocStatus.fetchFailed &&
+              _trendingRoutes.isEmpty) {
             return _buildTrendingRoutesShimmer(context);
-          }
-          if (state.status == BlocStatus.fetched) {
-            _trendingRoutes = state.routes;
-            return _buildTrendingRoutesCard(context);
-          } else {
+          } else if (state.status == BlocStatus.fetching &&
+              _trendingRoutes.isEmpty) {
             return _buildTrendingRoutesShimmer(context);
+          } else if (state.status == BlocStatus.fetched) {
+            _trendingRoutes = state.routeModels;
           }
+
+          return _buildTrendingRoutesCard(context);
         });
   }
 
@@ -267,12 +274,15 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            "Trending Search",
+            "Trending & Hot",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           IconButton(
               onPressed: () {
-                context.pushNamed(RouteLists.trendingRouteCards);
+                APIQuery query = APIQuery(
+                    categoryType: CategoryType.trendingRoutes, limit: 10);
+                context.pushNamed(RouteLists.hotAndTrendingScreen,
+                    arguments: {"query": query});
               },
               icon: const Icon(Icons.keyboard_arrow_right_sharp)),
         ],
@@ -282,7 +292,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   Widget _sponsoredViewAllAction(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        _viewAllSponosoredRoutes();
+      },
       child: Opacity(
         opacity: 0.5,
         child: Row(
@@ -315,7 +327,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           ),
           IconButton(
               onPressed: () {
-                // context.pushNamed(RouteLists.trendingRouteCards);
+                APIQuery query = APIQuery(
+                    categoryType: CategoryType.suggestedRoutes, limit: 10);
+                context.pushNamed(RouteLists.hotAndTrendingScreen,
+                    arguments: {"query": query});
               },
               icon: const Icon(Icons.keyboard_arrow_right_sharp)),
         ],
@@ -331,20 +346,26 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       scrollDirection: Axis.horizontal,
       controller: _scrollController,
       itemBuilder: (context, index) {
-        // if (index < _sponsoredRoutes.length) {
-        return _sponsoredCard(context, _sponsoredRoutes[index]);
-        // } else {
-        // return _showEmptyTrendingCard(context);
-        // }
+        if (index < _sponsoredRoutes.length) {
+          return _sponsoredCard(context, _sponsoredRoutes[index]);
+        } else {
+          return _showEmptySponsoredCard(context,
+              maxExtend: (!(_sponsoredRouteBloc.state.status ==
+                      BlocStatus.fetching)) &&
+                  _sponsoredRoutes.length > 50);
+        }
       },
-      itemCount: _sponsoredRoutes.length,
+      itemCount: _sponsoredRoutes.length +
+          1 +
+          (_sponsoredRouteBloc.state.status == BlocStatus.fetching ? 3 : 0),
     );
   }
 
-  Widget _sponsoredCard(BuildContext context, Post post) {
+  Widget _sponsoredCard(BuildContext context, RouteModel route) {
+    print("route json ::: sponsored ${route.toJson()}");
     return InkWell(
       onTap: () {
-        print(" ===> go to sponseored post detail");
+        context.pushNamed(RouteLists.routeDetailPage, arguments: route);
       },
       child: Card.filled(
         shape: const BeveledRectangleBorder(
@@ -360,219 +381,20 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               width: 0.01,
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              /// header
-              Expanded(
-                child: _sponsorHeader(post),
-              ),
-
-              Expanded(
-                flex: 5,
-                child: _sponsorBody(post, context),
-              ),
-              const SizedBox(
-                height: 10,
-              )
-            ],
+          // child: _routeCardTemp(route, context),
+          child: RouteCardVerticalWidget(
+            route: route,
+            onRoutePressed: (route) {
+              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+            },
+            onAgencyPressed: (route) {
+              context.pushNamed(
+                RouteLists.publicAgencyProfile,
+                arguments: route.agency,
+              );
+            },
           ),
         ),
-      ),
-    );
-  }
-
-  Padding _sponsorBody(Post post, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset20),
-      child: Card.filled(
-        shape: const BeveledRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.zero)),
-        margin: const EdgeInsets.all(0.0),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            children: [
-              /// Images
-              SizedBox(
-                width: double.infinity,
-                child: CachedImage(
-                  imageUrl: (post.images?.firstOrNull == null)
-                      ? ""
-                      : "${App.baseImgUrl}${post.images?.first}",
-                ).clipRRect(borderRadius: BorderRadius.circular(5)),
-              ).expanded(flex: 2),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  /// ORIGIN & DESTINATION
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.pin_drop,
-                        color:
-                            Theme.of(context).iconTheme.color?.withOpacity(0.7),
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(
-                        "${post.origin?.name ?? ""} to ${post.destination?.name ?? ""}",
-                      ).styled(fw: FontWeight.bold).expanded(),
-                    ],
-                  ),
-
-                  /// DATE
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.date_range_rounded,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(DateTimeUtil.formatDateTime(post.scheduleDate))
-                          .styled(fs: 12)
-                    ],
-                  ),
-
-                  /// MIDPOINTS
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.business_rounded,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(
-                        post.midpoints
-                                ?.map((m) => m.city?.name)
-                                .where((name) => name != null)
-                                .join(' - ') ??
-                            '',
-                        style: const TextStyle(fontSize: 12),
-                        textAlign: TextAlign.start,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        softWrap: true,
-                      ).expanded(),
-                    ],
-                  ),
-
-                  /// DESCRIPTION
-                  Text(
-                    post.description ?? "",
-                    style: const TextStyle(fontSize: 12),
-                    textAlign: TextAlign.start,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                    softWrap: true,
-                  ).padding(padding: const EdgeInsets.all(AppInsets.inset5))
-                ],
-              )
-                  .padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppInsets.inset5))
-                  .expanded(flex: 3),
-
-              /// Action Button
-              ElevatedButton(
-                style: ButtonStyle(
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          side: BorderSide.none),
-                    ),
-                    backgroundColor:
-                        WidgetStatePropertyAll(context.successColor),
-                    minimumSize: WidgetStatePropertyAll(
-                        Size(MediaQuery.of(context).size.width * 0.8, 35))),
-                onPressed: () {
-                  print("===> GO TO SPONSORED POST DETAIL");
-                },
-                child: Text(
-                  "Action Button",
-                  style: TextStyle(color: context.onPrimaryColor),
-                ),
-              )
-                  .padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppInsets.inset8))
-                  .expanded(),
-
-              /// short description
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Padding _sponsorHeader(Post post) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Opacity(
-                opacity: 0.7,
-                child: Text(
-                  "sponsored",
-                  style: TextStyle(
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              Text(
-                "${(post.pricePerTraveler ?? 38000).toString()} Ks",
-                style: const TextStyle(fontSize: 20),
-              ).expanded(),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(50),
-                onTap: () {
-                  print("===> go to Agency Detail");
-                  context.pushNamed(
-                    RouteLists.publicAgencyProfile,
-                    arguments: post.agency,
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: 25,
-                    height: 25,
-                    child:
-                        CachedImage(imageUrl: post.agency?.profileImage ?? "")
-                            .clipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(
-                width: AppInsets.inset8,
-              ),
-              IconButton(
-                  onPressed: () {
-                    print("hello");
-                  },
-                  icon: const Icon(Icons.more_vert_rounded)),
-            ],
-          )
-        ],
       ),
     );
   }
@@ -583,61 +405,77 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     }
     return ListView.builder(
       scrollDirection: Axis.horizontal,
+      controller: _trendingScrollController,
       itemBuilder: (context, index) {
         if (index < _trendingRoutes.length) {
-          Post post = _trendingRoutes[index];
-          return _trendingRouteCard(context, post);
+          RouteModel routeModel = _trendingRoutes[index];
+          print("routeMOdel json = ${routeModel.toJson()}");
+          return _trendingRouteCard(context, routeModel);
         }
-        return _navigateToAllTrendingRoutes();
+        return _navigateToAllTrendingRoutes(
+            maxExtend:
+                (!(_trendingRouteBloc.state.status == BlocStatus.fetching)) &&
+                    _trendingRoutes.length > 50);
       },
-      itemCount: _trendingRoutes.length + 1,
+      itemCount: _trendingRoutes.length +
+          1 +
+          (_trendingRouteBloc.state.status == BlocStatus.fetching ? 3 : 0),
     );
   }
 
-  Card _navigateToAllTrendingRoutes() {
-    return Card.filled(
-      child: TextButton.icon(
-        onPressed: () {
-          // _trendingRouteBloc.updatePage(); // set page value to
-          _trendingRouteBloc.fetchRoutes(query: {
-            "categoryType": "trending",
-          });
-          print("View All Pressed!");
-        },
-        label: const Text("View All"),
-        iconAlignment: IconAlignment.end,
-        icon: const Icon(Icons.double_arrow_rounded),
-      ).padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5)),
-    );
+  Widget _navigateToAllTrendingRoutes({required bool maxExtend}) {
+    if (maxExtend) {
+      return Card.filled(
+        child: TextButton.icon(
+          onPressed: () {
+            APIQuery query = APIQuery(
+                categoryType: CategoryType.trendingRoutes,
+                limit: 10,
+                page: _trendingRouteBloc.getPage);
+            context.pushNamed(RouteLists.hotAndTrendingScreen,
+                arguments: {"query": query});
+          },
+          label: const Text("View All"),
+          iconAlignment: IconAlignment.end,
+          icon: const Icon(Icons.double_arrow_rounded),
+        ).padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5)),
+      );
+    }
+    return Shimmer.fromColors(
+        baseColor: Colors.grey,
+        highlightColor: Colors.greenAccent,
+        child: Card.filled(
+          child: SizedBox(
+            height: double.infinity,
+            width: MediaQuery.sizeOf(context).width - 50,
+          ),
+        ));
   }
 
   Widget _trendingRouteCard(
     BuildContext context,
-    Post post,
+    RouteModel routeModel,
   ) {
+    print("routeModel ==== > card ${routeModel.toJson()}");
     Card.filled(
       elevation: 0.5,
       color: context.secondaryColor,
       child: Column(
         children: [
           InkWell(
-            onTap: () => context.pushNamed(RouteLists.trendingRouteCardDetail,
-                arguments: post),
+            onTap: () {
+              // Todo:
+              //   context.pushNamed(RouteLists.trendingRouteCardDetail,
+              //   arguments: routeModel);
+            },
             child: Card.filled(
               shape: Border.all(width: 0.01),
               margin: const EdgeInsets.all(0.0),
               child: Container(
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                  image: (post.images?.isNotEmpty == true)
-                      ? NetworkImage("${App.baseImgUrl}${post.images?.first}")
-                      : const AssetImage("assets/icon/app_logo.jpg"),
-                  // image: NetworkImage((post.images?.isNotEmpty == true)
-                  //     ? ((post.images?.firstOrNull != null)
-                  //         ? "${App.baseImgUrl}${post.images?.first}"
-                  //         : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1")
-                  //     : "https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"),
+                  image: NetworkImage(routeModel.image ?? ""),
                   fit: BoxFit.cover,
                   opacity: 0.5,
                   onError: (exception, stackTrace) => Container(
@@ -664,7 +502,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               width: AppInsets.inset5,
                             ),
                             Text(
-                                "${post.origin?.name ?? ""}-${post.destination?.name ?? ""}"),
+                                "${routeModel.origin?.name ?? ""}-${routeModel.destination?.name ?? ""}"),
                           ],
                         ).expanded(),
                         Padding(
@@ -684,7 +522,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                     width: AppInsets.inset5,
                                   ),
                                   Text(DateTimeUtil.formatDateTime(
-                                      post.scheduleDate))
+                                      routeModel.scheduleDate))
                                 ],
                               ),
                               Row(
@@ -694,7 +532,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                     size: AppInsets.inset15,
                                     color: Colors.amber,
                                   ),
-                                  Text(post.commentCounts.toString())
+                                  Text(15.toString())
                                 ],
                               ).expanded(),
                             ],
@@ -715,9 +553,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   ),
                   onPressed: () {
                     context.pushNamed(RouteLists.trendingRouteCardDetail,
-                        arguments: post);
+                        arguments: routeModel);
                     // context.pushNamed(RouteLists.trendingRouteCardDetail,
-                    //     arguments: post);
+                    //     arguments: routeModel);
                   },
                   child: const Text("Book Now"))
               .expanded(),
@@ -726,8 +564,18 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
 
     return SizedBox(
-      width: 333,
-      child: Card.filled(
+        width: 330,
+        child: GestureDetector(
+          onTap: () {
+            context.pushNamed(RouteLists.routeDetailPage,
+                arguments: routeModel);
+          },
+          child: RouteDetailPage(
+            route: routeModel,
+          ),
+        )
+        /*
+      Card.filled(
         shape: const BeveledRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(3))),
         child: Column(
@@ -744,14 +592,14 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       onTap: () {
                         context.pushNamed(
                           RouteLists.publicAgencyProfile,
-                          arguments: post.agency,
+                          arguments: routeModel.agency,
                         );
                       },
                       child: SizedBox(
                         height: 20,
                         width: 20,
                         child: CachedImage(
-                            imageUrl: post.agency?.profileImage ?? ""),
+                            imageUrl: routeModel.agency?.profileImage ?? ""),
                       ).clipRRect(borderRadius: BorderRadius.circular(50)),
                     ),
                     const SizedBox(width: 3),
@@ -759,19 +607,19 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       onTap: () {
                         context.pushNamed(
                           RouteLists.publicAgencyProfile,
-                          arguments: post.agency,
+                          arguments: routeModel.agency,
                         );
                       },
                       child: Text(
-                        post.agency?.name ?? "",
+                        routeModel.agency?.name ?? "",
                         style: const TextStyle(
                             fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(width: 3),
                     Text(
-                      DateTimeUtil.formatTime(
-                          context, TimeOfDay.fromDateTime(post.createdAt!)),
+                      DateTimeUtil.formatTime(context,
+                          TimeOfDay.fromDateTime(routeModel.createdAt!)),
                       style: const TextStyle(fontSize: 10),
                     ),
                   ],
@@ -782,17 +630,14 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               ],
             ).expanded(),
 
-            /// image and post info
+            /// image and routeModel info
             InkWell(
                 onTap: () => context.pushNamed(
                     RouteLists.trendingRouteCardDetail,
-                    arguments: post),
+                    arguments: routeModel),
                 child: Row(
                   children: [
-                    CachedImage(
-                            imageUrl: (post.images?.isNotEmpty == true)
-                                ? "${App.baseImgUrl}${post.images?.first}"
-                                : "")
+                    CachedImage(imageUrl: routeModel.image ?? "")
                         .clipRRect(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(5)),
@@ -807,12 +652,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               Text(
-                                "${post.origin?.name ?? ""} - ${post.destination?.name ?? ""}",
+                                "${routeModel.origin?.name ?? ""} - ${routeModel.destination?.name ?? ""}",
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                post.title ?? "",
+                                routeModel.description ?? "",
                                 style: const TextStyle(fontSize: 12),
                                 textAlign: TextAlign.start,
                                 overflow: TextOverflow.ellipsis,
@@ -824,7 +669,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                DateTimeUtil.formatDateTime(post.scheduleDate),
+                                DateTimeUtil.formatDateTime(
+                                    routeModel.scheduleDate),
                                 style: const TextStyle(fontSize: 10),
                               ),
                               Row(
@@ -848,7 +694,8 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
           ],
         ),
       ),
-    );
+      */
+        );
   }
 
   Widget _showEmptyTrendingCard(BuildContext context) {
@@ -866,7 +713,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       const Text(
-                        "Their is no trending post available",
+                        "There is no trending post available",
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16),
                         textAlign: TextAlign.center,
@@ -874,10 +721,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       ElevatedButton(
                           onPressed: () =>
                               // context.pushNamed(RouteLists.postCreatePage),
-                              _trendingRouteBloc.fetchRoutes(query: {
-                                "categoryType": "trending",
-                                "limit": 5
-                              }),
+                              _trendingRouteBloc.getRoutesByCategory(
+                                  query: APIQuery(
+                                      categoryType: CategoryType.trendingRoutes,
+                                      limit: 5)),
                           child: const Text("Start Creating A Post!"))
                     ],
                   ).padding(padding: const EdgeInsets.all(AppInsets.inset8)),
@@ -1013,18 +860,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        print(
-                            "${_originNotifier.value?.toJson()} - ${_destinationNotifier.value?.toJson()} ");
-                        if (_originNotifier.value == null ||
-                            _destinationNotifier.value == null) {
-                          return;
-                        }
-                        context.pushNamed(RouteLists.searchQueryRoutes,
-                            arguments: {
-                              "origin": _originNotifier.value,
-                              "destination": _destinationNotifier.value,
-                              "date": _selectedDateNotifier.value
-                            });
+                        _navigateToSearchedRoutesScreen();
                       },
                       icon: Icon(
                         color: context.onPrimaryColor,
@@ -1042,176 +878,180 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
+  _navigateToSearchedRoutesScreen() {
+    if (_originDestinationFormKey.currentState?.validate() ?? false) {
+      _originDestinationFormKey.currentState?.save();
+
+      print(
+          "${_originNotifier.value?.toJson()} - ${_destinationNotifier.value?.toJson()} ");
+      if (_originNotifier.value == null || _destinationNotifier.value == null) {
+        return;
+      }
+
+      SearchRoutesQuery searchedRouteQuery = SearchRoutesQuery(
+          origin: _originNotifier.value,
+          destination: _destinationNotifier.value,
+          date: _selectedDateNotifier.value);
+
+      APIQuery query = APIQuery(
+          categoryType: CategoryType.searchedRoutes,
+          searchedRouteQuery: searchedRouteQuery);
+
+      context.pushNamed(
+        // RouteLists.searchQueryRoutes,
+        RouteLists.searchRoutesScreen,
+        arguments: {"query": query},
+        // arguments: {
+        //   "origin": _originNotifier.value,
+        //   "destination": _destinationNotifier.value,
+        //   "date": _selectedDateNotifier.value
+        // },
+      );
+    }
+  }
+
   Widget _originDestinationCard(BuildContext context) {
     return Card.filled(
       shape: const BeveledRectangleBorder(
           borderRadius: BorderRadius.all(Radius.zero)),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            /// from & to
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                /// FROM
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_rounded),
-                    const SizedBox(
-                      width: AppInsets.inset25,
-                    ),
-                    Expanded(
-                      child: ValueListenableBuilder(
-                        valueListenable: _originNotifier,
-                        builder:
-                            (BuildContext context, City? value, Widget? child) {
-                          return InkWell(
-                            onTap: () async {
-                              City? city = await _chooseCity();
-
-                              if (city != null) {
-                                _originNotifier.value = city;
-                              }
-                            },
-                            splashColor:
-                                Colors.transparent, // Removes the splash effect
-                            highlightColor: Colors
-                                .transparent, // Removes the highlight effect
-                            hoverColor: Colors.transparent,
-                            child: Text(
-                              value == null ? "Origin" : value.name.toString(),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ), // Removes the hover effect
-                          );
-                        },
-                      ),
-                      // child: TextField(
-                      //   style: TextStyle(
-                      //     fontWeight: FontWeight.bold,
-                      //   ),
-                      //   decoration: InputDecoration(
-                      //     border: InputBorder.none,
-                      //   ),
-                      // ),
-                    ),
-                  ],
-                ),
-
-                /// DIVIDER
-                Row(
-                  children: [
-                    const Icon(Icons.keyboard_double_arrow_down),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      child: const Divider(
-                        indent: AppInsets.inset20,
-                        thickness: 0.2,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: AppInsets.inset5,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        City? origin = _originNotifier.value;
-                        City? destination = _destinationNotifier.value;
-                        _originNotifier.value = destination;
-                        _destinationNotifier.value = origin;
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _originDestinationFormKey,
+          child: Column(
+            children: [
+              /// FROM
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: ValueListenableBuilder(
+                      valueListenable: _originNotifier,
+                      builder:
+                          (BuildContext context, City? value, Widget? child) {
+                        return CityAutocomplete(
+                          cities: App.cities,
+                          controller: _originAutoCompleteController,
+                          onSelected: (city) {
+                            _originNotifier.value = city;
+                          },
+                          // border: InputBorder.none,
+                          labelText: "Origin",
+                          hintText: "From",
+                          validator: (value) => (value!.isEmpty ||
+                                  !_originAutoCompleteController.isValid)
+                              ? ''
+                              : null,
+                        );
                       },
-                      child: const Icon(
-                        Icons.swap_vert_circle,
-                        size: AppInsets.inset30,
-                      ),
-                    )
-                  ],
-                ),
-
-                /// TO
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined),
-                    const SizedBox(
-                      width: AppInsets.inset25,
                     ),
-                    Expanded(
-                      child: ValueListenableBuilder(
-                        valueListenable: _destinationNotifier,
-                        builder:
-                            (BuildContext context, City? value, Widget? child) {
-                          return InkWell(
-                            splashColor:
-                                Colors.transparent, // Removes the splash effect
-                            highlightColor: Colors
-                                .transparent, // Removes the highlight effect
-                            hoverColor: Colors.transparent,
-                            onTap: () async {
-                              City? city = await _chooseCity();
+                  ),
+                ],
+              ),
+              const Divider(
+                color: Colors.grey,
+                thickness: 0.1,
+              ),
 
-                              if (city != null) {
-                                _destinationNotifier.value = city;
-                              }
-                            },
-                            child: Text(
-                              value == null
-                                  ? "Destination"
-                                  : value.name.toString(),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+              /// REMOVE SWAP LOCATIONS IN HOME SCREEN
+              /*
+              /// DIVIDER
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.keyboard_double_arrow_down,
+                      color: Colors.grey, size: AppInsets.inset30),
+                  const Divider(color: Colors.grey, height: 1, thickness: 0.1)
+                      .expanded(),
+                  InkWell(
+                    onTap: () {
+                      City? origin = _originNotifier.value;
+                      City? destination = _destinationNotifier.value;
+                      _originNotifier.value = destination;
+                      _destinationNotifier.value = origin;
+                      _destinationAutoCompleteController.text =
+                          _originAutoCompleteController.text;
+                      _originAutoCompleteController.text =
+                          _destinationAutoCompleteController.text;
+                    },
+                    child: const Icon(
+                      Icons.swap_vert_circle,
+                      size: AppInsets.inset30,
+                    ),
+                  )
+                ],
+              ),
+          */
+
+              /// TO
+              Row(
+                children: [
+                  Expanded(
+                    child: ValueListenableBuilder(
+                      valueListenable: _destinationNotifier,
+                      builder:
+                          (BuildContext context, City? value, Widget? child) {
+                        return CityAutocomplete(
+                          cities: App.cities,
+                          controller: _destinationAutoCompleteController,
+                          onSelected: (city) {
+                            _destinationNotifier.value = city;
+                          },
+                          // border: InputBorder.none,
+                          labelText: "Destination",
+                          hintText: "To",
+                          validator: (value) => (value!.isEmpty ||
+                                  !_destinationAutoCompleteController.isValid)
+                              ? ''
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              /// FILTER
+
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: selections.map((value) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: StatefulBuilder(
+                          builder: (BuildContext context,
+                              void Function(void Function()) rebuild) {
+                            return FilterChip(
+                              color:
+                                  WidgetStatePropertyAll(context.primaryColor),
+                              label: Text(
+                                value,
+                                style: TextStyle(color: context.secondaryColor),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-
-            /// filter
-
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppInsets.inset10),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: selections.map((value) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: StatefulBuilder(
-                        builder: (BuildContext context,
-                            void Function(void Function()) rebuild) {
-                          return FilterChip(
-                            color: WidgetStatePropertyAll(context.primaryColor),
-                            label: Text(
-                              value,
-                              style: TextStyle(color: context.secondaryColor),
-                            ),
-                            selected: selectedHobbies.contains(value),
-                            onSelected: (bool isSelected) {
-                              print("selected");
-                              rebuild(() {
-                                if (isSelected) {
-                                  selectedHobbies.add(value);
-                                } else {
-                                  selectedHobbies.remove(value);
-                                }
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    );
-                  }).toList(),
+                              selected: selectedHobbies.contains(value),
+                              onSelected: (bool isSelected) {
+                                print("selected");
+                                rebuild(() {
+                                  if (isSelected) {
+                                    selectedHobbies.add(value);
+                                  } else {
+                                    selectedHobbies.remove(value);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1228,40 +1068,60 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   // Set to hold selected hobbies
   Set<String> selectedHobbies = {};
 
-  Future<City?> _chooseCity() async {
-    return await Context.showAlertDialog<City>(
-      context,
-      icon: IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-      headerWidget: ListTile(
-        leading: const Icon(Icons.location_on_outlined),
-        title: const Text("Choose Cities").styled(fw: FontWeight.bold),
-      ).padding(
-          padding: const EdgeInsets.symmetric(vertical: AppInsets.inset8)),
-      itemList: App.cities,
-      itemBuilder: (ctx, index) {
-        if (index < 0) {
-          return Center(
-            child: IconButton(
+  Widget _showEmptySponsoredCard(BuildContext context,
+      {bool maxExtend = false}) {
+    if (maxExtend) {
+      return Card.filled(
+        child: Container(
+          margin: const EdgeInsets.all(AppInsets.inset10),
+          padding: const EdgeInsets.all(AppInsets.inset10),
+          color: context.greyFilled,
+          width: MediaQuery.sizeOf(context).width - 100,
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Center(
+                child: Icon(
+                  Icons.content_paste_search,
+                  size: 50,
+                ),
+              ).expanded(),
+              TextButton.icon(
                 onPressed: () {
-                  context.read<CityCubit>().fetchCities();
+                  _viewAllSponosoredRoutes();
                 },
-                icon: const Icon(Icons.refresh_rounded)),
-          );
-        }
-        return StatefulBuilder(
-          builder: (BuildContext ctx, void Function(void Function()) setState) {
-            return ListTile(
-              dense: true,
-              onTap: () {
-                setState(() {});
-                Navigator.pop(context, App.cities[index]);
-              },
-              // leading: const Icon(Icons.add_circle_outlined),
-              title: Text(App.cities[index].name ?? ""),
-            );
-          },
-        );
-      },
-    );
+                label: const Text("View All"),
+                style: Theme.of(context).elevatedButtonTheme.style,
+                iconAlignment: IconAlignment.end,
+                icon: const Icon(Icons.double_arrow_rounded),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Shimmer.fromColors(
+          baseColor: context.greyColor,
+          highlightColor: context.greyFilled,
+          child: Card.filled(
+            child: Container(
+              padding: const EdgeInsets.all(AppInsets.inset10),
+              color: context.greyFilled,
+              width: MediaQuery.sizeOf(context).width - 100,
+              height: double.infinity,
+            ),
+          ));
+    }
+  }
+
+  void _viewAllSponosoredRoutes() {
+    APIQuery query = APIQuery(
+        categoryType: CategoryType.sponsoredRoutes,
+        limit: 10,
+        page: _sponsoredRouteBloc.getPage);
+    context.pushNamed(RouteLists.hotAndTrendingScreen,
+        arguments: {"query": query});
   }
 }

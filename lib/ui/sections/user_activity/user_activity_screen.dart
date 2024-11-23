@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
 import '../../../core/utils/app_insets.dart';
@@ -35,10 +36,12 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
   Widget _body(BuildContext ctx) {
     return Builder(
       builder: (BuildContext context) {
-        return const Center(
+        return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [],
+            children: [
+              const Text("Coming Soon...").styled(color: context.greyColor),
+            ],
           ),
         );
       },

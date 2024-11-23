@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/models/agency.dart';
@@ -31,40 +33,40 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   Widget _body(BuildContext context) {
-    ListTile(
-      title: const Text("Agency Profile by 1"),
-      trailing: IconButton.filled(
-          onPressed: () {
-            // context.pushNamed(
-            //   RouteLists.publicAgencyProfile,
-            //   arguments: Agency(id: "66b8d3c63e1a9b47a2c0e6a5"),
-            // );
-            /*
-            context.push(
-              MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                        create: (BuildContext context) => AgencyCubit(),
-                        child: const PublicAgencyProfileScreen(),
-                      ),
-                  settings: RouteSettings(
-                      arguments: Agency(id: "66b8d3c63e1a9b47a2c0e6a5"))),
-            );
-            */
-            /*
-            context.push(
-              MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                        create: (BuildContext context) => AgencyCubit(),
-                        child: const PublicProfileScreen(),
-                      ),
-                  settings: RouteSettings(
-                      arguments: Agency(id: "66b8d3c63e1a9b47a2c0e6a5"))),
-            );
-            */
-          },
-          icon: const Icon(Icons.arrow_right)),
+    return Column(
+      children: [
+        // ListTile(
+        //   title: const Text("Get Routes Screen"),
+        //   trailing: const Icon(Icons.arrow_right_alt_sharp),
+        //   onTap: () => context.pushNamed(
+        //     RouteLists.getTrendingRoutes,
+        //   ),
+        // ),
+        Card(
+          child: ListTile(
+            title: const Text("Theme"),
+            leading: const Icon(Icons.sunny),
+            onTap: () => context.read<ThemeCubit>().toggleTheme(),
+          ),
+        ),
+
+        /// Temp UI Sketch
+        Card(
+          child: ListTile(
+            title: const Text("Sign Up Screen (Sketch)"),
+            leading: const Icon(Icons.person),
+            onTap: () => context.pushNamed(RouteLists.signUp),
+          ),
+        ),
+        Card(
+          child: ListTile(
+            title: const Text("Sign In With Email Screen (Sketch)"),
+            leading: const Icon(Icons.email_outlined),
+            onTap: () => context.pushNamed(RouteLists.signInWithEmail),
+          ),
+        ),
+      ],
     );
-    return Container();
   }
 
   Agency sampleAgency = Agency(

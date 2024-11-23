@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+String handleErrorMessage(Exception e) => ApiErrorHandler.handle(e).message;
+
 class ApiErrorHandler {
   static ApiException handle(Exception error) {
     if (error is DioException) {

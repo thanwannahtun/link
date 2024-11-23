@@ -3,16 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
-import 'package:link/models/city.dart';
+import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/screens/post/upload_new_post_page.dart';
+import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/utils/app_insets.dart';
+import '../../../domain/api_utils/api_query.dart';
 import '../../../domain/bloc_utils/bloc_status.dart';
+import '../../../domain/enums/category_type.dart';
 import '../../screens/post_route_card.dart';
+import '../../screens/route_detail_page.dart';
 import '../../utils/route_list.dart';
 
 class SearchQueryRoutes extends StatefulWidget {
@@ -24,25 +27,15 @@ class SearchQueryRoutes extends StatefulWidget {
 
 class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
   /// create model later
-  City? origin;
-  City? destination;
-  DateTime? date;
+  SearchRoutesQuery? searchRoutesQuery;
+
   // create model later
-  final List<Post> _posts = [];
+  final List<RouteModel> _routes = [];
   late final PostRouteCubit _searchQueryCubit;
   bool _initial = true;
 
   @override
   void initState() {
-    // _searchQueryCubit = PostRouteCubit()
-    //   ..fetchRoutes(query: {
-    //     "categoryType": "filter_searched_routes",
-    //     "limit": 10
-    //   }, body: {
-    //     "origin": "66b613cd6c17b0be8b372dc6",
-    //     "destination": "66b613cd6c17b0be8b372dc4",
-    //     "date": "2024-10-08 00:00:00.000"
-    //   });
     super.initState();
   }
 
@@ -55,20 +48,15 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
 }*/
     if (_initial) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
-        Map<String, dynamic> argument =
-            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-        origin = argument["origin"] as City;
-        destination = argument["destination"] as City;
-        date = argument["date"] as DateTime?;
+        searchRoutesQuery =
+            ModalRoute.of(context)?.settings.arguments as SearchRoutesQuery;
+
         _searchQueryCubit = PostRouteCubit()
-          ..fetchRoutes(query: {
-            "categoryType": "filter_searched_routes",
-            "limit": 10
-          }, body: {
-            "origin": origin?.id,
-            "destination": destination?.id,
-            "date": date?.toIso8601String()
-          });
+          ..getRoutesByCategory(
+              query: APIQuery(
+                  categoryType: CategoryType.searchedRoutes,
+                  limit: 5,
+                  searchedRouteQuery: searchRoutesQuery));
       }
       _initial = false;
     }
@@ -114,16 +102,16 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
         bloc: _searchQueryCubit,
         builder: (BuildContext context, state) {
           debugPrint("::::::::::::: ${state.status}");
-          if (state.status == BlocStatus.fetchFailed && _posts.isEmpty) {
+          if (state.status == BlocStatus.fetchFailed && _routes.isEmpty) {
             return _buildShimmer(context);
-          } else if (state.status == BlocStatus.fetching && _posts.isEmpty) {
+          } else if (state.status == BlocStatus.fetching && _routes.isEmpty) {
             return _buildShimmer(context);
           }
-          final newPosts = state.routes;
-          print("=====> _posts before fetched ${_posts.length}");
-          print("=====> newPosts ${newPosts.length}");
-          _posts.addAll(newPosts);
-          print("=====> _posts afeter fetched ${_posts.length}");
+          final newRoutes = state.routeModels;
+          print("=====> _posts before fetched ${_routes.length}");
+          print("=====> newRoutes ${newRoutes.length}");
+          _routes.addAll(newRoutes);
+          print("=====> _routes afeter fetched ${_routes.length}");
           return _postViewBuilder();
         },
         listener: (BuildContext context, Object? state) {},
@@ -132,21 +120,31 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
   }
 
   Widget _postViewBuilder() {
-    if (_posts.isEmpty) {
+    if (_routes.isEmpty) {
       return Center(
         child: Text(
-                "No Rotes for ${origin?.name ?? ""} to ${destination?.name} ! ")
+                "No Routes for ${searchRoutesQuery?.origin?.name ?? ""} to ${searchRoutesQuery?.destination?.name} ! ")
             .padding(padding: const EdgeInsets.all(35)),
       );
     }
     return ListView.separated(
-      itemCount: _posts.length,
+      itemCount: _routes.length,
       itemBuilder: (context, index) {
-        return PostRouteCard(
-          post: _posts[index],
-          onAgencyPressed: () {
-            context.pushNamed(RouteLists.publicAgencyProfile,
-                arguments: _posts[index].agency);
+        // PostRouteCard(
+        //  post: _routes[index],
+        //  onAgencyPressed: () {
+        //    context.pushNamed(RouteLists.publicAgencyProfile,
+        //        arguments: _routes[index].agency);
+        //  },
+        // );
+
+        return RouteInfoCardWidget(
+          route: _routes[index],
+          onRoutePressed: (route) {
+            context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+          },
+          onAgencyPressed: (route) {
+            context.pushNamed(RouteLists.routeDetailPage, arguments: route);
           },
         );
       },
@@ -169,7 +167,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
                   baseColor: context.primaryColor,
                   highlightColor: context.onPrimaryColor,
                   child: const Chip(
-                    label: Text(" suggesstion "),
+                    label: Text(" suggestion "),
                     deleteIcon: Icon(Icons.search),
                   ),
                 ),

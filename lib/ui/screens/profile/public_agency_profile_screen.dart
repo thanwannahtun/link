@@ -27,6 +27,7 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
   Agency? _agency;
 
   bool _initial = true;
+
   // late TabController _tabController;
   late final PostRouteCubit _postTabCubit;
   late final AgencyCubit _agencyListBloc;
@@ -41,6 +42,7 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
   ///
   late final ValueNotifier<String?> _postSectionFilterNotifier;
   final List<String> categories = ['Latest', 'Popular'];
+
   @override
   void initState() {
     super.initState();
@@ -161,7 +163,7 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
                   ),
                 ),
               ),
-      
+
               // The TabBar (below the info widget)
               const TabBar(
                 isScrollable: true,
@@ -172,7 +174,7 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
                   Tab(text: "Gallery"),
                 ],
               ),
-      
+
               TabBarView(
                 children: [
                   _buildAboutSection(context),
@@ -398,6 +400,7 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     );
   }
 */
+
   ///
   ///
 
@@ -421,7 +424,8 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
           SliverAppBar(
             pinned: true,
             floating: false,
-            automaticallyImplyLeading: false, // Removes back button
+            automaticallyImplyLeading: false,
+            // Removes back button
             title: _postFilterDropDown(),
             expandedHeight: 20.0,
           ),
@@ -672,6 +676,7 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
     with AutomaticKeepAliveClientMixin<PostSectionBuilder> {
   late final PostRouteCubit _postRouteCubit;
   List<Post> _postOfAgencies = [];
+
   // Separate ScrollControllers for each tab
   final ScrollController _postScrollController = ScrollController();
 
@@ -696,6 +701,7 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
   }
 
   final bool _initial = true;
+
   @override
   void didChangeDependencies() {
     print(">PostSectionBuilder> didChangeDependencies");
@@ -703,8 +709,8 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
     if (_initial) {
       print(">PostSectionBuilder> _initial $_initial");
       if (_postOfAgencies.isEmpty) {
-        _postRouteCubit.fetchRoutes(
-            query: {"limit": 10, "agency_id": "66b8d3c63e1a9b47a2c0e6a5"});
+        // _postRouteCubit.fetchRoutes(
+        //     query: {"limit": 10, "agency_id": "66b8d3c63e1a9b47a2c0e6a5"});
       }
     }
   }
@@ -716,13 +722,21 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: DropdownCategory(
-                onCategoryChanged: (value) =>
-                    _postSectionFilterNotifier.value = value,
-                categories: categories,
-                selectedCategory: _postSectionFilterNotifier.value!),
+            // child: DropdownCategory(
+            //     onCategoryChanged: (value) =>
+            //         _postSectionFilterNotifier.value = value,
+            //     categories: categories,
+            //     selectedCategory: _postSectionFilterNotifier.value!),
+            child: CommentHeaderFilterTab(
+              valueLists: categories,
+              valueAsString: (value) => value,
+              onValueChanged: (value) {
+                print("$value changed");
+                _postSectionFilterNotifier.value = value;
+              },
+            ),
           ),
           // List of posts based on the selected category
           Expanded(
@@ -768,6 +782,46 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
   bool get wantKeepAlive => true;
 
   /// Build method
+}
+
+class CommentHeaderFilterTab<T> extends StatefulWidget {
+  CommentHeaderFilterTab(
+      {super.key,
+      required this.valueLists,
+      required this.valueAsString,
+      required this.onValueChanged});
+
+  List<T> valueLists;
+  String Function(T) valueAsString;
+  void Function(T) onValueChanged;
+
+  @override
+  State<CommentHeaderFilterTab<T>> createState() =>
+      _CommentHeaderFilterTabState<T>();
+}
+
+class _CommentHeaderFilterTabState<T> extends State<CommentHeaderFilterTab<T>> {
+  /*
+  * list<t>
+  * valueAsString(value:String)
+  * onValueChanged(value : index)
+  * */
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        ...widget.valueLists.map(
+          (e) => ElevatedButton(
+              style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                  backgroundColor:
+                      const WidgetStatePropertyAll(Colors.transparent)),
+              onPressed: () => widget.onValueChanged.call(e),
+              child: Text(widget.valueAsString(e),
+                  style: Theme.of(context).textTheme.labelSmall)),
+        )
+      ],
+    );
+  }
 }
 
 ///
@@ -922,6 +976,7 @@ class CustomSliverPersistentHeaderDelegate
 }
 
 // Sticky Header Delegate for Dropdown
+// ignore: unused_element
 class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
@@ -980,6 +1035,7 @@ class DropdownCategory extends StatefulWidget {
 
 class _DropdownCategoryState extends State<DropdownCategory> {
   late final ValueNotifier<String?> selectedCategory;
+
   @override
   void initState() {
     super.initState();
@@ -993,6 +1049,7 @@ class _DropdownCategoryState extends State<DropdownCategory> {
       builder: (BuildContext context, String? value, Widget? child) {
         return DropdownButton<String>(
           value: value,
+          style: Theme.of(context).textTheme.labelSmall,
           onChanged: (String? newValue) {
             selectedCategory.value = newValue;
             widget.onCategoryChanged(newValue!);
@@ -1012,11 +1069,6 @@ class _DropdownCategoryState extends State<DropdownCategory> {
     );
   }
 }
-
-
-
-
-
 
 /*
 import 'package:flutter/material.dart';

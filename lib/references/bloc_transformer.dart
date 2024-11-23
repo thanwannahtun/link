@@ -1,4 +1,3 @@
-
 /*
 Flutter BLoC: Transformers ( medium )
 
@@ -13,8 +12,6 @@ EventTransformer<E> debounceSequential<E>(Duration duration) {
   };
 }
  */
-
-
 
 /*
 

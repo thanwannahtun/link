@@ -27,6 +27,46 @@ class AppTheme {
       secondary: LightTheme.secondaryBg,
       tertiary: LightTheme.tertiaryBg,
       onPrimary: Colors.white,
+      onSecondary: Color(0xf5f5f5ff),
+    );
+
+    TextTheme lightTextTheme = const TextTheme(
+      titleMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.secondaryBg),
+      titleSmall: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
+      headlineLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
+      headlineMedium: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
+      headlineSmall: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
+      bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+          color: LightTheme.primaryText),
+      bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+          color: LightTheme.primaryText),
+      labelMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.primaryText),
+      labelSmall: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.normal,
+          color: LightTheme.primaryText),
     );
 
     return ThemeData(
@@ -41,12 +81,19 @@ class AppTheme {
 
       brightness: Brightness.light,
       primaryColor: LightTheme.primaryBg,
-      // textTheme: lightTextTheme, //
+      textTheme: lightTextTheme,
+      //
       dividerColor: LightTheme.primaryAsset,
-      // elevatedButtonTheme: elevatedButtonThemeData,
+      elevatedButtonTheme: elevatedButtonThemeData(),
       // textButtonTheme: textButtonThemeData,
       // outlinedButtonTheme: outlinedButtonThemeData,
-      colorScheme: colorScheme, // [important]
+      colorScheme: colorScheme,
+      // [important]
+      iconTheme: const IconThemeData(
+        color: Colors.black87, // Slightly darker black for visibility
+        size: 24.0, // Default size
+        opacity: 1.0, // Fully opaque
+      ),
       bottomNavigationBarTheme: bottomNavigationBarThemeData,
     );
   }
@@ -74,27 +121,88 @@ class AppTheme {
       secondary: DarkTheme.secondaryBg,
       tertiary: DarkTheme.tertiaryBg,
       onPrimary: Colors.white,
+      onSecondary: Color(0xff424242),
     );
 
+    TextTheme darkTextTheme = const TextTheme(
+      titleMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: LightTheme.tertiaryBg),
+      titleSmall: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
+      headlineLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
+      headlineMedium: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
+      headlineSmall: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
+      bodyLarge: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+          color: DarkTheme.primaryText),
+      bodyMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+          color: DarkTheme.primaryText),
+      labelMedium: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: DarkTheme.primaryText),
+      labelSmall: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.normal,
+          color: DarkTheme.primaryText),
+    );
     return ThemeData(
       scaffoldBackgroundColor: const Color(0xFF0E0D0D),
       appBarTheme: const AppBarTheme(
         backgroundColor: DarkTheme.tertiaryBg,
         titleTextStyle: TextStyle(
             color: LightTheme.onPrimary,
-            fontSize: AppInsets.font25,
+            fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),
 
       brightness: Brightness.dark,
       primaryColor: DarkTheme.primaryBg,
-      // textTheme: lightTextTheme, //
+      textTheme: darkTextTheme,
+      //
       dividerColor: DarkTheme.primaryAsset,
-      // elevatedButtonTheme: elevatedButtonThemeData,
+      elevatedButtonTheme: elevatedButtonThemeData(),
       // textButtonTheme: textButtonThemeData,
       // outlinedButtonTheme: outlinedButtonThemeData,
-      colorScheme: colorScheme, // [important]
+      iconTheme: const IconThemeData(
+        color: Colors.white70, // White for visibility in dark backgrounds
+        size: 24.0, // Default size
+        opacity: 1.0, // Fully opaque
+      ),
+
+      colorScheme: colorScheme,
+      // [important]
       bottomNavigationBarTheme: bottomNavigationBarThemeData,
     );
+  }
+
+  static ElevatedButtonThemeData elevatedButtonThemeData() {
+    return ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+      textStyle: const TextStyle(
+          color: DarkTheme.primaryText, fontWeight: FontWeight.bold),
+      backgroundColor: LightTheme.secondaryBg,
+      foregroundColor: LightTheme.primaryBg,
+      // disabledBackgroundColor: Colors.grey,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppInsets.inset5)),
+      overlayColor: LightTheme.secondaryBg.withBlue(255),
+    ));
   }
 }
