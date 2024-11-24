@@ -75,7 +75,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _authListener(BuildContext context, AuthenticationState state) {
     if (state.status == AuthenticationStatus.sendEmailCodeSuccess) {
-      context.pushNamed(RouteLists.emailCodeEnterScreen,
+      context.pushNamed(RouteLists.emailCodeEnterAuthScreen,
           arguments: {"email": _emailController.text});
       final cubit = context.read<AuthenticationCubit>();
       Future.delayed(const Duration(microseconds: 100)).then(

@@ -17,9 +17,9 @@ import 'package:link/ui/utils/route_list.dart';
 
 import '../screens/profile/public_agency_profile_screen.dart';
 import '../screens/route_detail_page.dart';
-import '../sections/auth/create_password_screen.dart';
-import '../sections/auth/email_code_enter_screen.dart';
-import '../sections/auth/enter_date_of_birth_screen.dart';
+import '../sections/auth/create_password_auth_screen.dart';
+import '../sections/auth/email_code_enter_auth_screen.dart';
+import '../sections/auth/date_of_birth_auth_screen.dart';
 import '../sections/auth/sign_up_screen.dart';
 import '../sections/auth/sing_in_with_email_screen.dart';
 import '../sections/hero_home/hero_home_screen.dart';
@@ -177,7 +177,7 @@ class RouteGenerator {
             );
           },
         );
-      case RouteLists.emailCodeEnterScreen:
+      case RouteLists.emailCodeEnterAuthScreen:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
@@ -186,11 +186,11 @@ class RouteGenerator {
                 BlocProvider<AuthenticationCubit>.value(
                     value: _authenticationCubit),
               ],
-              child: const EmailCodeEnterScreen(),
+              child: const EmailCodeEnterAuthScreen(),
             );
           },
         );
-      case RouteLists.createPasswordScreen:
+      case RouteLists.createPasswordAuthScreen:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
@@ -199,11 +199,11 @@ class RouteGenerator {
                 BlocProvider<AuthenticationCubit>.value(
                     value: _authenticationCubit),
               ],
-              child: const CreatePasswordScreen(),
+              child: const CreatePasswordAuthScreen(),
             );
           },
         );
-      case RouteLists.enterDateOfBirthScreen:
+      case RouteLists.enterDateOfBirthAuthScreen:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
@@ -212,7 +212,7 @@ class RouteGenerator {
                 BlocProvider<AuthenticationCubit>.value(
                     value: _authenticationCubit),
               ],
-              child: const EnterDateOfBirthScreen(),
+              child: const DateOfBirthAuthScreen(),
             );
           },
         );

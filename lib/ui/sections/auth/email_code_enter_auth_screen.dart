@@ -9,14 +9,15 @@ import '../../utils/route_list.dart';
 
 const int resendSecond = 60;
 
-class EmailCodeEnterScreen extends StatefulWidget {
-  const EmailCodeEnterScreen({super.key});
+class EmailCodeEnterAuthScreen extends StatefulWidget {
+  const EmailCodeEnterAuthScreen({super.key});
 
   @override
-  State<EmailCodeEnterScreen> createState() => _EmailCodeEnterScreenState();
+  State<EmailCodeEnterAuthScreen> createState() =>
+      _EmailCodeEnterAuthScreenState();
 }
 
-class _EmailCodeEnterScreenState extends State<EmailCodeEnterScreen> {
+class _EmailCodeEnterAuthScreenState extends State<EmailCodeEnterAuthScreen> {
   final int _otpLength = 6;
   late List<TextEditingController> _controllers;
   late List<FocusNode> _focusNodes;
@@ -105,7 +106,8 @@ class _EmailCodeEnterScreenState extends State<EmailCodeEnterScreen> {
             if (state.status ==
                 AuthenticationStatus.verificationCodeAddedSuccess) {
               /// go to Next screen
-              context.pushNamed(RouteLists.createPasswordScreen, arguments: {});
+              context.pushNamed(RouteLists.createPasswordAuthScreen,
+                  arguments: {});
             }
             if (state.status == AuthenticationStatus.sendEmailCodeSuccess) {
               /// snack for verification code sent success!

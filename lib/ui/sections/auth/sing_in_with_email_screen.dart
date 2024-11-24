@@ -144,18 +144,6 @@ class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> {
     );
   }
 
-  ButtonStyle? _listenValidEmailAndPassword(
-      BuildContext context, bool isValidEmail, bool isValidPassword) {
-    if (isValidEmail && isValidPassword) {
-      return Theme.of(context).elevatedButtonTheme.style;
-    }
-    return Theme.of(context).elevatedButtonTheme.style?.copyWith(
-          overlayColor: const WidgetStatePropertyAll(Colors.grey),
-          shadowColor: const WidgetStatePropertyAll(Colors.grey),
-          backgroundColor: const WidgetStatePropertyAll(Colors.grey),
-        );
-  }
-
   Widget _buildFormField(BuildContext context,
       {String? hintText,
       String? labelText,

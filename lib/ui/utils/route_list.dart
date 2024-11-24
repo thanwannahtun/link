@@ -5,9 +5,11 @@ class RouteLists {
   static const String signUp = "/sign_up"; // email sign up
   static const String signIn = "/sign_in";
   static const String signInWithEmail = "/sign_in_with_email";
-  static const String emailCodeEnterScreen = "/email_code_enter_screen";
-  static const String createPasswordScreen = "/create_password_screen";
-  static const String enterDateOfBirthScreen = "/enter_date_of_birth";
+  static const String emailCodeEnterAuthScreen =
+      "/email_code_enter_auth_screen";
+  static const String createPasswordAuthScreen = "/create_password_auth_screen";
+  static const String enterDateOfBirthAuthScreen =
+      "/enter_date_of_birth_auth_screen";
   static const String signInWithPhone = "/sign_in_with_phone";
   static const String signOut = "/sign_out";
 
