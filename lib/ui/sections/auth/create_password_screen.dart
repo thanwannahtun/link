@@ -1,12 +1,40 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 
+import '../../../bloc/authentication/authentication_cubit.dart';
 import '../../../core/utils/app_insets.dart';
 import '../../utils/route_list.dart';
 
-class CreatePasswordScreen extends StatelessWidget {
+class CreatePasswordScreen extends StatefulWidget {
   const CreatePasswordScreen({super.key});
+
+  @override
+  State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
+}
+
+class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
+  final ValueNotifier<bool> _isContinueEnabled = ValueNotifier(false);
+
+  late final _firstNameController;
+  late final _lastNameController;
+  late final _passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _isContinueEnabled.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +52,16 @@ class CreatePasswordScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: AppInsets.inset15),
-            _buildFormField(context, labelText: "Enter password"),
+            _buildFormField(context,
+                labelText: "First Name", controller: _firstNameController),
+            const SizedBox(height: AppInsets.inset15),
+            const SizedBox(height: AppInsets.inset15),
+            _buildFormField(context,
+                labelText: "Last Name", controller: _lastNameController),
+            const SizedBox(height: AppInsets.inset15),
+            const SizedBox(height: AppInsets.inset15),
+            _buildFormField(context,
+                labelText: "Enter password", controller: _passwordController),
             const SizedBox(height: AppInsets.inset15),
             Text(
               "Your password must have",
@@ -41,16 +78,33 @@ class CreatePasswordScreen extends StatelessWidget {
                   ?.copyWith(color: context.greyFilled),
             ),
             const SizedBox(height: AppInsets.inset15),
-            ElevatedButton(
-                onPressed: () {
-                  context.pushNamed(RouteLists.enterDateOfBirthScreen);
-                },
-                child: const Text("Continue")),
             const SizedBox(height: AppInsets.inset15),
+            _buildContinueButton(context),
           ],
         ),
       ),
     ));
+  }
+
+  Widget _buildContinueButton(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: _isContinueEnabled,
+        builder: (BuildContext context, value, Widget? child) {
+          return ElevatedButton(
+            onPressed: value
+                ? () {
+                    // final otpCode = _getOtpCode();
+                    if (kDebugMode) {
+                      print('Signing up... ');
+                    }
+                    // Add your OTP validation logic here
+                    context.read<AuthenticationCubit>();
+                    context.pushNamed(RouteLists.enterDateOfBirthScreen);
+                  }
+                : null,
+            child: const Text('Continue'),
+          );
+        });
   }
 
   AppBar _buildAppBar(BuildContext context) {
@@ -59,20 +113,20 @@ class CreatePasswordScreen extends StatelessWidget {
           onPressed: () => context.pop(),
           icon: const Icon(Icons.keyboard_arrow_left_rounded)),
       backgroundColor: Colors.transparent,
+      title: const Text("sign in"),
+      centerTitle: true,
     );
   }
 
-  Widget _buildFormField(
-    BuildContext context, {
-    String? hintText,
-    String? labelText,
-  }) {
+  Widget _buildFormField(BuildContext context,
+      {String? hintText,
+      String? labelText,
+      required TextEditingController controller,
+      void Function(String)? onChanged,
+      String? Function(String?)? validator}) {
     return TextFormField(
-      // validator: widget.validator,
-      // controller: textController,
-      // Use the textController from Autocomplete
-      // focusNode: focusNode,
-      // onTapOutside: (event) => focusNode.unfocus(),
+      validator: validator,
+      controller: controller,
       decoration: InputDecoration(
           hintText: hintText,
           hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -81,24 +135,8 @@ class CreatePasswordScreen extends StatelessWidget {
           labelText: labelText,
           border: InputBorder.none,
           fillColor: Theme.of(context).cardColor,
-          filled: true
-          // errorText: value ? null : "No matching!"
-          // errorText: widget.controller.isValid
-          //     ? null
-          //     : "No matching city found!", // Show error message
-          ),
-      /*
-      style: TextStyle(
-        fontWeight: widget.fontWeight,
-        color: value // widget.controller.isValid
-            ? Theme.of(context).textTheme.bodyMedium?.color
-            : Theme.of(context).colorScheme.error,
-      ),
-       */
-
-      onChanged: (value) {
-        // _checkValidity(value); // Validate the input on change
-      },
+          filled: true),
+      onChanged: onChanged,
       // onEditingComplete: onEditingComplete,
     );
   }

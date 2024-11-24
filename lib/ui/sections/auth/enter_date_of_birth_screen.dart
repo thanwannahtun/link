@@ -59,6 +59,16 @@ class EnterDateOfBirthScreen extends StatelessWidget {
           onPressed: () => context.pop(),
           icon: const Icon(Icons.keyboard_arrow_left_rounded)),
       backgroundColor: Colors.transparent,
+      title: const Text("sign in"),
+      centerTitle: true,
+      actions: [
+        TextButton(
+          onPressed: () {
+            // Navigate to Help screen
+          },
+          child: const Text('Skip', style: TextStyle(color: Colors.blue)),
+        ),
+      ],
     );
   }
 

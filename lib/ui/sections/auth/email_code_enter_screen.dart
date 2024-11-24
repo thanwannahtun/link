@@ -57,6 +57,8 @@ class _EmailCodeEnterScreenState extends State<EmailCodeEnterScreen> {
     for (var focusNode in _focusNodes) {
       focusNode.dispose();
     }
+    _isContinueEnabled.dispose();
+    _resendTimer.dispose();
     super.dispose();
   }
 
