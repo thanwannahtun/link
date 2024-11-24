@@ -185,7 +185,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 }
 
 class _PermissionAccessCheckBox extends StatefulWidget {
-  const _PermissionAccessCheckBox({super.key, required this.onValueChange});
+  const _PermissionAccessCheckBox({required this.onValueChange});
 
   final void Function(bool value) onValueChange;
 

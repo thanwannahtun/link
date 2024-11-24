@@ -5,7 +5,6 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 
 import '../../../bloc/authentication/authentication_cubit.dart';
-import '../../../core/utils/app_insets.dart';
 import '../../utils/route_list.dart';
 
 class CreatePasswordAuthScreen extends StatefulWidget {
