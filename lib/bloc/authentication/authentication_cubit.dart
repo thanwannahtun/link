@@ -110,13 +110,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (response.statusCode == 200) {
         emit(state.copyWith(
             status: AuthenticationStatus.sendEmailCodeSuccess,
-            message: "Verification code sent!"));
+            message: "Verification code sent!",
+            user: state.user?.copyWith(email: email)));
         return;
+      } else {
+        emit(state.copyWith(
+            status: AuthenticationStatus.sendEmailCodeFailed,
+            error: "Something went wrong!",
+            message: response.data["message"] ?? ""));
       }
-      emit(state.copyWith(
-          status: AuthenticationStatus.sendEmailCodeFailed,
-          error: "Something went wrong!",
-          message: response.data["message"] ?? ""));
     } on Exception catch (e, s) {
       debugPrint("""====== <Error> >
             (error) - $e
@@ -136,13 +138,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (response.statusCode == 200) {
         emit(state.copyWith(
             status: AuthenticationStatus.verificationCodeAddedSuccess,
-            message: "Success"));
+            message: "Success",
+            user: state.user?.copyWith(email: email)));
         return;
+      } else {
+        emit(state.copyWith(
+            status: AuthenticationStatus.verificationCodeAddFailed,
+            error: "Something went wrong!",
+            message: response.data["message"] ?? "Invalid Code!"));
       }
-      emit(state.copyWith(
-          status: AuthenticationStatus.verificationCodeAddFailed,
-          error: "Something went wrong!",
-          message: response.data["message"] ?? "Invalid Code!"));
     } on Exception catch (e, s) {
       debugPrint("""====== <Error> >
             (error) - $e
@@ -155,5 +159,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           error: handleErrorMessage(e),
           message: "Invalid Code!"));
     }
+  }
+
+  enterNameAndPassword(
+      {required String firstName,
+      String? lastName,
+      required String password}) async {
+    emit(state.copyWith(
+        status: AuthenticationStatus.signUpSuccess,
+        user: state.user?.copyWith(
+            firstName: firstName, lastName: lastName, password: password)));
   }
 }

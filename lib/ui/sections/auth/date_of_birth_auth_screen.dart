@@ -7,6 +7,8 @@ import 'package:link/core/theme_extension.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 
+import '../../../models/user.dart';
+
 class DateOfBirthAuthScreen extends StatefulWidget {
   const DateOfBirthAuthScreen({super.key});
 
@@ -19,6 +21,9 @@ class _DateOfBirthAuthScreenState extends State<DateOfBirthAuthScreen> {
   final TextEditingController _monthController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
   final ValueNotifier<bool> _isContinueEnabled = ValueNotifier(false);
+
+  bool _initial = true;
+  String? _email;
 
   @override
   void initState() {
@@ -34,6 +39,23 @@ class _DateOfBirthAuthScreenState extends State<DateOfBirthAuthScreen> {
     _monthController.dispose();
     _yearController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_initial) {
+      if (ModalRoute.of(context)?.settings.arguments != null) {
+        User? user = ModalRoute.of(context)?.settings.arguments as User?;
+        _email = user?.email;
+        print("aguments user = ${user?.toJson()}");
+      } else {
+        _email = context.read<AuthenticationCubit>().state.user?.email;
+      }
+      print(
+          "state.user = ${context.read<AuthenticationCubit>().state.user?.toJson()}");
+      _initial = false;
+    }
+    super.didChangeDependencies();
   }
 
   void _validateFields() {
@@ -76,13 +98,26 @@ class _DateOfBirthAuthScreenState extends State<DateOfBirthAuthScreen> {
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print("rebuild date_of_birth_auth_screen");
+      print("rebuild date_of_birth_auth_screen => :: { email = $_email }");
     }
     return BlocListener<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
-        // if (state.status == AuthenticationStatus.dobAddedSuccessfully) {
-        //   context.pushNamed(RouteLists.nextScreen, arguments: {});
-        // }
+        if (state.status == AuthenticationStatus.signUpSuccess) {
+          context.pushNamed(RouteLists.app);
+
+          Future.delayed(const Duration(seconds: 1)).then(
+            (value) => mounted
+                ? context.showSnackBar(const SnackBar(
+                    content: Text("Account successfully created!")))
+                : null,
+          );
+        }
+        if (state.status == AuthenticationStatus.signUpFailed) {
+          if (kDebugMode) {
+            print(state.error ?? "ERROR (SIGNUP FAILED)!");
+          }
+          context.showSnackBar(SnackBar(content: Text(state.message ?? "")));
+        }
       },
       child: Scaffold(
         appBar: _buildAppBar(context),
@@ -171,9 +206,10 @@ class _DateOfBirthAuthScreenState extends State<DateOfBirthAuthScreen> {
                   final dob = DateTime(year, month, day);
                   if (dob.isBefore(DateTime.now()
                       .subtract(const Duration(days: 365 * 18)))) {
-                    // context
-                    //     .read<AuthenticationCubit>()
-                    //     .addDateOfBirth(dob: dob);
+                    final user = context.read<AuthenticationCubit>().state.user;
+                    context
+                        .read<AuthenticationCubit>()
+                        .signUpUser(user: user!.copyWith(dob: dob));
                   } else {
                     context.showSnackBar(
                       const SnackBar(
@@ -209,13 +245,8 @@ class _DateOfBirthAuthScreenState extends State<DateOfBirthAuthScreen> {
             if (kDebugMode) {
               print("Skip to Next");
             }
-            context.pushNamed(RouteLists.app);
-            Future.delayed(const Duration(seconds: 1)).then(
-              (value) => mounted
-                  ? context.showSnackBar(const SnackBar(
-                      content: Text("Account successfully created!")))
-                  : null,
-            );
+            final user = context.read<AuthenticationCubit>().state.user;
+            context.read<AuthenticationCubit>().signUpUser(user: user!);
           },
           child: const Text('Skip', style: TextStyle(color: Colors.blue)),
         ),

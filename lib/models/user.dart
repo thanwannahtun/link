@@ -1,5 +1,7 @@
-class User {
-  User(
+import 'package:equatable/equatable.dart';
+
+class User extends Equatable {
+  const User(
       {this.id,
       this.firstName,
       this.lastName,
@@ -9,7 +11,9 @@ class User {
       this.role = 'user',
       this.accessToken,
       this.refreshToken,
+      this.dob,
       this.createdAt});
+
   final String? id;
   final String? firstName;
   final String? lastName;
@@ -20,6 +24,8 @@ class User {
   final String? createdAt;
   final String? accessToken;
   final String? refreshToken;
+  final DateTime? dob;
+
   User copyWith(
       {String? id,
       String? firstName,
@@ -30,6 +36,7 @@ class User {
       String? role,
       String? refreshToken,
       String? accessToken,
+      DateTime? dob,
       String? createdAt}) {
     return User(
         id: id ?? this.id,
@@ -40,7 +47,8 @@ class User {
         password: password ?? this.password,
         role: role ?? this.role,
         refreshToken: refreshToken ?? this.refreshToken,
-        accessToken: accessToken ?? this.refreshToken,
+        accessToken: accessToken ?? this.accessToken,
+        dob: dob ?? this.dob,
         createdAt: createdAt ?? this.createdAt);
   }
 
@@ -56,6 +64,7 @@ class User {
       "role": role,
       "accessToken": accessToken,
       "refreshToken": refreshToken,
+      "dob": dob?.toIso8601String(),
     };
   }
 
@@ -70,14 +79,29 @@ class User {
       password: json['password'],
       refreshToken: json['refreshToken'],
       accessToken: json['accessToken'],
+      dob: json['dob'] != null ? DateTime.parse(json['dob'] as String) : null,
       // role: json['role'] == Role.admin.name ? 'admin' : 'user',
     );
   }
 
   @override
   String toString() {
-    return 'User{id=$id, firstName=$firstName, lastName=$lastName, fullName=$fullName, email=$email, password=$password, role=$role, createdAt=$createdAt, accessToken=$accessToken, refreshToken=$refreshToken}';
+    return 'User{id=$id, firstName=$firstName, lastName=$lastName, fullName=$fullName, email=$email, password=$password, role=$role, createdAt=$createdAt, accessToken=$accessToken, refreshToken=$refreshToken, dob=$dob}';
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        firstName,
+        lastName,
+        firstName,
+        createdAt,
+        email,
+        password,
+        refreshToken,
+        accessToken,
+        dob
+      ];
 }
 
 enum Role {
@@ -85,5 +109,6 @@ enum Role {
   user('user');
 
   final String name;
+
   const Role(this.name);
 }

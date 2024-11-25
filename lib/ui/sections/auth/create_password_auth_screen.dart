@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/models/user.dart';
 
 import '../../../bloc/authentication/authentication_cubit.dart';
 import '../../utils/route_list.dart';
@@ -22,6 +23,9 @@ class _CreatePasswordAuthScreenState extends State<CreatePasswordAuthScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool _initial = true;
+  String? _email;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +43,24 @@ class _CreatePasswordAuthScreenState extends State<CreatePasswordAuthScreen> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    if (_initial) {
+      if (ModalRoute.of(context)?.settings.arguments != null) {
+        User? user = ModalRoute.of(context)?.settings.arguments as User?;
+        _email = user?.email;
+        print("aguments user = ${user?.toJson()}");
+      } else {
+        _email = context.read<AuthenticationCubit>().state.user?.email;
+      }
+      print(
+          "state.user = ${context.read<AuthenticationCubit>().state.user?.toJson()}");
+
+      _initial = false;
+    }
+    super.didChangeDependencies();
+  }
+
   void _validateFields() {
     final isValid = _firstNameController.text.isNotEmpty &&
         _lastNameController.text.isNotEmpty &&
@@ -50,7 +72,7 @@ class _CreatePasswordAuthScreenState extends State<CreatePasswordAuthScreen> {
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print("rebuild createdPasswordScreen");
+      print("rebuild createdPasswordScreen => :: { email = $_email }");
     }
     return BlocListener<AuthenticationCubit, AuthenticationState>(
       listener: _listener,
@@ -108,14 +130,15 @@ class _CreatePasswordAuthScreenState extends State<CreatePasswordAuthScreen> {
     );
   }
 
-  void _listener(context, state) {
-    if (state.status == AuthenticationStatus.verificationCodeAddedSuccess) {
-      // Navigate to the next screen
-      context.pushNamed(RouteLists.enterDateOfBirthAuthScreen, arguments: {});
-    } else if (state.status == AuthenticationStatus.verificationCodeAddFailed) {
-      context.showSnackBar(
-        SnackBar(content: Text(state.error ?? "Verification failed!")),
-      );
+  void _listener(BuildContext context, AuthenticationState state) {
+    if (state.status == AuthenticationStatus.signUpSuccess) {
+      /// Navigate to the next screen
+      final user = state.user?.copyWith(email: _email);
+      if (kDebugMode) {
+        print("user argument = ${user?.toJson()}");
+      }
+
+      context.pushNamed(RouteLists.enterDateOfBirthAuthScreen, arguments: user);
     }
   }
 
@@ -154,17 +177,14 @@ class _CreatePasswordAuthScreenState extends State<CreatePasswordAuthScreen> {
                   final lastName = _lastNameController.text;
                   final password = _passwordController.text;
 
-                  // // Trigger Cubit action
-                  // context.read<AuthenticationCubit>().completeVerification(
-                  //   firstName: firstName,
-                  //   lastName: lastName,
-                  //   password: password,
-                  // );
-                  /// Temp Navigation
-                  context.pushNamed(RouteLists.enterDateOfBirthAuthScreen);
+                  context.read<AuthenticationCubit>().enterNameAndPassword(
+                      firstName: firstName,
+                      password: password,
+                      lastName: lastName);
+
                   if (kDebugMode) {
                     print(
-                        'First Name: $firstName, Last Name: $lastName, Password: $password');
+                        'firstName: $firstName, lastName: $lastName, password: $password');
                   }
                 }
               : null,

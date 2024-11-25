@@ -40,6 +40,9 @@ class ApiErrorHandler {
       case 403:
         return _AuthenticationException(
             "Unauthorized: ${error.response?.data['message'] ?? 'Access denied'}");
+      case 429:
+        return _AuthenticationException(
+            "Rate limit: ${error.response?.data['message'] ?? 'Rate limited!'}");
       case 404:
         return _NotFoundException(
             "Not found: ${error.response?.data['message'] ?? 'Resource not found'}");

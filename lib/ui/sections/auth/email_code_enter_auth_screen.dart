@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
+import 'package:link/models/user.dart';
 import 'package:link/ui/utils/context.dart';
 
 import '../../utils/route_list.dart';
@@ -31,12 +32,15 @@ class _EmailCodeEnterAuthScreenState extends State<EmailCodeEnterAuthScreen> {
   void didChangeDependencies() {
     if (_initial) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
-        Map<String, dynamic> arguments =
-            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-        if (arguments['email'] != null) {
-          _email = arguments['email'];
-        }
+        User? user = ModalRoute.of(context)?.settings.arguments as User?;
+        _email = user?.email;
+        print("aguments user = ${user?.toJson()}");
+      } else {
+        _email = context.read<AuthenticationCubit>().state.user?.email;
       }
+      print(
+          "state.user = ${context.read<AuthenticationCubit>().state.user?.toJson()}");
+
       _initial = false;
     }
     super.didChangeDependencies();
@@ -94,37 +98,17 @@ class _EmailCodeEnterAuthScreenState extends State<EmailCodeEnterAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("rebuild OTP screen");
+    if (kDebugMode) {
+      print("rebuild email_code_enter_auth_screen => :: { email = $_email }");
+    }
+
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: BlocListener<AuthenticationCubit, AuthenticationState>(
           bloc: context.read<AuthenticationCubit>(),
-          listener: (BuildContext context, AuthenticationState state) {
-            print('State changed: ${state.status}');
-            if (state.status ==
-                AuthenticationStatus.verificationCodeAddedSuccess) {
-              /// go to Next screen
-              context.pushNamed(RouteLists.createPasswordAuthScreen,
-                  arguments: {});
-            }
-            if (state.status == AuthenticationStatus.sendEmailCodeSuccess) {
-              /// snack for verification code sent success!
-              context.showSnackBar(SnackBar(
-                content: Text(state.message ?? "Verification code sent!"),
-              ));
-            }
-
-            /// FAILED LISTENERS
-            if (state.status ==
-                AuthenticationStatus.verificationCodeAddFailed) {
-              /// snack for verification code sent success!
-              context.showSnackBar(SnackBar(
-                content: Text(state.message ?? "Invalid Code!!"),
-              ));
-            }
-          },
+          listener: _listener,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -171,6 +155,40 @@ class _EmailCodeEnterAuthScreenState extends State<EmailCodeEnterAuthScreen> {
         ),
       ),
     );
+  }
+
+  void _listener(BuildContext context, AuthenticationState state) {
+    if (kDebugMode) {
+      print('State changed: ${state.status}');
+    }
+    if (state.status == AuthenticationStatus.verificationCodeAddedSuccess) {
+      /// go to Next screen
+      final user = context
+          .read<AuthenticationCubit>()
+          .state
+          .user
+          ?.copyWith(email: _email);
+      print("user argument = ${user?.toJson()}");
+      context.pushNamed(RouteLists.createPasswordAuthScreen, arguments: user);
+    }
+    if (state.status == AuthenticationStatus.sendEmailCodeSuccess) {
+      /// snack for verification code sent success!
+      context.showSnackBar(SnackBar(
+        content: Text(state.message ?? "Verification code sent!"),
+      ));
+    }
+
+    /// FAILED LISTENERS
+    if (state.status == AuthenticationStatus.verificationCodeAddFailed) {
+      if (kDebugMode) {
+        print(state.error);
+      }
+
+      /// snack for verification code sent success!
+      context.showSnackBar(SnackBar(
+        content: Text(state.message ?? "Invalid Code!!"),
+      ));
+    }
   }
 
   Widget _buildContinueButton(BuildContext context) {
