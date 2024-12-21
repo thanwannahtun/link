@@ -55,6 +55,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     labelText: "Enter email address",
                     controller: _emailController),
                 const SizedBox(height: AppInsets.inset15),
+
+                /// Continue Button
                 BlocConsumer<AuthenticationCubit, AuthenticationState>(
                   builder: _authBuilder,
                   listener: _authListener,
@@ -75,8 +77,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _authListener(BuildContext context, AuthenticationState state) {
     if (state.status == AuthenticationStatus.sendEmailCodeSuccess) {
-      context.pushNamed(RouteLists.emailCodeEnterScreen,
-          arguments: {"email": _emailController.text});
+      final user = context
+          .read<AuthenticationCubit>()
+          .state
+          .user
+          ?.copyWith(email: _emailController.text);
+      print("user argument = ${user?.toJson()}");
+      context.pushNamed(RouteLists.emailCodeEnterAuthScreen, arguments: user);
       final cubit = context.read<AuthenticationCubit>();
       Future.delayed(const Duration(microseconds: 100)).then(
         (value) {
@@ -185,7 +192,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 }
 
 class _PermissionAccessCheckBox extends StatefulWidget {
-  const _PermissionAccessCheckBox({super.key, required this.onValueChange});
+  const _PermissionAccessCheckBox({required this.onValueChange});
 
   final void Function(bool value) onValueChange;
 

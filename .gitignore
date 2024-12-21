@@ -43,4 +43,4 @@ app.*.map.json
 /android/app/release
 
 # for references and nots
-db_note
+/db_note/

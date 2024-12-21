@@ -56,6 +56,8 @@ class _SettingScreenState extends State<SettingScreen> {
             title: const Text("Sign Up Screen (Sketch)"),
             leading: const Icon(Icons.person),
             onTap: () => context.pushNamed(RouteLists.signUp),
+            // onTap: () => context.pushNamed(RouteLists.createPasswordAuthScreen),
+            // onTap: () => context.pushNamed(RouteLists.emailCodeEnterAuthScreen),
           ),
         ),
         Card(

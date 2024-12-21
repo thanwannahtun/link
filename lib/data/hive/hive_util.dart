@@ -1,11 +1,37 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 class HiveUtil {
+  /// Cache to keep track of already open boxes
+  final Map<String, Box> _openBoxes = {};
+
   Future<Box<T>> _openBox<T>(String boxName) async {
-    return await Hive.openBox<T>(
-      boxName,
-    );
+    if (_openBoxes.containsKey(boxName)) {
+      if (kDebugMode) {
+        print("$boxName is already opened.");
+      }
+      // Return the already open box
+      return _openBoxes[boxName] as Box<T>;
+    }
+    if (kDebugMode) {
+      print("$boxName is opened.");
+    }
+
+    // Open the box and store it in the cache
+    final box = await Hive.openBox<T>(boxName);
+    _openBoxes[boxName] = box;
+    return box;
   }
+
+  // openBox<T>({required String boxName}) async {
+  //   await _openBox<T>(boxName);
+  // }
+  //
+  // Future<Box<T>> _openBox<T>(String boxName) async {
+  //   return await Hive.openBox<T>(
+  //     boxName,
+  //   );
+  // }
 
   Future<void> addValue<T>(String boxName, T value, dynamic key) async {
     final box = await _openBox<T>(boxName);
