@@ -14,14 +14,11 @@ import 'package:link/ui/utils/route_generator.dart';
 import 'package:link/ui/utils/route_list.dart';
 
 import 'bloc/agency/agency_cubit.dart';
-// import 'package:path_provider/path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // final appDocumentDir = await getApplicationDocumentsDirectory();
-  // Hive.init(appDocumentDir.path);
-  Hive.initFlutter();
+  await Hive.initFlutter();
 
   // Register Adapter
   Hive.registerAdapter(CityAdapter());
