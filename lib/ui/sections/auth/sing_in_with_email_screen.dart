@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
+
+import '../../../bloc/authentication/authentication_cubit.dart';
 
 class SignInWithEmailScreen extends StatefulWidget {
   const SignInWithEmailScreen({super.key});
@@ -81,9 +84,10 @@ class _SignInWithEmailScreenState extends State<SignInWithEmailScreen> {
                             return ElevatedButton(
                                 onPressed: (isValidPassword && isValidEmail)
                                     ? () {
-                                        // context
-                                        //     .read<AuthenticationCubit>()
-                                        //     .sendCode(email: _emailController.text);
+                                        context
+                                            .read<AuthenticationCubit>()
+                                            .sendCode(
+                                                email: _emailController.text);
                                       }
                                     : null,
                                 child: const Text("Sign in"));
