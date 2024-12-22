@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:link/ui/utils/snackbar_util.dart';
 
 String handleErrorMessage(Exception e) => ApiErrorHandler.handle(e).message;
 
@@ -16,6 +17,12 @@ class ApiErrorHandler {
         case DioExceptionType.receiveTimeout:
           return _TimeoutException(
               "Receive timeout in connection with API server");
+        case DioExceptionType.connectionError:
+          SnackbarUtils.showGlobalSnackBar(
+              "Please check your internet connection.",
+              type: SnackBarType.error);
+          return _NetworkException(
+              "Failed to connect to the API server. Please check your internet connection.");
         case DioExceptionType.badResponse:
           return _handleHttpResponse(error);
         case DioExceptionType.unknown:
@@ -27,6 +34,8 @@ class ApiErrorHandler {
           return ApiException(message: "Unexpected error occurred");
       }
     } else {
+      SnackbarUtils.showGlobalSnackBar("Something went wrong!",
+          type: SnackBarType.error);
       return ApiException(message: "[Unknown error] :: ${error.toString()}");
     }
   }
@@ -37,6 +46,9 @@ class ApiErrorHandler {
         return _BadRequestException(
             "Bad request: ${error.response?.data['message'] ?? 'Invalid request'}");
       case 401:
+        return ApiException(
+            message:
+                "Unauthorized. Please check your API key or login credentials.");
       case 403:
         return _AuthenticationException(
             "Unauthorized: ${error.response?.data['message'] ?? 'Access denied'}");
@@ -47,6 +59,12 @@ class ApiErrorHandler {
         return _NotFoundException(
             "Not found: ${error.response?.data['message'] ?? 'Resource not found'}");
       case 500:
+        return ApiException(
+            message: "Internal server error. Please try again later.");
+      case 504:
+        return ApiException(
+            message: "Gateway timeout. The server is not responding.");
+
       default:
         return _ServerException(
             "Server error: ${error.response?.data['message'] ?? 'Internal server error'}",
