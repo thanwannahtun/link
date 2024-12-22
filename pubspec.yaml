@@ -66,6 +66,9 @@ dependencies:
 
   # bloc_concurrency provides an opinionated set of event transformers
   bloc_concurrency: ^0.2.5
+  # for internet connection status checking
+  connectivity_plus:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
