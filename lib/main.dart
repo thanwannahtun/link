@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link/bloc/city/city_cubit.dart';
+import 'package:link/bloc/connectivity/connectivity_bloc.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/bloc/token_validator/token_validator_cubit.dart';
 import 'package:link/bloc/authentication/authentication_cubit.dart';
@@ -12,8 +13,12 @@ import 'package:link/domain/bloc_utils/app_bloc_observer.dart';
 import 'package:link/models/city.dart';
 import 'package:link/ui/utils/route_generator.dart';
 import 'package:link/ui/utils/route_list.dart';
+import 'package:link/ui/widgets/connectivity/connectiviy_listener.dart';
 
 import 'bloc/agency/agency_cubit.dart';
+
+/// Global scaffoldMessengerKey for showing global snackbars
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +33,9 @@ void main() async {
   runApp(MultiBlocProvider(providers: [
     BlocProvider<ThemeCubit>(
       create: (context) => ThemeCubit()..getTheme(),
+    ),
+    BlocProvider<ConnectivityBloc>(
+      create: (context) => ConnectivityBloc(),
     ),
   ], child: const LinkApplication()));
 }
@@ -85,14 +93,17 @@ class _LinkApplicationState extends State<LinkApplication>
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, state) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            onGenerateRoute: RouteGenerator.onGenerateRoute,
-            initialRoute: RouteLists.splashScreen,
-            title: 'Link',
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: state,
+          return ConnectiviyListener(
+            child: MaterialApp(
+              scaffoldMessengerKey: scaffoldMessengerKey,
+              debugShowCheckedModeBanner: false,
+              onGenerateRoute: RouteGenerator.onGenerateRoute,
+              initialRoute: RouteLists.splashScreen,
+              title: 'Link',
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: state,
+            ),
           );
         },
       ),
