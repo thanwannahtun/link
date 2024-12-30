@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/models/app.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
+import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
+import 'package:link/ui/widgets/buttons/book_button.dart';
 
 import '../../../core/utils/date_time_util.dart';
 import '../../../core/widgets/cached_image.dart';
 import '../../utils/expandable_text.dart';
-import '../post_route_card.dart';
+import '../../widgets/buttons/like_icon.dart';
 
 typedef RouteCallback = void Function(RouteModel route);
 
@@ -174,9 +178,10 @@ class RouteInfo extends StatelessWidget {
   }
 }
 
-/// Widget to display the midpoints of the route
 class RouteMidpoints extends StatelessWidget {
   final List<RouteMidpoint> midpoints;
+
+  /// Widget to display the midpoints of the route
 
   const RouteMidpoints({
     super.key,
@@ -278,17 +283,14 @@ class RouteFooter extends StatelessWidget {
             ),
           ],
         ),
-        TextButton.icon(
-            style: ButtonStyle(
-                minimumSize: const WidgetStatePropertyAll(Size(30, 30)),
-                shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5))),
-                foregroundColor: const WidgetStatePropertyAll(Colors.white),
-                backgroundColor: const WidgetStatePropertyAll(Colors.blue)),
-            onPressed: () => onBookPressed.call(route),
-            iconAlignment: IconAlignment.end,
-            icon: const Icon(Icons.phone_enabled_sharp, size: 20),
-            label: const Text("Book")),
+        BookButton(
+          onPressed: () => onBookPressed.call(route),
+          middleWare: () {
+            return App.user.isAuthenticated();
+          },
+          onMiddleWareFailed: () =>
+              context.pushNamed(RouteLists.signInWithEmail),
+        ),
       ],
     );
   }

@@ -134,17 +134,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return ListTile(
       title: Center(
         child: GestureDetector(
-          onTap: () => context.pushNamed(RouteLists.signInWithPhone),
+          onTap: () => context.pushNamed(RouteLists.signInWithEmail),
           child: Text.rich(
             style: const TextStyle(fontSize: 13),
             TextSpan(
                 // text: 'Hello', // default text style
                 children: <TextSpan>[
                   const TextSpan(
-                      text: " Continue with your phone number? ",
+                      // text: " Continue with your phone number? ",
+                      text: " Continue with your email? ",
                       style: TextStyle(fontStyle: FontStyle.italic)),
                   TextSpan(
-                      text: 'Sign up',
+                      text: 'Sign in',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: context.successColor)),
