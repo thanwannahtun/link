@@ -89,6 +89,11 @@ class User extends Equatable {
     return 'User{id=$id, firstName=$firstName, lastName=$lastName, fullName=$fullName, email=$email, password=$password, role=$role, createdAt=$createdAt, accessToken=$accessToken, refreshToken=$refreshToken, dob=$dob}';
   }
 
+  bool isAuthenticated() {
+    // return accessToken != null && refreshToken != null;
+    return true;
+  }
+
   @override
   List<Object?> get props => [
         id,

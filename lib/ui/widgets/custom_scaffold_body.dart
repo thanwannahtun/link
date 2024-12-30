@@ -20,13 +20,11 @@ class CustomScaffoldBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-        persistentFooterButtons: persistentFooterButtons,
-        appBar: _appBar(),
-        body: _body(context),
-      ),
+    return Scaffold(
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+      persistentFooterButtons: persistentFooterButtons,
+      appBar: _appBar(),
+      body: _body(context),
     );
   }
 
@@ -41,7 +39,7 @@ class CustomScaffoldBody extends StatelessWidget {
     );
   }
 
-  Container _body(BuildContext context) {
+  Widget _body(BuildContext context) {
     return Container(
         color: Theme.of(context).appBarTheme.backgroundColor,
         child: DraggableScrollableSheet(
