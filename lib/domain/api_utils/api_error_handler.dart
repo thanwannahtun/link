@@ -36,7 +36,7 @@ class ApiErrorHandler {
     } else {
       SnackbarUtils.showGlobalSnackBar("Something went wrong!",
           type: SnackBarType.error);
-      return ApiException(message: "[Unknown error] :: ${error.toString()}");
+      return ApiException(message: error.toString());
     }
   }
 
