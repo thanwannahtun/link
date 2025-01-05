@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,8 +10,6 @@ import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/styles/app_theme.dart';
-import 'package:link/data/hive/hive_util.dart';
-import 'package:link/domain/api_utils/api_service.dart';
 import 'package:link/domain/bloc_utils/app_bloc_observer.dart';
 import 'package:link/models/city.dart';
 import 'package:link/repositories/city_repo.dart';
@@ -19,33 +18,10 @@ import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widgets/connectivity/connectiviy_listener.dart';
 
 import 'bloc/agency/agency_cubit.dart';
+import 'ui/widgets/multi_repository_provider_wrapper.dart';
 
 /// Global scaffoldMessengerKey for showing global snackbars
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
-
-class MultiRepositoryProviderWrapper extends StatelessWidget {
-  /// Wrapper for [multiple repository]
-  ///
-  /// extracting logic in a [separate] widget
-  ///
-  /// for clean [readable wrapper] widget
-
-  const MultiRepositoryProviderWrapper({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final HiveUtil hiveUtil = HiveUtil();
-    final ApiService apiService = ApiService();
-
-    return MultiRepositoryProvider(providers: [
-      RepositoryProvider<CityRepo>(
-          create: (context) =>
-              CityRepo(hiveUtil: hiveUtil, apiservice: apiService)),
-    ], child: child);
-  }
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,7 +39,7 @@ void main() async {
         create: (context) => ThemeCubit()..getTheme(),
       ),
       BlocProvider<ConnectivityBloc>(
-        create: (context) => ConnectivityBloc(),
+        create: (context) => ConnectivityBloc(connectivity: Connectivity()),
       ),
     ], child: const LinkApplication()),
   ));

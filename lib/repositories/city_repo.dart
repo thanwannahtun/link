@@ -42,7 +42,6 @@ class CityRepo {
         throw Exception("Cities fetch failed");
       }
       for (var city in response.data) {
-        print('city => ${city}');
         cities.add(City.fromJson(city));
       }
       await _storeCities(cities);

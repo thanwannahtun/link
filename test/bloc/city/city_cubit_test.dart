@@ -14,7 +14,7 @@ class _MockCityRepo extends Mock implements CityRepo {}
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  late _MockCityRepo mockCityRepo;
+  late CityRepo mockCityRepo;
   final mockCities = List<City>.generate(
       5, (index) => City(id: '$index', name: "city-$index"));
 
@@ -25,13 +25,13 @@ void main() {
   );
 
   tearDown(() {
-    /// Here clear the Global valut to prevent  **[global state leakage]**
+    /// Here clear the Global value to prevent  **[global state leakage]**
     App.cities.clear();
     reset(mockCityRepo); // Resets mock interactions
   });
 
   group(
-    "[ CityCubit ]",
+    CityCubit,
     () {
       test(
         "initial state is CityState with empty cities and initial status",
