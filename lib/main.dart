@@ -13,6 +13,7 @@ import 'package:link/core/styles/app_theme.dart';
 import 'package:link/domain/bloc_utils/app_bloc_observer.dart';
 import 'package:link/models/city.dart';
 import 'package:link/repositories/city_repo.dart';
+import 'package:link/repositories/post_route.dart';
 import 'package:link/ui/utils/route_generator.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widgets/connectivity/connectiviy_listener.dart';
@@ -90,9 +91,10 @@ class _LinkApplicationState extends State<LinkApplication>
         BlocProvider<BottomSelectCubit>(
           create: (BuildContext context) => BottomSelectCubit(),
         ),
-        BlocProvider<PostRouteCubit>(
-          create: (context) => PostRouteCubit(),
-        ),
+        // BlocProvider<PostRouteCubit>(
+        //   create: (context) =>
+        //       PostRouteCubit(postRouteRepo: context.read<PostRouteRepo>()),
+        // ),
         BlocProvider<AgencyCubit>(
           create: (context) => AgencyCubit(),
         ),

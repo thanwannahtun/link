@@ -306,7 +306,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _postRouteCubit = PostRouteCubit();
+    _postRouteCubit = context.read<PostRouteCubit>();
   }
 
   @override

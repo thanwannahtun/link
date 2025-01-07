@@ -51,7 +51,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
         searchRoutesQuery =
             ModalRoute.of(context)?.settings.arguments as SearchRoutesQuery;
 
-        _searchQueryCubit = PostRouteCubit()
+        _searchQueryCubit = context.read<PostRouteCubit>()
           ..getRoutesByCategory(
               query: APIQuery(
                   categoryType: CategoryType.searchedRoutes,

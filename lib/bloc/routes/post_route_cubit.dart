@@ -29,7 +29,8 @@ EventTransformer<E> _throttleDroppable<E>(Duration duration) {
 }
 
 class PostRouteCubit extends Cubit<PostRouteState> {
-  final _postApiRepo = PostRouteRepo();
+  // final _postApiRepo = PostRouteRepo();
+  final PostRouteRepo _postApiRepo;
 
   // ignore: prefer_final_fields
   int _page = 1;
@@ -42,9 +43,9 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     _page = value ?? 1;
   }
 
-  PostRouteCubit()
-      : super(const PostRouteState(
-            status: BlocStatus.initial, routes: [], routeModels: []));
+  PostRouteCubit({required PostRouteRepo postRouteRepo})
+      : _postApiRepo = postRouteRepo,
+        super(const PostRouteState());
 
   // ignore: unused_element
   _fetchRoutes({Object? body, Map<String, dynamic>? query}) async {

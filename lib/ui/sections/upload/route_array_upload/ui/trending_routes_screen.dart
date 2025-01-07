@@ -26,7 +26,7 @@ class _TrendingRoutesScreenState extends State<TrendingRoutesScreen> {
 
   @override
   void initState() {
-    _trendingRouteCubit = PostRouteCubit()
+    _trendingRouteCubit = context.read<PostRouteCubit>()
       ..getRoutesByCategory(
           query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 5));
     super.initState();

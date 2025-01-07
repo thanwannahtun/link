@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/hive/hive_util.dart';
 import '../../domain/api_utils/api_service.dart';
 import '../../repositories/city_repo.dart';
+import '../../repositories/post_route.dart';
 
 class MultiRepositoryProviderWrapper extends StatelessWidget {
   /// Wrapper for [multiple repository]
@@ -23,8 +24,12 @@ class MultiRepositoryProviderWrapper extends StatelessWidget {
 
     return MultiRepositoryProvider(providers: [
       RepositoryProvider<CityRepo>(
-          create: (context) =>
-              CityRepo(hiveUtil: hiveUtil, apiservice: apiService)),
+        create: (context) =>
+            CityRepo(hiveUtil: hiveUtil, apiservice: apiService),
+      ),
+      RepositoryProvider<PostRouteRepo>(
+        create: (context) => PostRouteRepo(apiService: apiService),
+      ),
     ], child: child);
   }
 }

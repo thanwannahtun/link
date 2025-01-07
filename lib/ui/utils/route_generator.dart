@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/post_create_util/post_create_util_cubit.dart';
+import 'package:link/bloc/routes/post_route_cubit.dart';
+import 'package:link/repositories/post_route.dart';
 import 'package:link/ui/screens/app.dart';
 import 'package:link/ui/screens/post/upload_new_post_page.dart';
 
@@ -15,6 +17,7 @@ import 'package:link/ui/sections/search/search_query_routes.dart';
 import 'package:link/ui/sections/upload/route_array_upload/ui/trending_routes_screen.dart';
 import 'package:link/ui/utils/route_list.dart';
 
+import '../../bloc/agency/agency_cubit.dart';
 import '../screens/profile/public_agency_profile_screen.dart';
 import '../screens/route_detail_page.dart';
 import '../sections/auth/create_password_auth_screen.dart';
@@ -53,14 +56,24 @@ class RouteGenerator {
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const HotAndTrendingScreen();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const HotAndTrendingScreen());
           },
         );
       case RouteLists.trendingRouteCards:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const TrendingRoutesCard();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const TrendingRoutesCard());
           },
         );
       case RouteLists.trendingRouteCardDetail:
@@ -74,21 +87,36 @@ class RouteGenerator {
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const SearchQueryRoutes();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const SearchQueryRoutes());
           },
         );
       case RouteLists.searchRoutesScreen:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const SearchRoutesScreen();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const SearchRoutesScreen());
           },
         );
       case RouteLists.heroHomeScreen:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const HeroHomeScreen();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const HeroHomeScreen());
           },
         );
 
@@ -96,7 +124,15 @@ class RouteGenerator {
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const PublicAgencyProfileScreen();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+              BlocProvider<AgencyCubit>(
+                create: (BuildContext context) => AgencyCubit(),
+              ),
+            ], child: const PublicAgencyProfileScreen());
           },
         );
       case RouteLists.settingScreen:
@@ -117,14 +153,24 @@ class RouteGenerator {
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const RouteDetailScreen();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const RouteDetailScreen());
           },
         );
       case RouteLists.getTrendingRoutes:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
-            return const TrendingRoutesScreen();
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const TrendingRoutesScreen());
           },
         );
       case RouteLists.uploadNewPost:
@@ -135,6 +181,10 @@ class RouteGenerator {
               providers: [
                 BlocProvider<PostCreateCubit>(
                   create: (BuildContext context) => PostCreateCubit(),
+                ),
+                BlocProvider<PostRouteCubit>(
+                  create: (BuildContext context) =>
+                      PostRouteCubit(postRouteRepo: context.read()),
                 ),
               ],
               child: const NewRouteUploadScreen(),

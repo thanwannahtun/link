@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
+import 'package:link/core/extensions/util_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
@@ -13,6 +15,7 @@ import 'package:link/domain/api_utils/api_query.dart';
 import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/app.dart';
+import 'package:link/repositories/post_route.dart';
 import 'package:link/ui/screens/route_detail_page.dart';
 import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
@@ -58,11 +61,13 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   void initState() {
     super.initState();
     print("initStateCalled  :HeroHomeScreen");
-    _trendingRouteBloc = PostRouteCubit()
+    _trendingRouteBloc = PostRouteCubit(
+        postRouteRepo: context.read<PostRouteRepo>())
       ..getRoutesByCategory(
           query:
               APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
-    _sponsoredRouteBloc = PostRouteCubit()
+    _sponsoredRouteBloc = PostRouteCubit(
+        postRouteRepo: context.read<PostRouteRepo>())
       ..getRoutesByCategory(
           query:
               APIQuery(categoryType: CategoryType.sponsoredRoutes, limit: 10));
@@ -361,40 +366,54 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
+  double _cardWidth(BuildContext context) {
+    double screenWidth = context.screenWidth;
+
+    return context.isTablet
+        ? screenWidth * 0.5
+        : context.isDesktop
+            ? screenWidth * 0.33
+            : screenWidth * 0.8;
+  }
+
   Widget _sponsoredCard(BuildContext context, RouteModel route) {
-    print("route json ::: sponsored ${route.toJson()}");
     return InkWell(
       onTap: () {
         context.pushNamed(RouteLists.routeDetailPage, arguments: route);
       },
-      child: Card.filled(
-        shape: const BeveledRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(1))),
-        margin: const EdgeInsets.symmetric(
-          horizontal: AppInsets.inset5,
-        ),
-        color: Theme.of(context).cardColor,
-        child: Container(
-          width: MediaQuery.sizeOf(context).width - 100,
-          decoration: BoxDecoration(
-            border: Border.all(
-              width: 0.01,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          return Card.filled(
+            shape: const BeveledRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(1))),
+            margin: const EdgeInsets.symmetric(
+              horizontal: AppInsets.inset5,
             ),
-          ),
-          // child: _routeCardTemp(route, context),
-          child: RouteCardVerticalWidget(
-            route: route,
-            onRoutePressed: (route) {
-              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-            },
-            onAgencyPressed: (route) {
-              context.pushNamed(
-                RouteLists.publicAgencyProfile,
-                arguments: route.agency,
-              );
-            },
-          ),
-        ),
+            color: Theme.of(context).cardColor,
+            child: Container(
+              width: _cardWidth(context),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 0.01,
+                ),
+              ),
+              // child: _routeCardTemp(route, context),
+              child: RouteCardVerticalWidget(
+                route: route,
+                onRoutePressed: (route) {
+                  context.pushNamed(RouteLists.routeDetailPage,
+                      arguments: route);
+                },
+                onAgencyPressed: (route) {
+                  context.pushNamed(
+                    RouteLists.publicAgencyProfile,
+                    arguments: route.agency,
+                  );
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -744,24 +763,29 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         child: Card.filled(
           elevation: 0.5,
           color: context.secondaryColor,
-          child: Column(
-            children: [
-              const Card.filled(
-                child: SizedBox(
-                  // height: double.infinity,
-                  width: 250,
-                ),
-              ),
-              TextButton(
-                  style: const ButtonStyle(
-                    padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
-                        vertical: AppInsets.inset5,
-                        horizontal: AppInsets.inset10)),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return SizedBox(
+              width: _cardWidth(context),
+              child: Column(
+                children: [
+                  const Card.filled(
+                    child: SizedBox(
+                      // height: double.infinity,
+                      width: 250,
+                    ),
                   ),
-                  onPressed: () {},
-                  child: const Text("Book Now")),
-            ],
-          ),
+                  TextButton(
+                      style: const ButtonStyle(
+                        padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
+                            vertical: AppInsets.inset5,
+                            horizontal: AppInsets.inset10)),
+                      ),
+                      onPressed: () {},
+                      child: const Text("Book Now")),
+                ],
+              ),
+            );
+          }),
         ),
       ),
       itemCount: 7,
@@ -1071,48 +1095,54 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   Widget _showEmptySponsoredCard(BuildContext context,
       {bool maxExtend = false}) {
     if (maxExtend) {
-      return Card.filled(
-        child: Container(
-          margin: const EdgeInsets.all(AppInsets.inset10),
-          padding: const EdgeInsets.all(AppInsets.inset10),
-          color: context.greyFilled,
-          width: MediaQuery.sizeOf(context).width - 100,
-          height: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Center(
-                child: Icon(
-                  Icons.content_paste_search,
-                  size: 50,
+      return LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+        return Card.filled(
+          child: Container(
+            margin: const EdgeInsets.all(AppInsets.inset10),
+            padding: const EdgeInsets.all(AppInsets.inset10),
+            color: context.greyFilled,
+            width: _cardWidth(context),
+            height: double.infinity,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.content_paste_search,
+                    size: 50,
+                  ),
+                ).expanded(),
+                TextButton.icon(
+                  onPressed: () {
+                    _viewAllSponosoredRoutes();
+                  },
+                  label: const Text("View All"),
+                  style: Theme.of(context).elevatedButtonTheme.style,
+                  iconAlignment: IconAlignment.end,
+                  icon: const Icon(Icons.double_arrow_rounded),
                 ),
-              ).expanded(),
-              TextButton.icon(
-                onPressed: () {
-                  _viewAllSponosoredRoutes();
-                },
-                label: const Text("View All"),
-                style: Theme.of(context).elevatedButtonTheme.style,
-                iconAlignment: IconAlignment.end,
-                icon: const Icon(Icons.double_arrow_rounded),
-              ),
-            ],
-          ),
-        ),
-      );
-    } else {
-      return Shimmer.fromColors(
-          baseColor: context.greyColor,
-          highlightColor: context.greyFilled,
-          child: Card.filled(
-            child: Container(
-              padding: const EdgeInsets.all(AppInsets.inset10),
-              color: context.greyFilled,
-              width: MediaQuery.sizeOf(context).width - 100,
-              height: double.infinity,
+              ],
             ),
-          ));
+          ),
+        );
+      });
+    } else {
+      return LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+        return Shimmer.fromColors(
+            baseColor: context.greyColor,
+            highlightColor: context.greyFilled,
+            child: Card.filled(
+              child: Container(
+                padding: const EdgeInsets.all(AppInsets.inset10),
+                color: context.greyFilled,
+                width: _cardWidth(context),
+                height: double.infinity,
+              ),
+            ));
+      });
     }
   }
 
