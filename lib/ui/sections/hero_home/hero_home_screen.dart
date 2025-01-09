@@ -66,20 +66,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     return CustomScaffoldBody(
       resizeToAvoidBottomInset: false,
       body: RefreshIndicator.adaptive(
-        onRefresh: () async {
-          _suggestedRouteBloc
-            ..clearRoutes()
-            ..updatePage();
-          _trendingRouteBloc
-            ..clearRoutes()
-            ..updatePage();
-          _trendingRouteBloc.getRoutesByCategory(
-              query: APIQuery(
-                  categoryType: CategoryType.trendingRoutes, limit: 10));
-          _suggestedRouteBloc.getRoutesByCategory(
-              query: APIQuery(
-                  categoryType: CategoryType.suggestedRoutes, limit: 10));
-        },
+        onRefresh: _onRefresh,
         child: _heroBody(context),
       ),
       title: Text(
@@ -91,6 +78,19 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       ),
       action: _actionWidgets(context),
     );
+  }
+
+  Future<void> _onRefresh() async {
+    _suggestedRouteBloc
+      ..clearRoutes()
+      ..updatePage();
+    _trendingRouteBloc
+      ..clearRoutes()
+      ..updatePage();
+    _trendingRouteBloc.getRoutesByCategory(
+        query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
+    _suggestedRouteBloc.getRoutesByCategory(
+        query: APIQuery(categoryType: CategoryType.suggestedRoutes, limit: 10));
   }
 
   Row _actionWidgets(BuildContext context) {
@@ -124,11 +124,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 children: [
                   _trendingSearchTitleField(context),
                   SizedBox(
-                      height: 200,
-                      child: BlocProvider.value(
-                        value: _trendingRouteBloc,
-                        child: const TrendingAndHotRoutesList(),
-                      )),
+                    height: 200,
+                    child: BlocProvider.value(
+                      value: _trendingRouteBloc,
+                      child: const TrendingAndHotRoutesList(),
+                    ),
+                  ),
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
@@ -151,13 +152,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         value: _suggestedRouteBloc,
                         child: const SuggestedRoutesList(),
                       )),
-                  _sponsoredViewAllAction(context),
+                  _suggestedViewAllAction(context),
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
+            const SizedBox(height: AppInsets.inset8),
           ],
         ),
       ),
@@ -187,10 +186,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
-  Widget _sponsoredViewAllAction(BuildContext context) {
+  Widget _suggestedViewAllAction(BuildContext context) {
     return InkWell(
       onTap: () {
-        _viewAllSponosoredRoutes();
+        _viewAllSuggestedRoutes();
       },
       child: Opacity(
         opacity: 0.5,
@@ -533,9 +532,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   // Set to hold selected hobbies
   Set<String> selectedHobbies = {};
 
-  void _viewAllSponosoredRoutes() {
+  void _viewAllSuggestedRoutes() {
     APIQuery query = APIQuery(
-        categoryType: CategoryType.sponsoredRoutes,
+        categoryType: CategoryType.suggestedRoutes,
         limit: 10,
         page: _suggestedRouteBloc.getPage);
     context.pushNamed(RouteLists.hotAndTrendingScreen,

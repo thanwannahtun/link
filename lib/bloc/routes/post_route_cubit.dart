@@ -44,6 +44,8 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     emit(state.copyWith(routeModels: []));
   }
 
+  /// update the [_page] value
+  /// if [value] is ommited , set [_page] to 1
   void updatePage({int? value}) {
     _page = value ?? 1;
   }

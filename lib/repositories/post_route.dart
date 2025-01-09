@@ -10,17 +10,12 @@ import 'package:link/ui/sections/upload/route_array_upload/route_model/route_mod
 import 'package:path/path.dart';
 
 class PostRouteRepo {
-  // static final PostRouteRepo _instance = PostRouteRepo._();
-
-  // PostRouteRepo._();
-
-  // factory PostRouteRepo() => _instance;
-
   final ApiService _apiService;
 
   PostRouteRepo({required ApiService apiService}) : _apiService = apiService;
 
-  FutureOr<List<Post>> fetchRoutes(
+  // ignore: unused_element
+  FutureOr<List<Post>> _fetchRoutes(
       {Object? body, Map<String, dynamic>? query}) async {
     Response response =
         await _apiService.postRequest('/routes', body, queryParameters: query);
@@ -129,8 +124,6 @@ class PostRouteRepo {
 
   FutureOr<List<Post>> getPostWithRoutes(
       {Object? body, Map<String, dynamic>? query}) async {
-    print("------------------ getPostWithRoutes()------------");
-
     Response response = await _apiService.getRequest("/routes",
         body: body, queryParameters: query);
     if (response.statusCode == 200) {
