@@ -7,6 +7,12 @@ import 'package:link/ui/utils/snackbar_util.dart';
 import '../../../main.dart';
 
 class ConnectiviyListener extends StatelessWidget {
+  /// Connectivity Listener [BlocListener] for listening [network] status
+  ///
+  /// Show [snackBar] if the network status is changed
+  ///
+  /// **[ConnectivityBloc]** **[ConnectivityStatus]**
+  ///
   const ConnectiviyListener({super.key, this.child});
 
   final Widget? child;

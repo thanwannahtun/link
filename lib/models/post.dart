@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:link/models/agency.dart';
 import 'package:link/models/city.dart';
 import 'package:link/models/comment.dart';
@@ -6,7 +7,7 @@ import 'package:link/models/midpoint.dart';
 import 'package:link/models/seat.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 
-class Post {
+class Post extends Equatable {
   Post({
     this.id,
     this.agency,
@@ -95,7 +96,8 @@ class Post {
       // seats: (json['seats'] as List<dynamic>?)
       //     ?.map((e) => Seat.fromJson(e as Map<String, dynamic>))
       //     .toList(),
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       // midpoints: (json['midpoints'] as List<dynamic>?)
       //     ?.map((e) => Midpoint.fromJson(e))
       //     .toList(),
@@ -162,4 +164,26 @@ class Post {
   String toString() {
     return 'PostRoute{_id=$id, agency=$agency, origin=$origin, destination=$destination, scheduleDate=$scheduleDate, pricePerTraveler=$pricePerTraveler, seats=$seats, createdAt=$createdAt, midpoints=$midpoints, commentCounts=$commentCounts, likeCounts=$likeCounts, shareCounts=$shareCounts, comments=$comments, likes=$likes, title=$title, description=$description ,images=$images}, routes=$routes';
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        agency,
+        origin,
+        destination,
+        scheduleDate,
+        pricePerTraveler,
+        seats,
+        createdAt,
+        midpoints,
+        commentCounts,
+        likeCounts,
+        shareCounts,
+        comments,
+        likes,
+        title,
+        description,
+        images,
+        routes,
+      ];
 }

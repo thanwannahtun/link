@@ -63,7 +63,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     getPostWithRouteQuery =
         APIQuery(categoryType: CategoryType.postWithRoutes, limit: 10);
 
-    _postRouteCubit = PostRouteCubit();
+    _postRouteCubit = context.read<PostRouteCubit>();
     context.read<CityCubit>().fetchCities();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);

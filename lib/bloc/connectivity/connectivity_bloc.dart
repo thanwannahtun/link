@@ -12,11 +12,15 @@ enum ConnectivityStatus {
 }
 
 class ConnectivityBloc extends Cubit<ConnectivityStatus> {
-  final Connectivity _connectivity = Connectivity();
+  // final Connectivity _connectivity = Connectivity();
+  late final Connectivity _connectivity;
+
   late final StreamSubscription<List<ConnectivityResult>>
       _connectivitySubscription;
 
-  ConnectivityBloc() : super(ConnectivityStatus.disconnected) {
+  ConnectivityBloc({required Connectivity connectivity})
+      : super(ConnectivityStatus.disconnected) {
+    _connectivity = connectivity;
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen((result) {
       emit(_mapConnectivityResultToStatus(result));

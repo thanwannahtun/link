@@ -5,6 +5,8 @@ import 'package:link/ui/screens/app_bottom_navigation_bar.dart';
 import 'package:link/ui/sections/profile/profile_screen.dart';
 import 'package:link/ui/sections/hot_and_trending/hot_and_trending_screen.dart';
 
+import '../../bloc/routes/post_route_cubit.dart';
+import '../../repositories/post_route.dart';
 import '../sections/hero_home/hero_home_screen.dart';
 import '../sections/user_activity/user_activity_screen.dart';
 
@@ -18,11 +20,18 @@ class App extends StatelessWidget {
         builder: (context, state) {
           return IndexedStack(
             index: toggleIndexedScreen(state),
-            children: const [
-              HeroHomeScreen(),
-              HotAndTrendingScreen(),
-              UserActivityScreen(),
-              ProfileScreen(),
+            children: [
+              BlocProvider(
+                  create: (BuildContext context) => PostRouteCubit(
+                      postRouteRepo: context.read<PostRouteRepo>()),
+                  child: const HeroHomeScreen()),
+              BlocProvider(
+                  create: (BuildContext context) => PostRouteCubit(
+                      postRouteRepo: context.read<PostRouteRepo>()),
+                  child: const HotAndTrendingScreen()),
+              // const HotAndTrendingScreen(),
+              const UserActivityScreen(),
+              const ProfileScreen(),
             ],
           );
         },
