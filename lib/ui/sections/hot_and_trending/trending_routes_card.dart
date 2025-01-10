@@ -29,7 +29,7 @@ class _TrendingRoutesCardState extends State<TrendingRoutesCard> {
   @override
   void initState() {
     super.initState();
-    _trendingRouteBloc = PostRouteCubit()
+    _trendingRouteBloc = context.read<PostRouteCubit>()
       ..getRoutesByCategory(
           query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 5));
   }

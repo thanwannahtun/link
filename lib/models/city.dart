@@ -1,9 +1,10 @@
+import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
 
 part 'city.g.dart';
 
 @HiveType(typeId: 0)
-class City extends HiveObject {
+class City extends HiveObject with EquatableMixin {
   @HiveField(0)
   final String? id;
 
@@ -51,6 +52,9 @@ class City extends HiveObject {
   String toString() {
     return 'City{_id=$id, name=$name, country_id=$stateId}';
   }
+
+  @override
+  List<Object?> get props => [id, name, stateId];
 }
 
 /*

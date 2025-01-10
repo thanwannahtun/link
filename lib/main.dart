@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -7,15 +8,16 @@ import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/bloc/token_validator/token_validator_cubit.dart';
 import 'package:link/bloc/authentication/authentication_cubit.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
-import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/core/styles/app_theme.dart';
 import 'package:link/domain/bloc_utils/app_bloc_observer.dart';
 import 'package:link/models/city.dart';
+import 'package:link/repositories/city_repo.dart';
 import 'package:link/ui/utils/route_generator.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widgets/connectivity/connectiviy_listener.dart';
 
 import 'bloc/agency/agency_cubit.dart';
+import 'ui/widgets/multi_repository_provider_wrapper.dart';
 
 /// Global scaffoldMessengerKey for showing global snackbars
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -30,14 +32,16 @@ void main() async {
 
   Bloc.observer = AppBlocObserver();
 
-  runApp(MultiBlocProvider(providers: [
-    BlocProvider<ThemeCubit>(
-      create: (context) => ThemeCubit()..getTheme(),
-    ),
-    BlocProvider<ConnectivityBloc>(
-      create: (context) => ConnectivityBloc(),
-    ),
-  ], child: const LinkApplication()));
+  runApp(MultiRepositoryProviderWrapper(
+    child: MultiBlocProvider(providers: [
+      BlocProvider<ThemeCubit>(
+        create: (context) => ThemeCubit()..getTheme(),
+      ),
+      BlocProvider<ConnectivityBloc>(
+        create: (context) => ConnectivityBloc(connectivity: Connectivity()),
+      ),
+    ], child: const LinkApplication()),
+  ));
 }
 
 class LinkApplication extends StatefulWidget {
@@ -72,7 +76,8 @@ class _LinkApplicationState extends State<LinkApplication>
     return MultiBlocProvider(
       providers: [
         BlocProvider<CityCubit>(
-          create: (context) => CityCubit()..fetchCities(),
+          create: (context) =>
+              CityCubit(cityRepo: context.read<CityRepo>())..fetchCities(),
         ),
         BlocProvider<TokenValidatorCubit>(
           create: (BuildContext context) =>
@@ -84,9 +89,10 @@ class _LinkApplicationState extends State<LinkApplication>
         BlocProvider<BottomSelectCubit>(
           create: (BuildContext context) => BottomSelectCubit(),
         ),
-        BlocProvider<PostRouteCubit>(
-          create: (context) => PostRouteCubit(),
-        ),
+        // BlocProvider<PostRouteCubit>(
+        //   create: (context) =>
+        //       PostRouteCubit(postRouteRepo: context.read<PostRouteRepo>()),
+        // ),
         BlocProvider<AgencyCubit>(
           create: (context) => AgencyCubit(),
         ),

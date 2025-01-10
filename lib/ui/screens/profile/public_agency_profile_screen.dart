@@ -76,8 +76,10 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
         context.read<AgencyCubit>().fetAgencies(agencyId: agency.id);
       }
       _initial = false;
-      _postTabCubit = PostRouteCubit();
-      _agencyListBloc = AgencyCubit();
+      // _postTabCubit = PostRouteCubit();
+      _postTabCubit = context.read<PostRouteCubit>();
+      // _agencyListBloc = AgencyCubit();
+      _agencyListBloc = context.read<AgencyCubit>();
     }
     super.didChangeDependencies();
   }
@@ -687,7 +689,8 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
   void initState() {
     print(">PostSectionBuilder> initState");
     super.initState();
-    _postRouteCubit = PostRouteCubit();
+    // _postRouteCubit = PostRouteCubit();
+    _postRouteCubit = context.read<PostRouteCubit>();
     // _selectedValue = categories.first;
     _postSectionFilterNotifier = ValueNotifier(categories.first);
   }

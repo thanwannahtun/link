@@ -12,9 +12,13 @@ import 'package:link/repositories/city_repo.dart';
 part 'city_state.dart';
 
 class CityCubit extends Cubit<CityState> {
-  final _cityRepo = CityRepo();
+  // final _cityRepo = CityRepo();
+  late final CityRepo _cityRepo;
 
-  CityCubit() : super(const CityState(cities: [], status: BlocStatus.initial));
+  CityCubit({required CityRepo cityRepo})
+      : super(const CityState(cities: [], status: BlocStatus.initial)) {
+    _cityRepo = cityRepo;
+  }
 
   FutureOr<void> fetchCities() async {
     emit(state.copyWith(status: BlocStatus.fetching));

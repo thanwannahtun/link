@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/ui/widget_extension.dart';
 
-import '../../core/styles/app_theme.dart';
 import '../../core/utils/app_insets.dart';
 import '../../core/utils/date_time_util.dart';
 import '../../core/widgets/cached_image.dart';

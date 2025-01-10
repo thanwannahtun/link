@@ -9,17 +9,16 @@ import 'package:link/models/post.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:path/path.dart';
 
-class PostRouteRepo extends ApiService {
-  static final PostRouteRepo _instance = PostRouteRepo._();
+class PostRouteRepo {
+  final ApiService _apiService;
 
-  PostRouteRepo._();
+  PostRouteRepo({required ApiService apiService}) : _apiService = apiService;
 
-  factory PostRouteRepo() => _instance;
-
-  FutureOr<List<Post>> fetchRoutes(
+  // ignore: unused_element
+  FutureOr<List<Post>> _fetchRoutes(
       {Object? body, Map<String, dynamic>? query}) async {
     Response response =
-        await postRequest('/routes', body, queryParameters: query);
+        await _apiService.postRequest('/routes', body, queryParameters: query);
     if (response.statusCode == 200) {
       // print("running on separate Isolate!");
       // final routes = await Isolate.run(
@@ -89,7 +88,8 @@ class PostRouteRepo extends ApiService {
         ..files
             .addAll(multipartFiles.map((f) => MapEntry("files", f)).toList());
 
-      Response response = await postRequest('/routes/uploads/', formData);
+      Response response =
+          await _apiService.postRequest('/routes/uploads/', formData);
       if (response.statusCode == 201) {
         return Post.fromJson(response.data['data'][0]);
       } else {
@@ -103,8 +103,8 @@ class PostRouteRepo extends ApiService {
 
   FutureOr<List<RouteModel>> fetchRoutesByCategory(
       {Object? body, Map<String, dynamic>? query}) async {
-    Response response =
-        await getRequest("/routes", body: body, queryParameters: query);
+    Response response = await _apiService.getRequest("/routes",
+        body: body, queryParameters: query);
     if (response.statusCode == 200) {
       // print("running on separate Isolate!");
       // final routes = await Isolate.run(
@@ -124,10 +124,8 @@ class PostRouteRepo extends ApiService {
 
   FutureOr<List<Post>> getPostWithRoutes(
       {Object? body, Map<String, dynamic>? query}) async {
-    print("------------------ getPostWithRoutes()------------");
-
-    Response response =
-        await getRequest("/routes", body: body, queryParameters: query);
+    Response response = await _apiService.getRequest("/routes",
+        body: body, queryParameters: query);
     if (response.statusCode == 200) {
       List<Post> routes = [];
       for (var route in response.data['data']) {

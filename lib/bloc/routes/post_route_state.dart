@@ -2,10 +2,10 @@ part of 'post_route_cubit.dart';
 
 class PostRouteState extends Equatable {
   const PostRouteState({
-    required this.status,
-    required this.routes,
+    this.status = BlocStatus.initial,
+    this.routes = const [],
     this.error,
-    required this.routeModels,
+    this.routeModels = const [],
   });
 
   final BlocStatus status;
