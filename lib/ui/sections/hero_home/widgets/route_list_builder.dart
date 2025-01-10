@@ -118,6 +118,7 @@ class _RoutesListBuilderState extends State<RoutesListBuilder> {
         (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 1);
 
     return ListView.builder(
+      key: const Key('route-list-key'),
       scrollDirection: Axis.horizontal,
       controller: _scrollController,
       itemBuilder: (context, index) {
@@ -129,6 +130,7 @@ class _RoutesListBuilderState extends State<RoutesListBuilder> {
           );
         } else {
           return LoadingBuilderWithPlaceHolderWidget(
+            key: const Key('loading-builder-with-placeholder-key'),
             onPlaceHolderPressed: () {
               _navigateToAllRoutes(context);
             },
@@ -178,6 +180,7 @@ class LoadingBuilderWithPlaceHolderWidget extends StatelessWidget {
       builder: (context, constraints) {
         if (reachMaxExtend) {
           return Card.filled(
+            key: const Key('route-list-builder-reach-max-extend-key'),
             child: Container(
               margin: const EdgeInsets.all(AppInsets.inset10),
               padding: const EdgeInsets.all(AppInsets.inset10),
@@ -208,6 +211,7 @@ class LoadingBuilderWithPlaceHolderWidget extends StatelessWidget {
         }
 
         return SizedBox(
+          key: const Key('route-list-builder-shimmer-key'),
           width: _cardWidth(context),
           child: Shimmer.fromColors(
             baseColor: context.greyColor,

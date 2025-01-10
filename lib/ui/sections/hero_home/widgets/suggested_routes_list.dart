@@ -10,6 +10,7 @@ class SuggestedRoutesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RoutesListBuilder(
+      key: const Key("suggested-route-list-key"),
       categoryType: CategoryType.suggestedRoutes,
       fetchRoutes: (query) async {
         context.read<PostRouteCubit>().getRoutesByCategory(query: query);

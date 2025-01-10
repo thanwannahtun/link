@@ -61,6 +61,12 @@ void main() {
               ),
             ).thenAnswer((_) async => post);
           },
+          verify: (_) {
+            verify(() => postRouteRepo.uploadNewPost(
+                  post: post,
+                  files: files,
+                )).called(1);
+          },
           act: (bloc) => bloc.uploadNewPost(post: post, files: files),
           expect: () => [
             const PostRouteState(
@@ -104,6 +110,26 @@ void main() {
         const RouteModel(id: '1', description: 'Route 1'),
         const RouteModel(id: '2', description: 'Route 2'),
       ];
+
+      test(
+        "ensures _page value is incremented on successful fetch",
+        () async {
+          /// Arrange
+          when(() => postRouteRepo.fetchRoutesByCategory(
+                query: any(named: "query"),
+                body: any(named: "body"),
+              )).thenAnswer((_) async => routes);
+
+          /// Act
+          await bloc.getRoutesByCategory(
+              query: APIQuery(
+                  categoryType: CategoryType.suggestedRoutes, limit: 5));
+
+          /// expect
+          expect(bloc.getPage, 2);
+        },
+      );
+
       blocTest<PostRouteCubit, PostRouteState>(
         'should emit [BlocStatus.fetching, BlocStatus.fetched] when routes are fetched successfully',
         build: () => bloc,

@@ -22,13 +22,13 @@ class SuggestedRouteCard implements RouteCardInterface {
               : screenWidth * 0.8;
     }
 
-    return InkWell(
-      onTap: () {
-        context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-      },
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return Card.filled(
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return GestureDetector(
+          onTap: () {
+            context.pushNamed(RouteLists.routeDetailPage, arguments: route);
+          },
+          child: Card.filled(
             shape: const BeveledRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(1))),
             margin: const EdgeInsets.symmetric(
@@ -57,9 +57,9 @@ class SuggestedRouteCard implements RouteCardInterface {
                 },
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

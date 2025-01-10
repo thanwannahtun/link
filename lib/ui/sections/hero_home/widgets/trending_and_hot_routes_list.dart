@@ -10,6 +10,7 @@ class TrendingAndHotRoutesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RoutesListBuilder(
+      key: const Key("trending-and-hot-route-list-key"),
       categoryType: CategoryType.trendingRoutes,
       fetchRoutes: (query) async {
         context.read<PostRouteCubit>().getRoutesByCategory(query: query);
