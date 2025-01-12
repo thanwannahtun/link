@@ -20,7 +20,11 @@ import 'package:shimmer/shimmer.dart';
 class RoutesListBuilder extends StatefulWidget {
   /// Generic Widget for showing Widgets based on the [Cubit] or [Bloc] states
   ///
-  /// [RouteFetchedFailWidget] , [RouteFetchingWidget] , [RouteFetchedEmptyWidget]
+  /// show [RouteFetchedFailWidget] if the status is fetchFailed and state.routeModels.isNotEmpty
+  ///
+  /// show [RouteFetchingWidget] if the status is fetching  ,
+  ///
+  /// show [RouteFetchedEmptyWidget] if the status is fetched and state.routeModels.isEmpty
   ///
   /// Optional [arguments] for [Data] passing down which will be accessed by [RouteCardWidget] as it's [argument]
   ///
@@ -94,7 +98,9 @@ class _RoutesListBuilderState extends State<RoutesListBuilder> {
   Widget build(BuildContext context) {
     return BlocBuilder<PostRouteCubit, PostRouteState>(
       builder: (context, state) {
-        if (state.status == BlocStatus.fetchFailed) {
+        if (state.status == BlocStatus.fetchFailed ||
+            state.status == BlocStatus.fetchFailed &&
+                state.routeModels.isNotEmpty) {
           return const RouteFetchedFailWidget();
         } else if (state.status == BlocStatus.fetching &&
             state.routeModels.isEmpty) {
