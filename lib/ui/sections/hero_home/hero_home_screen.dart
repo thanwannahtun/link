@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
@@ -11,7 +12,6 @@ import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/domain/api_utils/api_query.dart';
 import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/enums/category_type.dart';
-import 'package:link/models/app.dart';
 import 'package:link/models/city.dart';
 import 'package:link/repositories/post_route.dart';
 import 'package:link/ui/sections/hero_home/widgets/suggested_routes_list.dart';
@@ -81,6 +81,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   }
 
   Future<void> _onRefresh() async {
+    context.read<CityCubit>().fetchCities();
     _suggestedRouteBloc
       ..clearRoutes()
       ..updatePage();
@@ -376,148 +377,163 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   }
 
   Widget _originDestinationCard(BuildContext context) {
-    return Card.filled(
-      shape: const BeveledRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.zero)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _originDestinationFormKey,
-          child: Column(
-            children: [
-              /// FROM
-              Row(
-                mainAxisSize: MainAxisSize.min,
+    return BlocBuilder<CityCubit, CityState>(
+      builder: (BuildContext context, CityState state) {
+        return Card.filled(
+          shape: const BeveledRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.zero)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _originDestinationFormKey,
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: _originNotifier,
-                      builder:
-                          (BuildContext context, City? value, Widget? child) {
-                        return CityAutocomplete(
-                          cities: App.cities,
-                          controller: _originAutoCompleteController,
-                          onSelected: (city) {
-                            _originNotifier.value = city;
-                          },
-                          // border: InputBorder.none,
-                          labelText: "Origin",
-                          hintText: "From",
-                          validator: (value) => (value!.isEmpty ||
-                                  !_originAutoCompleteController.isValid)
-                              ? ''
-                              : null,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(
-                color: Colors.grey,
-                thickness: 0.1,
-              ),
-
-              /// REMOVE SWAP LOCATIONS IN HOME SCREEN
-              /*
-              /// DIVIDER
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.keyboard_double_arrow_down,
-                      color: Colors.grey, size: AppInsets.inset30),
-                  const Divider(color: Colors.grey, height: 1, thickness: 0.1)
-                      .expanded(),
-                  InkWell(
-                    onTap: () {
-                      City? origin = _originNotifier.value;
-                      City? destination = _destinationNotifier.value;
-                      _originNotifier.value = destination;
-                      _destinationNotifier.value = origin;
-                      _destinationAutoCompleteController.text =
-                          _originAutoCompleteController.text;
-                      _originAutoCompleteController.text =
-                          _destinationAutoCompleteController.text;
-                    },
-                    child: const Icon(
-                      Icons.swap_vert_circle,
-                      size: AppInsets.inset30,
-                    ),
-                  )
-                ],
-              ),
-          */
-
-              /// TO
-              Row(
-                children: [
-                  Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: _destinationNotifier,
-                      builder:
-                          (BuildContext context, City? value, Widget? child) {
-                        return CityAutocomplete(
-                          cities: App.cities,
-                          controller: _destinationAutoCompleteController,
-                          onSelected: (city) {
-                            _destinationNotifier.value = city;
-                          },
-                          // border: InputBorder.none,
-                          labelText: "Destination",
-                          hintText: "To",
-                          validator: (value) => (value!.isEmpty ||
-                                  !_destinationAutoCompleteController.isValid)
-                              ? ''
-                              : null,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              /// FILTER
-
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: selections.map((value) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: StatefulBuilder(
-                          builder: (BuildContext context,
-                              void Function(void Function()) rebuild) {
-                            return FilterChip(
-                              color:
-                                  WidgetStatePropertyAll(context.primaryColor),
-                              label: Text(
-                                value,
-                                style: TextStyle(color: context.secondaryColor),
-                              ),
-                              selected: selectedHobbies.contains(value),
-                              onSelected: (bool isSelected) {
-                                rebuild(() {
-                                  if (isSelected) {
-                                    selectedHobbies.add(value);
-                                  } else {
-                                    selectedHobbies.remove(value);
-                                  }
-                                });
+                  /// FROM
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: ValueListenableBuilder(
+                          valueListenable: _originNotifier,
+                          builder: (BuildContext context, City? value,
+                              Widget? child) {
+                            return CityAutocomplete(
+                              cities: state.cities,
+                              controller: _originAutoCompleteController,
+                              onSelected: (city) {
+                                _originNotifier.value = city;
                               },
+                              border: InputBorder.none,
+                              // labelText: "Origin",
+                              fillColor: Theme.of(context)
+                                  .primaryColor
+                                  .withOpacity(0.5),
+                              filled: true,
+                              hintText: "From Origin",
+                              validator: (value) => (value!.isEmpty ||
+                                      !_originAutoCompleteController.isValid)
+                                  ? ''
+                                  : null,
                             );
                           },
                         ),
-                      );
-                    }).toList(),
+                      ),
+                    ],
                   ),
+                  const Divider(
+                    color: Colors.grey,
+                    thickness: 0.1,
+                  ),
+
+                  /// REMOVE SWAP LOCATIONS IN HOME SCREEN
+                  /*
+                /// DIVIDER
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.keyboard_double_arrow_down,
+                        color: Colors.grey, size: AppInsets.inset30),
+                    const Divider(color: Colors.grey, height: 1, thickness: 0.1)
+                        .expanded(),
+                    InkWell(
+                      onTap: () {
+                        City? origin = _originNotifier.value;
+                        City? destination = _destinationNotifier.value;
+                        _originNotifier.value = destination;
+                        _destinationNotifier.value = origin;
+                        _destinationAutoCompleteController.text =
+                            _originAutoCompleteController.text;
+                        _originAutoCompleteController.text =
+                            _destinationAutoCompleteController.text;
+                      },
+                      child: const Icon(
+                        Icons.swap_vert_circle,
+                        size: AppInsets.inset30,
+                      ),
+                    )
+                  ],
                 ),
+            */
+
+                  /// TO
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ValueListenableBuilder(
+                          valueListenable: _destinationNotifier,
+                          builder: (BuildContext context, City? value,
+                              Widget? child) {
+                            return CityAutocomplete(
+                              cities: state.cities,
+                              controller: _destinationAutoCompleteController,
+                              onSelected: (city) {
+                                _destinationNotifier.value = city;
+                              },
+                              fillColor: Theme.of(context)
+                                  .primaryColor
+                                  .withOpacity(0.5),
+                              filled: true,
+                              border: InputBorder.none,
+                              // labelText: "Destination",
+                              hintText: "To Destination",
+                              validator: (value) => (value!.isEmpty ||
+                                      !_destinationAutoCompleteController
+                                          .isValid)
+                                  ? ''
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  /// FILTER
+
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: selections.map((value) {
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: StatefulBuilder(
+                              builder: (BuildContext context,
+                                  void Function(void Function()) rebuild) {
+                                return FilterChip(
+                                  color: WidgetStatePropertyAll(
+                                      context.primaryColor),
+                                  label: Text(
+                                    value,
+                                    style: TextStyle(
+                                        color: context.secondaryColor),
+                                  ),
+                                  selected: selectedHobbies.contains(value),
+                                  onSelected: (bool isSelected) {
+                                    rebuild(() {
+                                      if (isSelected) {
+                                        selectedHobbies.add(value);
+                                      } else {
+                                        selectedHobbies.remove(value);
+                                      }
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
