@@ -146,7 +146,7 @@ class RouteTimelineWidget extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            RouteHeader(route: RouteModel()),
+            const RouteHeader(route: RouteModel()),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -155,12 +155,12 @@ class RouteTimelineWidget extends StatelessWidget {
                 Text("Origin: $origin"),
                 for (var i = 0; i < midpoints.length; i++)
                   ListTile(
-                    leading: Icon(Icons.location_pin),
+                    leading: const Icon(Icons.location_pin),
                     title: Text(midpoints[i].city?.name ?? "Unknown City"),
                     subtitle: Text("Stop ${i + 1}"),
                   ),
                 Text("Destination: $destination"),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                     "Scheduled Date: ${scheduleDate.toIso8601String().substring(0, 10)}"),
                 Text("Price: \$${price.toStringAsFixed(2)}"),
@@ -224,8 +224,10 @@ class RouteInfoBodyWithImage extends StatelessWidget {
                               const WidgetStatePropertyAll(Size(30, 20)),
                           shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5))),
-                          foregroundColor: WidgetStatePropertyAll(Colors.white),
-                          backgroundColor: WidgetStatePropertyAll(Colors.blue)),
+                          foregroundColor:
+                              const WidgetStatePropertyAll(Colors.white),
+                          backgroundColor:
+                              const WidgetStatePropertyAll(Colors.blue)),
                       onPressed: () => onBookPressed?.call(route),
                       iconAlignment: IconAlignment.end,
                       label: const Text("Book now")),
@@ -264,9 +266,9 @@ class RouteDetailPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("From: ${route.origin?.name ?? "Origin"}",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: Theme.of(context).textTheme.titleMedium),
                       Text("To: ${route.destination?.name ?? "Destination"}",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: Theme.of(context).textTheme.titleMedium),
                       Text(
                           "Date: ${DateTimeUtil.formatDateTime(route.scheduleDate)}"),
                       Text(
@@ -453,6 +455,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     );
   }
 
+// ignore: unused_element,
   Future<Size> _getImageSize(String imageUrl) async {
     final Completer<Size> completer = Completer();
     final Image image = Image.network(imageUrl);

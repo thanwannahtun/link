@@ -1,4 +1,5 @@
 // ignore_for_file: avoid_print
+// ignore_for_file: unused_element, unused_field
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -201,7 +202,6 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     );
   }
 
-  // ignore: unused_element
   AppBar _appBar() {
     return AppBar(
       title: Text(_agency?.name ?? 'Agency Profile'),
@@ -255,7 +255,6 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     );
   }
 
-  // ignore: unused_element
   SliverList _sliverListBuilder() {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
@@ -308,23 +307,6 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
             // Image.network('https://example.com/header-background.jpg', fit: BoxFit.cover),
           ],
         ),
-      ),
-    );
-  }
-
-  SliverAppBar _sliverAppBar_normal() {
-    return const SliverAppBar(
-      pinned: true, // Sticks the TabBar at the top when scrolling
-      floating: false,
-      automaticallyImplyLeading: false, // Removes back button
-      bottom: TabBar(
-        isScrollable: true,
-        tabs: [
-          Tab(text: "About"),
-          Tab(text: "Services Offered"),
-          Tab(text: "Ratings & Reviews"),
-          Tab(text: "Gallery"),
-        ],
       ),
     );
   }
@@ -788,15 +770,15 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
 }
 
 class CommentHeaderFilterTab<T> extends StatefulWidget {
-  CommentHeaderFilterTab(
+  const CommentHeaderFilterTab(
       {super.key,
       required this.valueLists,
       required this.valueAsString,
       required this.onValueChanged});
 
-  List<T> valueLists;
-  String Function(T) valueAsString;
-  void Function(T) onValueChanged;
+  final List<T> valueLists;
+  final String Function(T) valueAsString;
+  final void Function(T) onValueChanged;
 
   @override
   State<CommentHeaderFilterTab<T>> createState() =>
@@ -979,7 +961,6 @@ class CustomSliverPersistentHeaderDelegate
 }
 
 // Sticky Header Delegate for Dropdown
-// ignore: unused_element
 class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 

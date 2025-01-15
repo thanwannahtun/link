@@ -92,6 +92,7 @@ class DateTimeUtil {
 
 extension on TimeOfDay {
   //  Convert TimeOfDay to string (HH:mm)
+  /// ignore: unused_element
   String get toStr {
     return "$hour:$minute";
   }

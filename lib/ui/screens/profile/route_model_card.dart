@@ -130,7 +130,7 @@ class RouteHeader extends StatelessWidget {
         ),
         IconButton(
             onPressed: () {
-              print("clicked more button!");
+              debugPrint("clicked more button!");
             },
             icon: const Icon(Icons.more_vert_rounded)),
       ],
@@ -215,9 +215,9 @@ class MidpointItem extends StatelessWidget {
   final RouteMidpoint midpoint;
 
   const MidpointItem({
-    Key? key,
+    super.key,
     required this.midpoint,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +262,7 @@ class RouteFooter extends StatelessWidget {
                 LikeIcon(
                   toggleLike: (isLiked) {},
                 ),
-                Text(
+                const Text(
                   "1k +",
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 )
@@ -275,7 +275,7 @@ class RouteFooter extends StatelessWidget {
                       color: context.successColor, size: 20),
                   onPressed: () {},
                 ),
-                Text(
+                const Text(
                   "25 reviews",
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 )

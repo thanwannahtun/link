@@ -44,8 +44,8 @@ void main() {
     group(
       "uploadNewPost",
       () {
-        final post = Post(description: "description", title: "title");
-        final routePost = Post(description: "description", title: "title");
+        const post = Post(description: "description", title: "title");
+        const routePost = Post(description: "description", title: "title");
         final files = <File>[_FakeFile(), _FakeFile()];
 
         blocTest<PostRouteCubit, PostRouteState>(
@@ -71,9 +71,9 @@ void main() {
           expect: () => [
             const PostRouteState(
                 status: BlocStatus.uploading, routeModels: [], routes: []),
-            PostRouteState(
+            const PostRouteState(
                 status: BlocStatus.uploaded,
-                routeModels: const [],
+                routeModels: [],
                 routes: [routePost]),
           ],
         );
@@ -222,8 +222,8 @@ void main() {
         build: () => bloc,
         setUp: () {
           final posts = [
-            Post(id: '1', title: 'Post 1'),
-            Post(id: '2', title: 'Post 2'),
+            const Post(id: '1', title: 'Post 1'),
+            const Post(id: '2', title: 'Post 2'),
           ];
           when(() => postRouteRepo.getPostWithRoutes(
                 query: any(named: 'query'),
@@ -235,7 +235,7 @@ void main() {
         ),
         expect: () => [
           const PostRouteState(status: BlocStatus.fetching),
-          PostRouteState(
+          const PostRouteState(
             status: BlocStatus.fetched,
             routes: [
               Post(id: '1', title: 'Post 1'),

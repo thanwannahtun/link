@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 
-// import 'package:link/ui/screens/post/upload_new_post_page.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
@@ -20,7 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    print("initStateCalled  :ProfileScreen");
+    debugPrint("initStateCalled  :ProfileScreen");
   }
 
   @override
@@ -65,7 +64,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   .pushNamed(
                                     RouteLists.uploadNewPost,
                                   )
-                                  .then((value) => context.pop())),
+                                  .then((value) =>
+                                      context.mounted ? context.pop() : null)),
                         ],
                       ),
                     );
@@ -91,7 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _body(BuildContext context) {
-    // return _examplePages(context);
     return const SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.all(8.0),
@@ -103,6 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// ignore: unused_element
   SingleChildScrollView _examplePages(BuildContext context) {
     return SingleChildScrollView(
       child: Column(

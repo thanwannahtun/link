@@ -114,7 +114,7 @@ class _TrendingRoutesScreenState extends State<TrendingRoutesScreen> {
                         onPhonePressed: (route) {},
                         onRemove: (route) {},
                         onRoutePressed: (route) {
-                          print(
+                          debugPrint(
                               "--> go route Detail Screen ${route.origin?.name} ");
                         },
                       ),
@@ -193,8 +193,7 @@ class RouteCard extends StatelessWidget {
   final RouteModel route;
   final RouteCardController controller;
 
-  const RouteCard({Key? key, required this.route, required this.controller})
-      : super(key: key);
+  const RouteCard({super.key, required this.route, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +231,7 @@ class RouteCard extends StatelessWidget {
                   icon: const Icon(Icons.delete),
                   onPressed: () {
                     controller.removeItem(() {
-                      print("Route removed: ${route.id}");
+                      debugPrint("Route removed: ${route.id}");
                     });
                   },
                 ),

@@ -36,7 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("rebuild SignUpScreen");
+    debugPrint("rebuild SignUpScreen");
     return SafeArea(
         child: Scaffold(
       appBar: _buildAppBar(context),
@@ -82,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           .state
           .user
           ?.copyWith(email: _emailController.text);
-      print("user argument = ${user?.toJson()}");
+      debugPrint("user argument = ${user?.toJson()}");
       context.pushNamed(RouteLists.emailCodeEnterAuthScreen, arguments: user);
       final cubit = context.read<AuthenticationCubit>();
       Future.delayed(const Duration(microseconds: 100)).then(

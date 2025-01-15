@@ -108,10 +108,10 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
             return _buildShimmer(context);
           }
           final newRoutes = state.routeModels;
-          print("=====> _posts before fetched ${_routes.length}");
-          print("=====> newRoutes ${newRoutes.length}");
+          debugPrint("=====> _posts before fetched ${_routes.length}");
+          debugPrint("=====> newRoutes ${newRoutes.length}");
           _routes.addAll(newRoutes);
-          print("=====> _routes afeter fetched ${_routes.length}");
+          debugPrint("=====> _routes afeter fetched ${_routes.length}");
           return _postViewBuilder();
         },
         listener: (BuildContext context, Object? state) {},
@@ -182,7 +182,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
             itemCount: 10,
             itemBuilder: (context, index) {
               return PostRouteCard(
-                post: Post(),
+                post: const Post(),
                 loading: true,
               );
             },
