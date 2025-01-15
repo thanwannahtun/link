@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:link/core/styles/app_style.dart';
 import 'package:link/core/theme_extension.dart';
 import '../../../models/city.dart';
 
@@ -33,6 +32,8 @@ class CityAutocomplete extends StatefulWidget {
   final String? initialValue; // City name as String
   final String? labelText;
   final String? hintText;
+  final bool? filled;
+  final Color? fillColor;
   final InputBorder? border;
   final FontWeight? fontWeight;
   final String? Function(String?)? validator;
@@ -47,6 +48,8 @@ class CityAutocomplete extends StatefulWidget {
     this.hintText,
     this.border = const OutlineInputBorder(),
     this.fontWeight = FontWeight.bold,
+    this.filled = false,
+    this.fillColor,
     this.validator,
   });
 
@@ -112,6 +115,8 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
                   focusNode: focusNode,
                   onTapOutside: (event) => focusNode.unfocus(),
                   decoration: InputDecoration(
+                      filled: widget.filled,
+                      fillColor: widget.fillColor,
                       hintText: widget.hintText,
                       hintStyle:
                           Theme.of(context).textTheme.bodyMedium?.copyWith(

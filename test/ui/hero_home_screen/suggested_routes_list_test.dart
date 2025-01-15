@@ -83,9 +83,31 @@ void main() {
         expect(find.byType(RouteFetchedFailWidget), findsOneWidget);
       },
     );
+    testWidgets(
+      "Render $RouteFetchedFailWidget when transition from ${BlocStatus.fetched} with data to ${BlocStatus.fetchFailed} ",
+      (WidgetTester tester) async {
+        final initialState =
+            PostRouteState(routeModels: routes, status: BlocStatus.fetched);
+
+        whenListen(
+            bloc,
+            Stream<PostRouteState>.fromIterable([
+              initialState,
+              initialState.copyWith(status: BlocStatus.fetchFailed),
+            ]),
+            initialState: initialState);
+
+        await tester.pumpSuggestedRoutesList(bloc);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(RouteFetchingWidget), findsNothing);
+        expect(find.byType(RouteFetchedEmptyWidget), findsNothing);
+        expect(find.byType(RouteFetchedFailWidget), findsOneWidget);
+      },
+    );
 
     ///
-    /// ⚠️ This test is not completed !
+    /// ⚠️ This test is not completed yet!
 
     testWidgets(
       "Render $RouteCardWidget when status is ${BlocStatus.fetched}",
