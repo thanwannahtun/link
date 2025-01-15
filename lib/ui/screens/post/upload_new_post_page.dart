@@ -69,7 +69,6 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   @override
   void didChangeDependencies() {
-    print("DEPENDENCY CHANDED :: REBUILD!");
     super.didChangeDependencies();
   }
 
@@ -140,7 +139,6 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("rebuild");
     double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
 
@@ -1740,7 +1738,6 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   }
 */
   void _validateMidpoint() {
-    print("_validateMIdpint");
     if (_selectedMidpointCity == null ||
         _seletedDepartureDate == null ||
         _seletedDepartureDate == null) {

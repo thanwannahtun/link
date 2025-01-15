@@ -1,9 +1,9 @@
-/// categoryType?:
-/// | "sponsored" |
-/// "suggested" |
-/// "filter_searched_routes" |
-/// "trending_routes" |
-/// "post_with_routes";
+// categoryType?:
+// | "sponsored" |
+// "suggested" |
+// "filter_searched_routes" |
+// "trending_routes" |
+// "post_with_routes";
 
 enum CategoryType {
   trendingRoutes("trending_routes", "Trending"),

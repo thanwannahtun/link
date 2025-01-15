@@ -157,7 +157,7 @@ class _RoutesListBuilderState extends State<RoutesListBuilder> {
       page: context.read<PostRouteCubit>().getPage,
     );
     context.pushNamed(
-      RouteLists.hotAndTrendingScreen,
+      RouteLists.showRoutesByCategoryScreen,
       arguments: {"query": query},
     );
   }

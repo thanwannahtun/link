@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:link/models/app.dart';
 
 import '../../../../../models/agency.dart';
@@ -36,7 +37,7 @@ class RouteModel extends Equatable {
       this.isSponsored});
 
   factory RouteModel.fromJson(Map<String, dynamic> json) {
-    print("json- ${json} ----- json");
+    debugPrint("json- $json ----- json");
     return RouteModel(
       id: json['_id'] as String?,
       agency: json['agency'] == null

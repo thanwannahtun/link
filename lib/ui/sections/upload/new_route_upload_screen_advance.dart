@@ -6,7 +6,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:link/bloc/theme/theme_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
@@ -77,12 +76,12 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    print("dependencies changed");
+    debugPrint("dependencies changed");
   }
 
   @override
   Widget build(BuildContext context) {
-    print("rebuild");
+    debugPrint("rebuild");
 
     return CustomScaffoldBody(
         body: Padding(
@@ -1140,7 +1139,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     setState(() {
-                      print("index ::: ${index}");
+                      debugPrint("index ::: $index");
                       midpoints.removeAt(index);
                     });
                   },

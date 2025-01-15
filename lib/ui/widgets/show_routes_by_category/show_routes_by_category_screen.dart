@@ -13,8 +13,12 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/widgets/cached_image.dart';
+import 'package:link/domain/api_utils/api_query.dart';
+import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
+import 'package:link/domain/enums/category_type.dart';
 import 'package:link/models/app.dart';
+import 'package:link/models/city.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/screens/profile/route_model_card.dart';
@@ -22,23 +26,19 @@ import 'package:link/ui/screens/route_detail_page.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
-import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../domain/api_utils/api_query.dart';
-import '../../../domain/api_utils/search_routes_query.dart';
-import '../../../domain/enums/category_type.dart';
-import '../../../models/city.dart';
-
-class HotAndTrendingScreen extends StatefulWidget {
-  const HotAndTrendingScreen({super.key});
+class ShowRoutesByCategoryScreen extends StatefulWidget {
+  const ShowRoutesByCategoryScreen({super.key});
 
   @override
-  State<HotAndTrendingScreen> createState() => _HotAndTrendingScreenState();
+  State<ShowRoutesByCategoryScreen> createState() =>
+      _ShowRoutesByCategoryScreenState();
 }
 
-class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
+class _ShowRoutesByCategoryScreenState
+    extends State<ShowRoutesByCategoryScreen> {
   List<Post> _trendingPosts = [];
   List<RouteModel> _trendingRoutes = [];
   late PostRouteCubit _postRouteCubit;
@@ -440,179 +440,6 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
     );
   }
 
-  ListView _buildSuggestionChips() {
-    return ListView.separated(
-      scrollDirection: Axis.horizontal,
-      itemBuilder: (context, index) {
-        final city = App.cities[index];
-        // Check if there is a next city
-        final nextCityName = (index + 1 < App.cities.length)
-            ? App.cities[index + 1].name
-            : ""; // Prevent out-of-bounds access
-        return Card.filled(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-                    (nextCityName?.isNotEmpty ?? false)
-                        ? "${city.name} - $nextCityName"
-                        : city.name ?? "",
-                    style: const TextStyle(fontWeight: FontWeight.bold))
-                .padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppInsets.inset10))
-                .center());
-      },
-      separatorBuilder: (context, index) => const SizedBox(
-        width: 5,
-      ),
-      itemCount: App.cities.length,
-    );
-  }
-
-  ListView _postViewBuilder() {
-    return ListView.separated(
-      controller: _scrollController,
-      itemBuilder: (context, index) {
-        // Insert widget every 15 items or based on other conditions
-        final shouldShowHorizontalWidget =
-            (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
-
-        if (shouldShowHorizontalWidget) {
-          return HorizontalPostWithRoutesWidget(
-            posts: _trendingPosts,
-            onFetchAllPressed: () {
-              _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
-            },
-          );
-        }
-
-        // Calculate the actual index considering additional horizontal widgets
-        final adjustedIndex = index - (index ~/ 15);
-
-        if (adjustedIndex >= 0 && adjustedIndex < _trendingRoutes.length) {
-          RouteModel route = _trendingRoutes[adjustedIndex];
-          return RouteInfoCardWidget(
-            route: route,
-            onRoutePressed: (route) {
-              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-            },
-            onAgencyPressed: (route) {
-              context.pushNamed(RouteLists.publicAgencyProfile,
-                  arguments: route.agency);
-            },
-          );
-        }
-
-        // Fallback for invalid index
-        return Shimmer.fromColors(
-          baseColor: context.greyColor,
-          highlightColor: context.greyFilled,
-          child: const SizedBox(
-            width: double.infinity,
-            height: 250,
-            child: Card(),
-          ),
-        );
-      },
-      itemCount: _trendingRoutes.isNotEmpty
-          ? _trendingRoutes.length +
-              (_trendingRoutes.length ~/ 15) +
-              (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0)
-          : 0,
-      separatorBuilder: (BuildContext context, int index) => const SizedBox(
-        height: AppInsets.inset8,
-      ),
-    );
-  }
-
-/*
-  ListView _postViewBuilder() {
-    return ListView.separated(
-      controller: _scrollController,
-      itemBuilder: (context, index) {
-// Determine if a horizontal widget should be shown
-        final shouldShowHorizontalWidget =
-            (index % 15 == 0) && index != 0 && _trendingPosts.isNotEmpty;
-
-        if (shouldShowHorizontalWidget) {
-          return HorizontalPostWithRoutesWidget(
-            posts: _trendingPosts,
-            onFetchAllPressed: () {
-              _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
-            },
-          );
-        }
-
-        // Calculate the actual index considering additional horizontal widgets
-        final adjustedIndex = index - (index ~/ 15);
-
-        if (adjustedIndex < _trendingRoutes.length) {
-          RouteModel route = _trendingRoutes[adjustedIndex];
-          return RouteInfoCardWidget(
-            route: route,
-            onRoutePressed: (route) {
-              context.pushNamed(RouteLists.routeDetailPage, arguments: route);
-            },
-            onAgencyPressed: (route) {
-              context.pushNamed(RouteLists.publicAgencyProfile,
-                  arguments: route.agency);
-            },
-          );
-        }
-
-        // Placeholder for loading or other widgets
-        return Container(
-            color: Colors.amber, width: double.infinity, height: 200);
-      },
-      itemCount: _trendingRoutes.length + (_trendingRoutes.length ~/ 15),
-      separatorBuilder: (BuildContext context, int index) => const SizedBox(
-        height: AppInsets.inset8,
-      ),
-    );
-  }
-*/
-  /*
-  ListView _postViewBuilders() {
-    return ListView.separated(
-      controller: _scrollController,
-      itemBuilder: (context, index) {
-        // Decide where to show HorizontalPostWithRoutesWidget
-        const insertAtIndex = 2; // Display after the 2nd item
-
-        // Show HorizontalPostWithRoutesWidget if index matches insertAtIndex and _trendingPosts has data
-        if (index == insertAtIndex && _trendingPosts.isNotEmpty) {
-          return HorizontalPostWithRoutesWidget(posts: _trendingPosts);
-        }
-
-        // Adjust index to skip the widget position if it was inserted before
-        final actualIndex = index > insertAtIndex ? index - 1 : index;
-
-        // Display RouteModelCard for trending routes based on adjusted index
-        if (actualIndex < _trendingRoutes.length) {
-          RouteModel route = _trendingRoutes[actualIndex];
-          return RouteModelCard(route: route);
-        }
-
-        // Placeholder for loading or other widgets
-        return Container(
-            color: Colors.amber, width: double.infinity, height: 200);
-      },
-      itemCount: _trendingRoutes.length +
-          (_trendingPosts.isNotEmpty
-              ? 1
-              : 0) + // Add 1 if _trendingPosts is not empty
-          (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0),
-      separatorBuilder: (BuildContext context, int index) => const SizedBox(
-        height: AppInsets.inset8,
-      ),
-      // itemCount: _trendingRoutes.length +
-      //     (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0),
-      // separatorBuilder: (BuildContext context, int index) => const SizedBox(
-      //   height: AppInsets.inset8,
-      // ),
-    );
-  }
-
-  */
   Future<Object?> goPageDetail(Post post) =>
       context.pushNamed(RouteLists.trendingRouteCardDetail, arguments: post);
 
@@ -655,7 +482,7 @@ class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: PostRouteCard(
-                    post: Post(),
+                    post: const Post(),
                     loading: true,
                   ),
                 ),

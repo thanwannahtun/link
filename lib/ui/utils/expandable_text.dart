@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:link/core/styles/app_style.dart';
 import 'package:link/core/theme_extension.dart';
 
 class ExpandableText extends StatefulWidget {

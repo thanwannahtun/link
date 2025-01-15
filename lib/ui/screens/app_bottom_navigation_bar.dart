@@ -6,6 +6,7 @@ import 'package:link/core/utils/app_insets.dart';
 // ignore: must_be_immutable
 class AppBottomNavigationBar extends StatefulWidget {
   const AppBottomNavigationBar({super.key});
+
   // ValueChanged<NavigationStates?>? onDoubleTap;
   @override
   State<AppBottomNavigationBar> createState() => _AppBottomNavigationBarState();
@@ -43,7 +44,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onDoubleTap: () {
-        print(
+        debugPrint(
             "[NavigationStates] onDoubleTap ::: currentIndex => ${NavigationStates.values[_currentIndex]} ");
         context
             .read<BottomSelectCubit>()
