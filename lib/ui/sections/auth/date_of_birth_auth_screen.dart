@@ -47,11 +47,11 @@ class _DateOfBirthAuthScreenState extends State<DateOfBirthAuthScreen> {
       if (ModalRoute.of(context)?.settings.arguments != null) {
         User? user = ModalRoute.of(context)?.settings.arguments as User?;
         _email = user?.email;
-        print("aguments user = ${user?.toJson()}");
+        debugPrint("aguments user = ${user?.toJson()}");
       } else {
         _email = context.read<AuthenticationCubit>().state.user?.email;
       }
-      print(
+      debugPrint(
           "state.user = ${context.read<AuthenticationCubit>().state.user?.toJson()}");
       _initial = false;
     }
@@ -106,7 +106,7 @@ class _DateOfBirthAuthScreenState extends State<DateOfBirthAuthScreen> {
           context.pushNamed(RouteLists.app);
 
           Future.delayed(const Duration(seconds: 1)).then(
-            (value) => mounted
+            (value) => context.mounted
                 ? context.showSnackBar(const SnackBar(
                     content: Text("Account successfully created!")))
                 : null,

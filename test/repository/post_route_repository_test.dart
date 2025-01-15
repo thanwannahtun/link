@@ -26,7 +26,7 @@ void main() {
   });
 
   final mockedFiles = [_FakeFile(), _FakeFile()];
-  final post = Post(title: 'New Post');
+  const post = Post(title: 'New Post');
 
   final routeModelResponse = [
     {

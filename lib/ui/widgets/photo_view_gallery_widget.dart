@@ -94,7 +94,7 @@ class _FileViewGalleryWidgetState extends State<FileViewGalleryWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print("rebuild Gallery");
+    debugPrint("rebuild Gallery");
     return Builder(builder: (context) {
       return StatefulBuilder(
         builder:
@@ -133,7 +133,7 @@ class _FileViewGalleryWidgetState extends State<FileViewGalleryWidget> {
                       PhotoViewHeroAttributes(tag: widget.xfiles[index]),
                   gestureDetectorBehavior: HitTestBehavior.deferToChild,
                   onTapUp: (context, details, controllerValue) {
-                    print("onTapUp");
+                    debugPrint("onTapUp");
 
                     rebuild(() {
                       currentIndex = index;
@@ -141,7 +141,7 @@ class _FileViewGalleryWidgetState extends State<FileViewGalleryWidget> {
                     });
                   },
                   onTapDown: (context, details, controllerValue) {
-                    print("onTapDown");
+                    debugPrint("onTapDown");
                     rebuild(() {
                       showAppBar = false;
                     });

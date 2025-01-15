@@ -8,7 +8,7 @@ import 'package:link/models/seat.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 
 class Post extends Equatable {
-  Post({
+  const Post({
     this.id,
     this.agency,
     this.origin,

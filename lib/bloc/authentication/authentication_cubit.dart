@@ -98,7 +98,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       String? error,
       String? message,
       User? user}) {
-    print("[[changed State]]");
     emit(state.copyWith(
         status: status, error: error, user: user, message: message));
   }

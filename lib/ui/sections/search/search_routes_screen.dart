@@ -42,7 +42,7 @@ class _SearchRoutesScreenState extends State<SearchRoutesScreen> {
     super.initState();
     _searchedRouteCubit = context.read<PostRouteCubit>();
 
-    print("initStateCalled  :HeroHomeScreen");
+    debugPrint("initStateCalled  :HeroHomeScreen");
     _scrollController = ScrollController(); // _sponsoredRoute Controller
     _scrollController.addListener(_onScroll);
   }
@@ -148,6 +148,7 @@ class _SearchRoutesScreenState extends State<SearchRoutesScreen> {
     );
   }
 
+  /// ignore: unused_element
   Stack _flexibleSpaceBarBackgroundTemp(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
@@ -179,7 +180,7 @@ class _SearchRoutesScreenState extends State<SearchRoutesScreen> {
   }
 
   _fetchAvailableRoutes(City? origin, City? destination, DateTime? date) async {
-    print("${origin?.toJson()} - ${destination?.toJson()} ");
+    debugPrint("${origin?.toJson()} - ${destination?.toJson()} ");
     if (origin == null || destination == null) {
       return;
     }
@@ -268,7 +269,7 @@ class _SearchRoutesScreenState extends State<SearchRoutesScreen> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: PostRouteCard(
-              post: Post(),
+              post: const Post(),
               loading: true,
             ),
           ),
@@ -280,7 +281,7 @@ class _SearchRoutesScreenState extends State<SearchRoutesScreen> {
 }
 
 class LocationCityChoiceWidget extends StatefulWidget {
-  LocationCityChoiceWidget({
+  const LocationCityChoiceWidget({
     super.key,
     required ValueNotifier<City?> locationValueNotifier,
     required CityAutocompleteController locationAutoCompleteController,
@@ -292,9 +293,9 @@ class LocationCityChoiceWidget extends StatefulWidget {
 
   final ValueNotifier<City?> _locationValueNotifier;
   final CityAutocompleteController _locationAutoCompleteController;
-  String? hintText;
-  String? labelText;
-  City? initialLocation;
+  final String? hintText;
+  final String? labelText;
+  final City? initialLocation;
 
   @override
   State<LocationCityChoiceWidget> createState() =>
@@ -313,14 +314,14 @@ class LocationCityChoiceWidgetState extends State<LocationCityChoiceWidget> {
   }
 
   setLabelText(String label) {
-    print("LABEL TEXT CHANGED!");
+    debugPrint("LABEL TEXT CHANGED!");
 
     _labelText = label;
     setState(() {});
   }
 
   setHintText(String hint) {
-    print("HINT TEXT CHANGED!");
+    debugPrint("HINT TEXT CHANGED!");
     _hintText = hint;
     setState(() {});
   }
@@ -407,7 +408,7 @@ class OriginDestinationSwipeWidgetState
             hintText: "Select Origin",
           ),
         ),
-        Divider(),
+        const SizedBox(height: 16),
 
         /// Destination
         Card.filled(

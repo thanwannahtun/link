@@ -17,7 +17,7 @@ class App {
   // static const baseImgUrl = 'https://link-myanmar-mongodb.onrender.com';
   // static const baseImgUrl = 'https://link-myanmar-mongodb-live.onrender.com';
   static const baseImgUrl = 'https://link-myanmar-backend.onrender.com';
-  static User user = User();
+  static User user = const User();
 
   static List<City> cities = [];
 

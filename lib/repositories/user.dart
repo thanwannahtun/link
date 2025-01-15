@@ -16,7 +16,7 @@ class UserRepo {
       List<Map<String, dynamic>> users = await _crudTable.readData(Table.user);
       return User.fromJson(users.first);
     } catch (e) {
-      return User();
+      return const User();
     }
   }
 

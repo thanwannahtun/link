@@ -9,7 +9,7 @@ import 'package:link/ui/screens/post/upload_new_post_page.dart';
 
 import 'package:link/ui/sections/hot_and_trending/trending_route_card_detail.dart';
 import 'package:link/ui/screens/post_detail.dart';
-import 'package:link/ui/sections/hot_and_trending/hot_and_trending_screen.dart';
+import 'package:link/ui/widgets/show_routes_by_category/show_routes_by_category_screen.dart';
 import 'package:link/ui/screens/splash_screen.dart';
 import 'package:link/ui/sections/hot_and_trending/trending_routes_card.dart';
 import 'package:link/ui/sections/profile/setting_screen.dart';
@@ -52,7 +52,7 @@ class RouteGenerator {
               //         PostRouteCubit()..fetchRoutes(),
               //     child: const App());
             });
-      case RouteLists.hotAndTrendingScreen:
+      case RouteLists.showRoutesByCategoryScreen:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
@@ -61,7 +61,7 @@ class RouteGenerator {
                 create: (BuildContext context) => PostRouteCubit(
                     postRouteRepo: context.read<PostRouteRepo>()),
               ),
-            ], child: const HotAndTrendingScreen());
+            ], child: const ShowRoutesByCategoryScreen());
           },
         );
       case RouteLists.trendingRouteCards:

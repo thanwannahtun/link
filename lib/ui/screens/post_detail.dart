@@ -32,7 +32,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
         child: Column(
           children: [
             PostRouteCard(
-              post: post ?? Post(),
+              post: post ?? const Post(),
               onCommentPressed: onCommentPressed,
               onLocationPressed: () {},
               onStarPressed: (isLiked) {},
@@ -75,36 +75,36 @@ class _PostDetailPageState extends State<PostDetailPage> {
     return null;
   }
 
-  // ? : onStarPressed
-  // void Function()? onStarPressed() {
-  //   List<Like> likes = post?.likes ?? [];
+// ? : onStarPressed
+// void Function()? onStarPressed() {
+//   List<Like> likes = post?.likes ?? [];
 
-  //   Context.showBottomSheet(
-  //     context,
-  //     body: ListView.builder(
-  //       shrinkWrap: true,
-  //       itemCount: likes.length,
-  //       itemBuilder: (context, index) {
-  //         if (likes.isEmpty) {
-  //           return const ListTile(
-  //             title: Text("Be the First Person!"),
-  //             subtitle: Text("hit the like button!"),
-  //           );
-  //         }
+//   Context.showBottomSheet(
+//     context,
+//     body: ListView.builder(
+//       shrinkWrap: true,
+//       itemCount: likes.length,
+//       itemBuilder: (context, index) {
+//         if (likes.isEmpty) {
+//           return const ListTile(
+//             title: Text("Be the First Person!"),
+//             subtitle: Text("hit the like button!"),
+//           );
+//         }
 
-  //         Like like = likes[index];
+//         Like like = likes[index];
 
-  //         return ListTile(
-  //           leading: const Icon(Icons.person),
-  //           title: Text(like.user?.fullName ?? ""),
-  //           subtitle: Text(like.user?.email ?? "user@gmail.com"),
-  //           trailing: Text(like.createdAt != null
-  //               ? AppDateUtil.formatDateTime(like.createdAt)
-  //               : ""),
-  //         );
-  //       },
-  //     ),
-  //   );
-  //   return null;
-  // }
+//         return ListTile(
+//           leading: const Icon(Icons.person),
+//           title: Text(like.user?.fullName ?? ""),
+//           subtitle: Text(like.user?.email ?? "user@gmail.com"),
+//           trailing: Text(like.createdAt != null
+//               ? AppDateUtil.formatDateTime(like.createdAt)
+//               : ""),
+//         );
+//       },
+//     ),
+//   );
+//   return null;
+// }
 }

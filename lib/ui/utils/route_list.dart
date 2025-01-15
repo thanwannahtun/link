@@ -1,5 +1,6 @@
 class RouteLists {
-  static const String hotAndTrendingScreen = "/hot_and_trending_screen";
+  static const String showRoutesByCategoryScreen =
+      "/show_routes_by_category_screen";
   static const String splashScreen = "/splash_screen";
   static const String app = "/base_app";
   static const String signUp = "/sign_up"; // email sign up
