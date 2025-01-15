@@ -28,7 +28,7 @@ class App extends StatelessWidget {
               BlocProvider(
                   create: (BuildContext context) => PostRouteCubit(
                       postRouteRepo: context.read<PostRouteRepo>()),
-                  child: const HotAndTrendingScreen()),
+                  child: const ShowRoutesByCategoryScreen()),
               // const HotAndTrendingScreen(),
               const UserActivityScreen(),
               const ProfileScreen(),

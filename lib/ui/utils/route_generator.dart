@@ -52,7 +52,7 @@ class RouteGenerator {
               //         PostRouteCubit()..fetchRoutes(),
               //     child: const App());
             });
-      case RouteLists.hotAndTrendingScreen:
+      case RouteLists.showRoutesByCategoryScreen:
         return _navigateRoute(
           settings: settings,
           builder: (context) {
@@ -61,7 +61,7 @@ class RouteGenerator {
                 create: (BuildContext context) => PostRouteCubit(
                     postRouteRepo: context.read<PostRouteRepo>()),
               ),
-            ], child: const HotAndTrendingScreen());
+            ], child: const ShowRoutesByCategoryScreen());
           },
         );
       case RouteLists.trendingRouteCards:

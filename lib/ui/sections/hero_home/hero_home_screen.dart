@@ -178,7 +178,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               onPressed: () {
                 APIQuery query = APIQuery(
                     categoryType: CategoryType.trendingRoutes, limit: 10);
-                context.pushNamed(RouteLists.hotAndTrendingScreen,
+                context.pushNamed(RouteLists.showRoutesByCategoryScreen,
                     arguments: {"query": query});
               },
               icon: const Icon(Icons.keyboard_arrow_right_sharp)),
@@ -226,7 +226,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
               onPressed: () {
                 APIQuery query = APIQuery(
                     categoryType: CategoryType.suggestedRoutes, limit: 10);
-                context.pushNamed(RouteLists.hotAndTrendingScreen,
+                context.pushNamed(RouteLists.showRoutesByCategoryScreen,
                     arguments: {"query": query});
               },
               icon: const Icon(Icons.keyboard_arrow_right_sharp)),
@@ -553,7 +553,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         categoryType: CategoryType.suggestedRoutes,
         limit: 10,
         page: _suggestedRouteBloc.getPage);
-    context.pushNamed(RouteLists.hotAndTrendingScreen,
+    context.pushNamed(RouteLists.showRoutesByCategoryScreen,
         arguments: {"query": query});
   }
 }

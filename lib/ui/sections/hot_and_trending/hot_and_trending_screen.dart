@@ -31,14 +31,16 @@ import '../../../domain/api_utils/search_routes_query.dart';
 import '../../../domain/enums/category_type.dart';
 import '../../../models/city.dart';
 
-class HotAndTrendingScreen extends StatefulWidget {
-  const HotAndTrendingScreen({super.key});
+class ShowRoutesByCategoryScreen extends StatefulWidget {
+  const ShowRoutesByCategoryScreen({super.key});
 
   @override
-  State<HotAndTrendingScreen> createState() => _HotAndTrendingScreenState();
+  State<ShowRoutesByCategoryScreen> createState() =>
+      _ShowRoutesByCategoryScreenState();
 }
 
-class _HotAndTrendingScreenState extends State<HotAndTrendingScreen> {
+class _ShowRoutesByCategoryScreenState
+    extends State<ShowRoutesByCategoryScreen> {
   List<Post> _trendingPosts = [];
   List<RouteModel> _trendingRoutes = [];
   late PostRouteCubit _postRouteCubit;
