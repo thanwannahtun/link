@@ -13,8 +13,12 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/widgets/cached_image.dart';
+import 'package:link/domain/api_utils/api_query.dart';
+import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
+import 'package:link/domain/enums/category_type.dart';
 import 'package:link/models/app.dart';
+import 'package:link/models/city.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/screens/profile/route_model_card.dart';
@@ -24,11 +28,6 @@ import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../../../domain/api_utils/api_query.dart';
-import '../../../domain/api_utils/search_routes_query.dart';
-import '../../../domain/enums/category_type.dart';
-import '../../../models/city.dart';
 
 class ShowRoutesByCategoryScreen extends StatefulWidget {
   const ShowRoutesByCategoryScreen({super.key});

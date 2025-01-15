@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/ui/screens/app_bottom_navigation_bar.dart';
 import 'package:link/ui/sections/profile/profile_screen.dart';
-import 'package:link/ui/sections/hot_and_trending/hot_and_trending_screen.dart';
+import 'package:link/ui/widgets/show_routes_by_category/show_routes_by_category_screen.dart';
 
 import '../../bloc/routes/post_route_cubit.dart';
 import '../../repositories/post_route.dart';
