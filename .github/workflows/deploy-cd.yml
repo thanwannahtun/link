@@ -1,0 +1,81 @@
+name: Deploy to Firebase
+
+on:
+  #  pull_request:
+  #    branches: [ "main" ]
+  workflow_dispatch:
+    branches: [ "main" ] # remove this part if you want to select specific branch
+    inputs:
+      release_notes:
+        type: string
+        required: true
+        default: 'Manual Debug Build'
+        description: 'Release Notes'
+
+
+jobs:
+  deploy:
+    name: Building and distributing app
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 2: Checkout the source code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Install jq
+      # jq is used to parse JSON when downloading the build artifact
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      # Step 3: Set Up Flutter
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3'
+          channel: 'stable'
+          cache: true
+
+      # Step 4: Download build artifact from the latest release
+      - name: Download Build Artifact from Release
+        run: |
+          curl -L -o android_builds.tar.gz \
+          "$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest \
+          | jq -r '.assets[] | select(.name == "android_builds.tar.gz").browser_download_url')"
+
+
+      # Step 5: Extract the downloaded artifact
+      - name: Extract Artifact
+        run: |
+          mkdir deploy_output
+          tar -xzf android_builds.tar.gz -C deploy_output
+
+      # Step 6: Check APK File exists
+      - name: Check APK File
+        run: ls deploy_output/app/outputs/flutter-apk/
+
+      # Step 7: Determine Release Notes between pull_request and manually via workflow_dispatch
+      - name: Determine Release Notes
+        id: determine_release_notes
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "Using release notes from workflow_dispatch input."
+            echo "RELEASE_NOTES=${{ github.event.inputs.release_notes }}" >> $GITHUB_ENV
+          else
+            echo "Using default release notes for pull request."
+            echo "RELEASE_NOTES=Automatic Deployment triggered by Pull Request #${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          fi
+
+      # Step 8: Deploy to Firebase App Distribution
+      - name: Upload Artifact to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          groups: ${{ secrets.FIREBASE_TESTER_GROUPS }}
+          file: deploy_output/app/outputs/flutter-apk/app-release.apk
+          releaseNotes: ${{ env.RELEASE_NOTES }}
+
+      # Step 9: Debug Firebase CLI output
+      - name: Debug Firebase Output
+        run: echo "Firebase Distribution Completed!"

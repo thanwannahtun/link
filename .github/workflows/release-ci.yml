@@ -1,0 +1,107 @@
+name: Release CI
+
+on:
+  push:
+    branches:
+      - release/**
+
+jobs:
+  release:
+    name: Prepare Release with Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+
+      - name: Set Up Java
+        uses: actions/setup-java@v3.12.0
+        with:
+          distribution: 'oracle'
+          java-version: "17"
+          cache: 'gradle'
+
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3'
+          channel: 'stable'
+          cache: true
+
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+
+      - name: Run Tests
+        run: flutter test # --tags release
+
+      - name: Build APK and AAB
+        run: |
+          flutter build apk --release
+          flutter build appbundle
+
+
+      - name: Compress Android Archives
+        run: |
+          cd build
+          tar -czf android_builds.tar.gz app/outputs/
+
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android_builds
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+            build/android_builds.tar.gz
+
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android_builds
+          path: build/
+
+
+      - name: Extract Version
+        id: extract_version
+        run: |
+          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+
+      - name: Check if Tag Exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "TAG_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+
+      - name: Modify Tag if it Exists
+        if: env.TAG_EXISTS == 'true'
+        run: |
+          new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
+          echo "VERSION=$new_version" >> $GITHUB_ENV
+
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+            build/android_builds.tar.gz
+          tag: v${{ env.VERSION }}
+          token: ${{ secrets.TOKEN }}
+
+
+      - name: Debug Release Variables
+        run: |
+          echo "VERSION: ${{ env.VERSION }}"
+          echo "TAG_EXISTS: ${{ env.TAG_EXISTS }}"
