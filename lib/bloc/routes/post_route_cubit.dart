@@ -16,7 +16,7 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 
 part 'post_route_state.dart';
 
-const throttleDuration = Duration(milliseconds: 100);
+const throttleDuration = Duration(milliseconds: 10000);
 
 EventTransformer<E> _throttleDroppable<E>(Duration duration) {
   return (events, mapper) {
@@ -93,7 +93,7 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     } on Exception catch (e, stackTrace) {
       _logError(e, stackTrace);
       emit(state.copyWith(
-          routeModels: [],
+          // routeModels: [],
           status: BlocStatus.fetchFailed,
           error: handleErrorMessage(e)));
     }

@@ -2,8 +2,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:link/bloc/city/city_cubit.dart';
 import 'package:link/bloc/routes/post_route_cubit.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
+import 'package:link/repositories/city_repo.dart';
 import 'package:link/repositories/post_route.dart';
 import 'package:link/ui/sections/hero_home/hero_home_screen.dart';
 import 'package:link/ui/sections/hero_home/widgets/suggested_routes_list.dart';
@@ -16,12 +18,16 @@ class _MockPostRouteCubit extends MockCubit<PostRouteState>
 
 class _MockPostRouteRepo extends Mock implements PostRouteRepo {}
 
+class _MockCityRepo extends Mock implements CityRepo {}
+
 void main() {
   late PostRouteCubit trendingRouteBloc;
   late PostRouteCubit suggestedRouteBloc;
   late PostRouteRepo repo;
+  late CityRepo cityRepo;
   setUp(() {
     repo = _MockPostRouteRepo();
+    cityRepo = _MockCityRepo();
     trendingRouteBloc = _MockPostRouteCubit();
     suggestedRouteBloc = _MockPostRouteCubit();
   });
@@ -31,10 +37,19 @@ void main() {
       providers: [
         BlocProvider<PostRouteCubit>.value(value: trendingRouteBloc),
         BlocProvider<PostRouteCubit>.value(value: suggestedRouteBloc),
+        BlocProvider<CityCubit>.value(
+            value: CityCubit(cityRepo: _MockCityRepo())),
       ],
       child: MaterialApp(
-        home: RepositoryProvider(
-          create: (context) => repo,
+        home: MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider(
+              create: (context) => repo,
+            ),
+            RepositoryProvider(
+              create: (context) => cityRepo,
+            )
+          ],
           child: const HeroHomeScreen(),
         ),
       ),
