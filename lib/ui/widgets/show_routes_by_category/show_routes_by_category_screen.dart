@@ -58,10 +58,8 @@ class _ShowRoutesByCategoryScreenState
   void initState() {
     print("initStateCalled  :HotAndTrendingScreen");
     super.initState();
-    initialQuery =
-        APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10);
-    getPostWithRouteQuery =
-        APIQuery(categoryType: CategoryType.postWithRoutes, limit: 10);
+    initialQuery = APIQuery(categoryType: CategoryType.trendingRoutes);
+    getPostWithRouteQuery = APIQuery(categoryType: CategoryType.postWithRoutes);
 
     _postRouteCubit = context.read<PostRouteCubit>();
     context.read<CityCubit>().fetchCities();
@@ -177,6 +175,7 @@ class _ShowRoutesByCategoryScreenState
       ),
       backButton: _pushedRoutePage
           ? BackButton(
+              color: context.onPrimaryColor,
               onPressed: () => context.pop(),
             )
           : null,
@@ -185,7 +184,7 @@ class _ShowRoutesByCategoryScreenState
             (initialQuery.categoryType?.title ?? ""),
         style: TextStyle(
             color: context.onPrimaryColor,
-            fontSize: AppInsets.font25,
+            fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),
       action: IconButton(
@@ -197,7 +196,6 @@ class _ShowRoutesByCategoryScreenState
               destination: getRandomCity(),
             );
             query = APIQuery(
-                limit: 5,
                 categoryType: CategoryType.searchedRoutes,
                 searchedRouteQuery: searchedRouteQuery);
             context.pushNamed(RouteLists.searchRoutesScreen,
@@ -287,7 +285,7 @@ class _ShowRoutesByCategoryScreenState
       return _showEmptyTrendingWidget();
     }
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+        padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset10),
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
@@ -316,16 +314,19 @@ class _ShowRoutesByCategoryScreenState
                 if (adjustedIndex >= 0 &&
                     adjustedIndex < _trendingRoutes.length) {
                   RouteModel route = _trendingRoutes[adjustedIndex];
-                  return RouteInfoCardWidget(
-                    route: route,
-                    onRoutePressed: (route) {
-                      context.pushNamed(RouteLists.routeDetailPage,
-                          arguments: route);
-                    },
-                    onAgencyPressed: (route) {
-                      context.pushNamed(RouteLists.publicAgencyProfile,
-                          arguments: route.agency);
-                    },
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: RouteInfoCardWidget(
+                      route: route,
+                      onRoutePressed: (route) {
+                        context.pushNamed(RouteLists.routeDetailPage,
+                            arguments: route);
+                      },
+                      onAgencyPressed: (route) {
+                        context.pushNamed(RouteLists.publicAgencyProfile,
+                            arguments: route.agency);
+                      },
+                    ),
                   );
                 }
 
@@ -372,21 +373,28 @@ class _ShowRoutesByCategoryScreenState
     return SliverAppBar(
       floating: true,
       snap: true,
+      shadowColor: context.greyFilled,
       // pinned: true,
       // expandedHeight: 20.0,
       automaticallyImplyLeading: false,
       backgroundColor: Theme.of(context).cardColor,
       flexibleSpace: FlexibleSpaceBar(
+          centerTitle: true,
           titlePadding: EdgeInsets.zero,
           title: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) => Chip(
-              label: Text(
-                "Yangon to ${index + 1}",
-                style: Theme.of(context).textTheme.labelSmall,
+            itemBuilder: (context, index) => Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                child: Text(
+                  "Yangon to ${index + 1}",
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
               ),
-              labelPadding: EdgeInsets.zero,
-              color: WidgetStatePropertyAll(context.greyFilled),
             ),
             itemCount: 10,
             separatorBuilder: (BuildContext context, int index) =>

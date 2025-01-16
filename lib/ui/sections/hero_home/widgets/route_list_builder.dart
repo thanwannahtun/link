@@ -98,9 +98,8 @@ class _RoutesListBuilderState extends State<RoutesListBuilder> {
   Widget build(BuildContext context) {
     return BlocBuilder<PostRouteCubit, PostRouteState>(
       builder: (context, state) {
-        if (state.status == BlocStatus.fetchFailed ||
-            state.status == BlocStatus.fetchFailed &&
-                state.routeModels.isNotEmpty) {
+        if (state.status == BlocStatus.fetchFailed &&
+            state.routeModels.isEmpty) {
           return const RouteFetchedFailWidget();
         } else if (state.status == BlocStatus.fetching &&
             state.routeModels.isEmpty) {

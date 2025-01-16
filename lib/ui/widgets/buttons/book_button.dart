@@ -37,6 +37,6 @@ class BookButton extends StatelessWidget {
         },
         iconAlignment: IconAlignment.end,
         icon: const Icon(Icons.phone_enabled_sharp, size: 20),
-        label: const Text("Book"));
+        label: const Text(""));
   }
 }

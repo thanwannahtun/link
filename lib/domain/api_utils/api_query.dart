@@ -15,7 +15,7 @@ class APIQuery {
 
   APIQuery(
       {this.categoryType,
-      this.limit,
+      this.limit = 5,
       this.page,
       this.postId,
       this.searchedRouteQuery});

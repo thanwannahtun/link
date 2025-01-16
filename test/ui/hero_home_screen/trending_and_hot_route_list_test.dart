@@ -85,7 +85,7 @@ void main() {
     );
 
     testWidgets(
-      "Render $RouteFetchedFailWidget when transition from ${BlocStatus.fetched} with data to ${BlocStatus.fetchFailed} ",
+      "Don't Render $RouteFetchedFailWidget when transition from ${BlocStatus.fetched} with data to ${BlocStatus.fetchFailed} ",
       (WidgetTester tester) async {
         final initialState =
             PostRouteState(routeModels: routes, status: BlocStatus.fetched);
@@ -103,7 +103,7 @@ void main() {
 
         expect(find.byType(RouteFetchingWidget), findsNothing);
         expect(find.byType(RouteFetchedEmptyWidget), findsNothing);
-        expect(find.byType(RouteFetchedFailWidget), findsOneWidget);
+        expect(find.byType(RouteFetchedFailWidget), findsNothing);
       },
     );
 

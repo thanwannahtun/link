@@ -42,10 +42,12 @@ class RouteInfoCardWidget extends StatefulWidget {
 class _RouteInfoCardWidgetState extends State<RouteInfoCardWidget> {
   @override
   Widget build(BuildContext context) {
-    return Card.filled(
+    return Card(
       shape: const BeveledRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(1))),
       margin: const EdgeInsets.all(0.0),
+      elevation: 2.0,
+      // color: context.greyFilled,
       child: InkWell(
         onTap: () => widget.onRoutePressed.call(widget.route),
         child: Column(
@@ -252,6 +254,8 @@ class RouteDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: context.greyFilled,
+      elevation: 2.0,
       margin: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,9 +270,9 @@ class RouteDetailPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("From: ${route.origin?.name ?? "Origin"}",
-                          style: Theme.of(context).textTheme.titleMedium),
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       Text("To: ${route.destination?.name ?? "Destination"}",
-                          style: Theme.of(context).textTheme.titleMedium),
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       Text(
                           "Date: ${DateTimeUtil.formatDateTime(route.scheduleDate)}"),
                       Text(

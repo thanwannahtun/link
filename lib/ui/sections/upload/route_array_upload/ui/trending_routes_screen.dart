@@ -28,7 +28,7 @@ class _TrendingRoutesScreenState extends State<TrendingRoutesScreen> {
   void initState() {
     _trendingRouteCubit = context.read<PostRouteCubit>()
       ..getRoutesByCategory(
-          query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 5));
+          query: APIQuery(categoryType: CategoryType.trendingRoutes));
     super.initState();
   }
 
@@ -46,8 +46,7 @@ class _TrendingRoutesScreenState extends State<TrendingRoutesScreen> {
     return RefreshIndicator.adaptive(
       onRefresh: () async {
         _trendingRouteCubit.getRoutesByCategory(
-            query:
-                APIQuery(categoryType: CategoryType.trendingRoutes, limit: 5));
+            query: APIQuery(categoryType: CategoryType.trendingRoutes));
       },
       child: CustomScrollView(
         slivers: [
