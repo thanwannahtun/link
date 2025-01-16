@@ -11,7 +11,7 @@ class RouteFetchedFailWidget extends StatelessWidget {
     return Row(
       children: [
         Card(
-          color: context.tertiaryColor,
+          color: context.greyFilled,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -20,7 +20,10 @@ class RouteFetchedFailWidget extends StatelessWidget {
                 "Something went wrong!\n"
                 "Please check you Network Connection 🛜",
                 // context.read<ConnectivityBloc>().state.status.toUpperCase(),
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: context.greyColor),
                 textAlign: TextAlign.center,
               ).fittedBox(),
             ],
