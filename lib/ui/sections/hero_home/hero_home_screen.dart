@@ -48,16 +48,14 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     if (kDebugMode) {
       print("initStateCalled  :HeroHomeScreen");
     }
-    _trendingRouteBloc = PostRouteCubit(
-        postRouteRepo: context.read<PostRouteRepo>())
-      ..getRoutesByCategory(
-          query:
-              APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
-    _suggestedRouteBloc = PostRouteCubit(
-        postRouteRepo: context.read<PostRouteRepo>())
-      ..getRoutesByCategory(
-          query:
-              APIQuery(categoryType: CategoryType.suggestedRoutes, limit: 10));
+    _trendingRouteBloc =
+        PostRouteCubit(postRouteRepo: context.read<PostRouteRepo>())
+          ..getRoutesByCategory(
+              query: APIQuery(categoryType: CategoryType.trendingRoutes));
+    _suggestedRouteBloc =
+        PostRouteCubit(postRouteRepo: context.read<PostRouteRepo>())
+          ..getRoutesByCategory(
+              query: APIQuery(categoryType: CategoryType.suggestedRoutes));
     _selectedDateNotifier = ValueNotifier(DateTime.now());
   }
 
@@ -89,9 +87,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       ..clearRoutes()
       ..updatePage();
     _trendingRouteBloc.getRoutesByCategory(
-        query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10));
+        query: APIQuery(categoryType: CategoryType.trendingRoutes));
     _suggestedRouteBloc.getRoutesByCategory(
-        query: APIQuery(categoryType: CategoryType.suggestedRoutes, limit: 10));
+        query: APIQuery(categoryType: CategoryType.suggestedRoutes));
   }
 
   Row _actionWidgets(BuildContext context) {

@@ -140,8 +140,7 @@ void main() {
               )).thenAnswer((_) async => routes);
         },
         act: (cubit) => cubit.getRoutesByCategory(
-          query:
-              APIQuery(categoryType: CategoryType.suggestedRoutes, limit: 10),
+          query: APIQuery(categoryType: CategoryType.suggestedRoutes, limit: 5),
         ),
         expect: () => [
           const PostRouteState(status: BlocStatus.fetching),
@@ -162,7 +161,7 @@ void main() {
               )).thenThrow(Exception('Fetch failed'));
         },
         act: (cubit) => cubit.getRoutesByCategory(
-          query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10),
+          query: APIQuery(categoryType: CategoryType.trendingRoutes, limit: 5),
         ),
         expect: () => [
           const PostRouteState(status: BlocStatus.fetching),
@@ -201,7 +200,7 @@ void main() {
             },
             act: (cubit) => cubit.getRoutesByCategory(
               query: APIQuery(
-                  categoryType: CategoryType.suggestedRoutes, limit: 10),
+                  categoryType: CategoryType.suggestedRoutes, limit: 5),
             ),
             seed: () => PostRouteState(routeModels: routes),
             expect: () => [
@@ -231,7 +230,7 @@ void main() {
               )).thenAnswer((_) async => posts);
         },
         act: (cubit) => cubit.getPostWithRoutes(
-          query: APIQuery(categoryType: CategoryType.postWithRoutes, limit: 10),
+          query: APIQuery(categoryType: CategoryType.postWithRoutes, limit: 5),
         ),
         expect: () => [
           const PostRouteState(status: BlocStatus.fetching),

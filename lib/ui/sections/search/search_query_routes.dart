@@ -55,7 +55,6 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
           ..getRoutesByCategory(
               query: APIQuery(
                   categoryType: CategoryType.searchedRoutes,
-                  limit: 5,
                   searchedRouteQuery: searchRoutesQuery));
       }
       _initial = false;
