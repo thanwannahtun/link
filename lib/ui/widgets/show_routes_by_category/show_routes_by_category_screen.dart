@@ -58,10 +58,8 @@ class _ShowRoutesByCategoryScreenState
   void initState() {
     print("initStateCalled  :HotAndTrendingScreen");
     super.initState();
-    initialQuery =
-        APIQuery(categoryType: CategoryType.trendingRoutes, limit: 10);
-    getPostWithRouteQuery =
-        APIQuery(categoryType: CategoryType.postWithRoutes, limit: 10);
+    initialQuery = APIQuery(categoryType: CategoryType.trendingRoutes);
+    getPostWithRouteQuery = APIQuery(categoryType: CategoryType.postWithRoutes);
 
     _postRouteCubit = context.read<PostRouteCubit>();
     context.read<CityCubit>().fetchCities();
@@ -197,7 +195,6 @@ class _ShowRoutesByCategoryScreenState
               destination: getRandomCity(),
             );
             query = APIQuery(
-                limit: 5,
                 categoryType: CategoryType.searchedRoutes,
                 searchedRouteQuery: searchedRouteQuery);
             context.pushNamed(RouteLists.searchRoutesScreen,
