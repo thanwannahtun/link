@@ -121,7 +121,8 @@ class AppTheme {
       secondary: DarkTheme.secondaryBg,
       tertiary: DarkTheme.tertiaryBg,
       onPrimary: Colors.white,
-      onSecondary: Color(0xff424242),
+      // onSecondary: Color(0xff424242),
+      onSecondary: Colors.white10,
     );
 
     TextTheme darkTextTheme = const TextTheme(

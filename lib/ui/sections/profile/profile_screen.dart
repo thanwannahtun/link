@@ -30,7 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         "Profile",
         style: TextStyle(
             color: context.onPrimaryColor,
-            fontSize: AppInsets.font25,
+            fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),
       action: Row(

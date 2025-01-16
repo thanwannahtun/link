@@ -71,7 +71,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
         "Home",
         style: TextStyle(
             color: context.onPrimaryColor,
-            fontSize: AppInsets.font25,
+            fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),
       action: _actionWidgets(context),
@@ -118,7 +118,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             Container(
               padding: const EdgeInsets.only(bottom: AppInsets.inset5),
               margin: const EdgeInsets.all(0.0),
-              color: Theme.of(context).cardColor.withOpacity(0.5),
+              color: Theme.of(context).cardColor.withOpacity(0.8),
               child: Column(
                 children: [
                   _trendingSearchTitleField(context),
@@ -151,6 +151,9 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                         value: _suggestedRouteBloc,
                         child: const SuggestedRoutesList(),
                       )),
+                  const SizedBox(
+                    height: AppInsets.inset8,
+                  ),
                   _suggestedViewAllAction(context),
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
@@ -235,8 +238,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
   Card _dateChoiceActionCard() {
     return Card.filled(
+      elevation: 2.0,
       shape: const BeveledRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.zero)),
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(5), bottomRight: Radius.circular(5))),
       child: Row(
         children: [
           Expanded(
@@ -378,6 +383,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     return BlocBuilder<CityCubit, CityState>(
       builder: (BuildContext context, CityState state) {
         return Card.filled(
+          elevation: 2.0,
           shape: const BeveledRectangleBorder(
               borderRadius: BorderRadius.all(Radius.zero)),
           child: Padding(
@@ -401,7 +407,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               onSelected: (city) {
                                 _originNotifier.value = city;
                               },
-                              border: InputBorder.none,
+                              // border: InputBorder.none,
                               // labelText: "Origin",
                               fillColor: Theme.of(context)
                                   .primaryColor
@@ -418,10 +424,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                       ),
                     ],
                   ),
-                  const Divider(
-                    color: Colors.grey,
-                    thickness: 0.1,
-                  ),
+                  const SizedBox(height: AppInsets.inset15),
+                  // const Divider(
+                  //   color: Colors.grey,
+                  //   thickness: 0.1,
+                  // ),
 
                   /// REMOVE SWAP LOCATIONS IN HOME SCREEN
                   /*
@@ -471,7 +478,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                                   .primaryColor
                                   .withOpacity(0.5),
                               filled: true,
-                              border: InputBorder.none,
+                              // border: InputBorder.none,
                               // labelText: "Destination",
                               hintText: "To Destination",
                               validator: (value) => (value!.isEmpty ||

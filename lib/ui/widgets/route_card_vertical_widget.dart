@@ -39,9 +39,6 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
           flex: 5,
           child: _sponsorBody(widget.route, context),
         ),
-        const SizedBox(
-          height: 10,
-        )
       ],
     );
   }
@@ -104,127 +101,125 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
   }
 
   Widget _sponsorBody(RouteModel route, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset20),
-      child: Card.filled(
-        shape: const BeveledRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.zero)),
-        margin: const EdgeInsets.all(0.0),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              /// Images
-              SizedBox(
-                width: double.infinity,
-                child: CachedImage(imageUrl: route.image ?? "")
-                    .clipRRect(borderRadius: BorderRadius.circular(5)),
-              ).expanded(flex: 2),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  /// ORIGIN & DESTINATION
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.pin_drop,
-                        color:
-                            Theme.of(context).iconTheme.color?.withOpacity(0.7),
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(
-                        "${route.origin?.name ?? ""} to ${route.destination?.name ?? ""}",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(fontSize: 13),
-                      ).expanded(),
-                    ],
-                  ).padding(padding: const EdgeInsets.only(bottom: 5)),
+    return Card.filled(
+      shape: const BeveledRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.zero)),
+      margin: const EdgeInsets.all(0.0),
+      color: Theme.of(context).cardColor,
+      child: Padding(
+        padding: const EdgeInsets.all(AppInsets.inset15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            /// Images
+            SizedBox(
+              width: double.infinity,
+              child: CachedImage(imageUrl: route.image ?? "")
+                  .clipRRect(borderRadius: BorderRadius.circular(5)),
+            ).expanded(flex: 2),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                /// ORIGIN & DESTINATION
+                Row(
+                  children: [
+                    Icon(
+                      Icons.pin_drop,
+                      color:
+                          Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                      size: 15,
+                    ),
+                    const SizedBox(
+                      width: AppInsets.inset10,
+                    ),
+                    Text(
+                      "${route.origin?.name ?? ""} to ${route.destination?.name ?? ""}",
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(fontSize: 13),
+                    ).expanded(),
+                  ],
+                ).padding(padding: const EdgeInsets.only(bottom: 5)),
 
-                  /// DATE
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.date_range_rounded,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Expanded(
-                        child: Text(
-                          DateTimeUtil.formatDateTime(route.scheduleDate),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(fontSize: 12),
-                        ),
-                      )
-                    ],
-                  ).padding(padding: const EdgeInsets.only(bottom: 5)),
-
-                  /// MIDPOINTS
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.business_rounded,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: AppInsets.inset10,
-                      ),
-                      Text(
-                        route.midpoints
-                                ?.map((m) => m.city?.name)
-                                .where((name) => name != null)
-                                .join(' - ') ??
-                            '',
+                /// DATE
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.date_range_rounded,
+                      size: 15,
+                    ),
+                    const SizedBox(
+                      width: AppInsets.inset10,
+                    ),
+                    Expanded(
+                      child: Text(
+                        DateTimeUtil.formatDateTime(route.scheduleDate),
                         style: Theme.of(context)
                             .textTheme
                             .headlineSmall
                             ?.copyWith(fontSize: 12),
-                        textAlign: TextAlign.start,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        softWrap: true,
-                      ).expanded(),
-                    ],
-                  ).padding(padding: const EdgeInsets.only(bottom: 5)),
+                      ),
+                    )
+                  ],
+                ).padding(padding: const EdgeInsets.only(bottom: 5)),
 
-                  /// DESCRIPTION
-                  Text(
-                    route.description ?? "",
-                    style: const TextStyle(fontSize: 12),
-                    textAlign: TextAlign.start,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                    softWrap: true,
-                  ).expanded()
-                ],
-              )
-                  .padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: AppInsets.inset5))
-                  .expanded(flex: 3),
+                /// MIDPOINTS
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.business_rounded,
+                      size: 15,
+                    ),
+                    const SizedBox(
+                      width: AppInsets.inset10,
+                    ),
+                    Text(
+                      route.midpoints
+                              ?.map((m) => m.city?.name)
+                              .where((name) => name != null)
+                              .join(' - ') ??
+                          '',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(fontSize: 12),
+                      textAlign: TextAlign.start,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      softWrap: true,
+                    ).expanded(),
+                  ],
+                ).padding(padding: const EdgeInsets.only(bottom: 5)),
 
-              /// Action Button
-              ElevatedButton(
-                onPressed: () => widget.onRoutePressed.call(route),
-                child: Text(
-                  "Book Now",
-                  style: TextStyle(color: context.onPrimaryColor),
-                ),
+                /// DESCRIPTION
+                Text(
+                  route.description ?? "",
+                  style: const TextStyle(fontSize: 12),
+                  textAlign: TextAlign.start,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  softWrap: true,
+                ).expanded()
+              ],
+            )
+                .padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppInsets.inset5))
+                .expanded(flex: 3),
+
+            /// Action Button
+            ElevatedButton(
+              onPressed: () => widget.onRoutePressed.call(route),
+              child: Text(
+                "Book Now",
+                style: TextStyle(color: context.onPrimaryColor),
               ),
+            ),
 
-              /// short description
-            ],
-          ),
+            /// short description
+          ],
         ),
       ),
     );

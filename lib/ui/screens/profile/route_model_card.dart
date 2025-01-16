@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/core/utils/app_insets.dart';
 import 'package:link/models/app.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/route_list.dart';
@@ -252,46 +253,49 @@ class RouteFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Row(
-              children: [
-                LikeIcon(
-                  toggleLike: (isLiked) {},
-                ),
-                const Text(
-                  "1k +",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                )
-              ],
-            ),
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.comment_rounded,
-                      color: context.successColor, size: 20),
-                  onPressed: () {},
-                ),
-                const Text(
-                  "25 reviews",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                )
-              ],
-            ),
-          ],
-        ),
-        BookButton(
-          onPressed: () => onBookPressed.call(route),
-          middleWare: () {
-            return App.user.isAuthenticated();
-          },
-          onMiddleWareFailed: () =>
-              context.pushNamed(RouteLists.signInWithEmail),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Row(
+                children: [
+                  LikeIcon(
+                    toggleLike: (isLiked) {},
+                  ),
+                  const Text(
+                    "1k +",
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  )
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.comment_rounded,
+                        color: context.successColor, size: 20),
+                    onPressed: () {},
+                  ),
+                  const Text(
+                    "25 reviews",
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  )
+                ],
+              ),
+            ],
+          ),
+          BookButton(
+            onPressed: () => onBookPressed.call(route),
+            middleWare: () {
+              return App.user.isAuthenticated();
+            },
+            onMiddleWareFailed: () =>
+                context.pushNamed(RouteLists.signInWithEmail),
+          ),
+        ],
+      ),
     );
   }
 }
