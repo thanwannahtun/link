@@ -16,6 +16,7 @@ import 'package:link/ui/sections/upload/drop_down_autocomplete.dart';
 import 'package:link/ui/sections/upload/post_create/post_create_cubit.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
 import 'package:link/ui/utils/context.dart';
+import 'package:link/ui/utils/snackbar_util.dart';
 import 'package:link/ui/widget_extension.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
 
@@ -422,16 +423,8 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
           listener: (BuildContext context, PostRouteState state) {
             if (state.status == BlocStatus.uploaded) {
               context.pop();
-              SnackBar snackBar = SnackBar(
-                  content: Row(
-                children: [
-                  Icon(Icons.panorama_fish_eye_outlined,
-                      color: context.tertiaryColor),
-                  const Text("Successfully Uploaded")
-                ],
-              ));
-
-              context.showSnackBar(snackBar);
+              SnackbarUtils.showSnackBar(context, "Successfully Uploaded",
+                  type: SnackBarType.success);
             }
           },
         )).padding(padding: const EdgeInsets.symmetric(vertical: 5));
