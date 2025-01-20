@@ -85,7 +85,7 @@ class AppTheme {
       //
       dividerColor: LightTheme.primaryAsset,
       elevatedButtonTheme: elevatedButtonThemeData(),
-      // textButtonTheme: textButtonThemeData,
+      textButtonTheme: textButtonThemeData(),
       // outlinedButtonTheme: outlinedButtonThemeData,
       colorScheme: colorScheme,
       // [important]
@@ -179,7 +179,7 @@ class AppTheme {
       //
       dividerColor: DarkTheme.primaryAsset,
       elevatedButtonTheme: elevatedButtonThemeData(),
-      // textButtonTheme: textButtonThemeData,
+      textButtonTheme: textButtonThemeData(),
       // outlinedButtonTheme: outlinedButtonThemeData,
       iconTheme: const IconThemeData(
         color: Colors.white70, // White for visibility in dark backgrounds
@@ -204,6 +204,18 @@ class AppTheme {
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppInsets.inset5)),
       overlayColor: LightTheme.secondaryBg.withBlue(255),
+    ));
+  }
+
+  static TextButtonThemeData textButtonThemeData() {
+    return TextButtonThemeData(
+        style: ElevatedButton.styleFrom(
+      textStyle:
+          const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+      foregroundColor: LightTheme.secondaryBg,
+      disabledBackgroundColor: Colors.grey,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppInsets.inset5)),
     ));
   }
 }

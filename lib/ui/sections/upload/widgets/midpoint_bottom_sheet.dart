@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
 import 'package:link/models/app.dart';
@@ -150,8 +151,7 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
       style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
             minimumSize:
                 const WidgetStatePropertyAll(Size(double.infinity, 40)),
-            backgroundColor: WidgetStatePropertyAll(
-                _arrivalTimeColor ?? Colors.grey.withOpacity(0.3)),
+            backgroundColor: WidgetStatePropertyAll(_arrivalTimeColor),
           ),
       onPressed: () => _selectTime(context),
       icon: const Icon(Icons.access_time),
@@ -183,10 +183,20 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
         });
   }
 
-  Text _buildTitleText(BuildContext context) {
-    return Text(
-      widget.initialValue == null ? 'Add Midpoint' : 'Update Midpoint',
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 20),
+  Widget _buildTitleText(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          widget.initialValue == null ? 'Add Midpoint' : 'Update Midpoint',
+          style:
+              Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 20),
+        ),
+        IconButton(
+            tooltip: "Close",
+            onPressed: () => context.pop(),
+            icon: const Icon(Icons.close))
+      ],
     );
   }
 
@@ -217,7 +227,7 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
           child: const Text("Cancel"),
         ),
         ElevatedButton(

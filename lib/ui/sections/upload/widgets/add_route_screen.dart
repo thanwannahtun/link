@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
@@ -75,12 +77,13 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(
-              top: AppInsets.inset15,
+              top: AppInsets.inset5,
               left: AppInsets.inset15,
               right: AppInsets.inset15,
               bottom: 3),
           child: Column(
             children: [
+              _header(context),
               SingleChildScrollView(
                 child: Form(
                   key: _formKey,
@@ -89,17 +92,15 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                       Column(
                         // crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            widget.route != null
-                                ? 'Edit Route'
-                                : 'Add New Route',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
                           const SizedBox(height: 16),
                           CityAutocomplete(
                             cities: App.cities,
                             controller: originController,
                             initialValue: origin?.name,
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(0.1),
+                            border: InputBorder.none,
+                            hintText: "Enter Origin",
                             onSelected: (value) {
                               origin = value;
                               setState(() {});
@@ -107,7 +108,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                             labelText: "Origin",
                             validator: (value) =>
                                 (value!.isEmpty || !originController.isValid)
-                                    ? ''
+                                    ? 'Enter Origin'
                                     : null,
                           ),
 
@@ -120,10 +121,14 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                               destination = value;
                               setState(() {});
                             },
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(0.1),
+                            border: InputBorder.none,
                             labelText: "Destination",
+                            hintText: "Enter Destination",
                             validator: (value) => (value!.isEmpty ||
                                     !destinationController.isValid)
-                                ? ''
+                                ? 'Enter Destination'
                                 : null,
                           ),
 
@@ -131,7 +136,9 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                           _buildDatePicker(),
                           const SizedBox(height: 8),
                           _buildTextField(
+                              inputFormat: true,
                               label: 'Price Per Traveller',
+                              hintText: "Enter number",
                               initialValue: pricePerTraveller != null
                                   ? pricePerTraveller.toString()
                                   : '',
@@ -147,7 +154,6 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                           const SizedBox(height: 16),
                           _buildMidpointsSection(),
                           const SizedBox(height: 16),
-                          // _buildImagePicker(), // Add image picker here
                           const SizedBox(height: 16),
                           _buildImageCarousel(), // Add image carousel here
                           const SizedBox(height: AppInsets.inset5),
@@ -169,18 +175,43 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
     );
   }
 
+  Widget _header(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          widget.route != null ? 'Edit Route' : 'Add New Route',
+          style:
+              Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 20),
+        ),
+        IconButton(
+            tooltip: "Close",
+            onPressed: () => context.pop(),
+            icon: const Icon(Icons.close))
+      ],
+    );
+  }
+
   TextFormField _buildRouteDescriptionInput(BuildContext context) {
     return TextFormField(
         autocorrect: true,
         maxLines: null,
+        style: TextStyle(color: context.greyColor),
         controller: _routeDescriptionController,
         decoration: InputDecoration(
+          fillColor: Colors.grey.withOpacity(0.1),
+          filled: true,
+          labelStyle: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
+          hintStyle: Theme.of(context)
+              .textTheme
+              .labelMedium
+              ?.copyWith(color: Colors.grey),
+          border: InputBorder.none,
           hintText: "Description",
           label: const Text("Description(optional)"),
-          hintStyle: Theme.of(context).textTheme.labelMedium,
-          labelStyle: Theme.of(context).textTheme.labelMedium,
-          border: const OutlineInputBorder(
-              borderSide: BorderSide(width: 0.05, color: Colors.grey)),
           // border: InputBorder.none,
         ));
   }
@@ -216,7 +247,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Route Images (Optional)',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
         const SizedBox(height: 8),
 
         if (routeImagePath == null)
@@ -284,19 +315,35 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
 
   Widget _buildTextField({
     required String label,
+    String? hintText,
     String? initialValue,
     TextInputType keyboardType = TextInputType.text,
     required FormFieldSetter<String> onSaved,
+    bool inputFormat = false,
   }) {
     return TextFormField(
       style: const TextStyle(fontWeight: FontWeight.bold),
       initialValue: initialValue,
       keyboardType: keyboardType,
       decoration: InputDecoration(
+        fillColor: Colors.grey.withOpacity(0.1),
+        filled: true,
         labelText: label,
-        border: const OutlineInputBorder(),
+        hintText: hintText,
+        labelStyle: Theme.of(context)
+            .textTheme
+            .labelLarge
+            ?.copyWith(fontWeight: FontWeight.bold),
+        hintStyle: Theme.of(context)
+            .textTheme
+            .labelMedium
+            ?.copyWith(color: Colors.grey),
+        border: InputBorder.none,
       ),
-      validator: (value) => value!.isEmpty ? '' : null,
+      inputFormatters: inputFormat
+          ? [FilteringTextInputFormatter.allow(RegExp(r'\d+\.?\d*'))]
+          : null,
+      validator: (value) => value!.isEmpty ? 'Enter a price' : null,
       onSaved: onSaved,
     );
   }
@@ -307,9 +354,20 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
       child: AbsorbPointer(
         child: TextFormField(
           style: const TextStyle(fontWeight: FontWeight.bold),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Schedule Date',
-            border: OutlineInputBorder(),
+            fillColor: Colors.grey.withOpacity(0.1),
+            filled: true,
+            hintText: "Enter number",
+            labelStyle: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
+            hintStyle: Theme.of(context)
+                .textTheme
+                .labelMedium
+                ?.copyWith(color: Colors.grey),
+            border: InputBorder.none,
           ),
           controller: TextEditingController(
             text: '${scheduleDate?.toLocal()}'.split(' ')[0],
@@ -335,7 +393,6 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
 
   Widget _buildMidpointsSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         midpoints.isNotEmpty
             ? const Text(
@@ -346,67 +403,39 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         ...midpoints.map((midpoint) {
           int index = midpoints.indexOf(midpoint);
           return Card(
-              child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(midpoint.city?.name ?? ""),
-                      Text(
-                        DateTimeUtil.displayTime(midpoint.arrivalTime),
-                      )
-                    ],
-                  ),
-                  midpoint.price != null
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("Price",
-                                style: TextStyle(color: context.greyColor)),
-                            Text((midpoint.price ?? "").toString(),
-                                style: TextStyle(color: context.greyColor)),
-                          ],
-                        )
-                      : Container(),
-                  Text(midpoint.description ?? "",
-                      style: TextStyle(color: context.greyColor)),
+                  Text(midpoint.city?.name ?? ""),
+                  Text(
+                    DateTimeUtil.displayTime(midpoint.arrivalTime),
+                  )
                 ],
-              )
-                  .padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10))
-                  .expanded(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Column(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit_location_alt_outlined,
-                          size: 20),
-                      onPressed: () {
-                        setState(() {
-                          _showMidpointBottomSheet(
-                              initialMidpoint: midpoint, index: index);
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.clear, size: 20),
-                      onPressed: () {
-                        setState(() {
-                          midpoints.removeAt(index);
-                        });
-                      },
-                    ),
-                  ],
-                ),
               ),
+              const Divider(thickness: 0.05),
+              midpoint.price != null
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Price",
+                            style: TextStyle(color: context.greyColor)),
+                        Text((midpoint.price ?? "").toString(),
+                            style: TextStyle(color: context.greyColor)),
+                      ],
+                    )
+                  : Container(),
+              if (midpoint.description?.isNotEmpty ?? false)
+                const Divider(thickness: 0.05),
+              Text(midpoint.description ?? "",
+                  style: TextStyle(color: context.greyColor)),
+              _midpointIcons(midpoint, index),
             ],
-          ));
+          ).padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10)));
         }),
         const SizedBox(
           height: AppInsets.inset5,
@@ -418,6 +447,31 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
             icon: const Icon(Icons.add),
             label: const Text('Add Midpoint'),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _midpointIcons(RouteMidpoint midpoint, int index) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          iconSize: 15,
+          color: context.successColor,
+          onPressed: () =>
+              _showMidpointBottomSheet(initialMidpoint: midpoint, index: index),
+        ),
+        IconButton(
+          icon: const Icon(Icons.clear_rounded),
+          iconSize: 15,
+          color: context.dangerColor,
+          onPressed: () {
+            setState(() {
+              midpoints.removeAt(index);
+            });
+          },
         ),
       ],
     );

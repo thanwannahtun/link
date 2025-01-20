@@ -534,8 +534,7 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-
+            const Divider(height: 16.0, thickness: 0.05),
             // Midpoints Section
             Padding(
               padding: const EdgeInsets.only(left: AppInsets.inset15),
@@ -554,11 +553,12 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
                         padding: const EdgeInsets.only(top: 8),
                         child: Row(
                           children: [
-                            Icon(
-                              isExpanded
-                                  ? Icons.arrow_drop_down_rounded
-                                  : Icons.arrow_drop_up_rounded,
-                              color: Colors.blueAccent,
+                            Text(
+                              isExpanded ? "Collapse" : "View All",
+                              style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: context.successColor,
+                                  color: context.successColor),
                             ),
                           ],
                         ),
@@ -568,9 +568,9 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
               ),
             ),
 
-            const SizedBox(height: 8),
+            const Divider(height: 16.0, thickness: 0.05),
 
-            // Destination & Price Per Traveller
+            // Destination & Price Per Traveller1
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -600,7 +600,7 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
                 ).expanded(),
               ],
             ),
-            const SizedBox(height: 8),
+            const Divider(height: 16.0, thickness: 0.05),
             _routeDescriptionWidget(widget.route.description),
 
             /// Edit Button and Accommodation
@@ -626,11 +626,13 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
                     IconButton(
                       icon: const Icon(Icons.edit_square),
                       iconSize: 15,
+                      color: context.successColor,
                       onPressed: widget.onEditRoute,
                     ),
                     IconButton(
                       icon: const Icon(Icons.clear_rounded),
                       iconSize: 15,
+                      color: context.dangerColor,
                       onPressed: widget.onRemoveRoute,
                     ),
                   ],
@@ -659,58 +661,57 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
   List<Widget> _buildMidpointSummaries(List<RouteMidpoint> midpoints) {
     int displayedMidpoints = isExpanded ? midpoints.length : 2;
     return midpoints.take(displayedMidpoints).map((midpoint) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: AppInsets.inset5),
-        child: Opacity(
-            opacity: 0.7,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+      return Card(
+        margin: const EdgeInsets.only(bottom: 5),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    midpoint.city?.name ?? "",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: context.greyColor),
+                  ),
+                  Text(
+                    DateTimeUtil.formatTime(
+                        context, TimeOfDay.fromDateTime(midpoint.arrivalTime!)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if ((midpoint.description ?? "").isNotEmpty)
                     Text(
-                      midpoint.city?.name ?? "",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        // color: Colors.black87,
+                      midpoint.description ?? "",
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      textAlign: TextAlign.start,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 3,
+                      softWrap: true,
+                    ).expanded(),
+                  if (((midpoint.price ?? 0).toString()).isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 4),
+                      child: Text(
+                        (midpoint.price ?? 0.0).toString(),
+                        style: TextStyle(color: context.greyColor),
                       ),
                     ),
-                    if ((midpoint.description ?? "").isNotEmpty)
-                      Text(
-                        midpoint.description ?? "",
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey),
-                        textAlign: TextAlign.start,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        softWrap: true,
-                      ),
-                  ],
-                ).expanded(flex: 2),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      DateTimeUtil.formatTime(context,
-                          TimeOfDay.fromDateTime(midpoint.arrivalTime!)),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    if (((midpoint.price ?? 0).toString()).isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 4),
-                        child: Text(
-                          (midpoint.price ?? 0.0).toString(),
-                          // style: TextStyle(color: Colors.grey[700]),
-                        ),
-                      ),
-                  ],
-                ).expanded(),
-              ],
-            )),
+                ],
+              ),
+              // const Divider(height: 16.0, thickness: 0.05),
+            ],
+          ),
+        ),
       );
     }).toList();
   }
