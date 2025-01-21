@@ -403,37 +403,38 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         ...midpoints.map((midpoint) {
           int index = midpoints.indexOf(midpoint);
           return Card(
+              elevation: 3.0,
               child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(midpoint.city?.name ?? ""),
-                  Text(
-                    DateTimeUtil.displayTime(midpoint.arrivalTime),
-                  )
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(midpoint.city?.name ?? ""),
+                      Text(
+                        DateTimeUtil.displayTime(midpoint.arrivalTime),
+                      )
+                    ],
+                  ),
+                  const Divider(thickness: 0.05),
+                  midpoint.price != null
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Price",
+                                style: TextStyle(color: context.greyColor)),
+                            Text((midpoint.price ?? "").toString(),
+                                style: TextStyle(color: context.greyColor)),
+                          ],
+                        )
+                      : Container(),
+                  if (midpoint.description?.isNotEmpty ?? false)
+                    const Divider(thickness: 0.05),
+                  Text(midpoint.description ?? "",
+                      style: TextStyle(color: context.greyColor)),
+                  _midpointIcons(midpoint, index),
                 ],
-              ),
-              const Divider(thickness: 0.05),
-              midpoint.price != null
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Price",
-                            style: TextStyle(color: context.greyColor)),
-                        Text((midpoint.price ?? "").toString(),
-                            style: TextStyle(color: context.greyColor)),
-                      ],
-                    )
-                  : Container(),
-              if (midpoint.description?.isNotEmpty ?? false)
-                const Divider(thickness: 0.05),
-              Text(midpoint.description ?? "",
-                  style: TextStyle(color: context.greyColor)),
-              _midpointIcons(midpoint, index),
-            ],
-          ).padding(
+              ).padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 10)));
         }),

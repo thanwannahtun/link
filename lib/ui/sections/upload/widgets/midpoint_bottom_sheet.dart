@@ -77,34 +77,38 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTitleText(context),
-                const SizedBox(height: AppInsets.inset15),
-                _buildCityAutocomplete(context),
-                const SizedBox(height: AppInsets.inset15),
-                _buildArrivalTimePicker(context),
-                const SizedBox(height: AppInsets.inset15),
-                _buildPriceFormField(context),
-                const SizedBox(height: AppInsets.inset15),
-                _buildDescriptionFormField(context),
-                const SizedBox(height: AppInsets.inset15),
-                _midpointButtonsRow(context),
-                const SizedBox(height: AppInsets.inset8),
-              ],
-            ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTitleText(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildCityAutocomplete(context),
+                      const SizedBox(height: AppInsets.inset15),
+                      _buildArrivalTimePicker(context),
+                      const SizedBox(height: AppInsets.inset15),
+                      _buildPriceFormField(context),
+                      const SizedBox(height: AppInsets.inset15),
+                      _buildDescriptionFormField(context),
+                      const SizedBox(height: AppInsets.inset15),
+                    ],
+                  ),
+                ),
+              ),
+              _midpointButtonsRow(context),
+            ],
           ),
         ),
       ),
@@ -204,16 +208,12 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
     return TextFormField(
       controller: _descriptionController,
       maxLines: null,
+      minLines: 3,
       decoration: InputDecoration(
         fillColor: Colors.grey.withOpacity(0.1),
         filled: true,
-        labelText: "Description",
-        labelStyle: Theme.of(context)
-            .textTheme
-            .labelLarge
-            ?.copyWith(fontWeight: FontWeight.bold),
         border: InputBorder.none,
-        hintText: ".. short description for the midpoint",
+        hintText: ".. short description",
         hintStyle: Theme.of(context)
             .textTheme
             .labelMedium
@@ -232,12 +232,12 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (_arrivalTime == null && !(_formKey.currentState!.validate())) {
-              _arrivalTimeColor = Colors.red;
-              setState(() {});
-              return;
-            }
-            if (_formKey.currentState!.validate() && _arrivalTime != null) {
+            if (_formKey.currentState!.validate()) {
+              if (_arrivalTime == null) {
+                _arrivalTimeColor = Colors.red;
+                setState(() {});
+                return;
+              }
               final midpoint = RouteMidpoint(
                 city: _selectedCity,
                 description: _descriptionController.text,

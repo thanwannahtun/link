@@ -95,10 +95,17 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
             ],
           ),
         ),
-        title: const Text('Create New Post'),
+        title: Text(
+          'Create New Post',
+          style: TextStyle(
+              color: context.onPrimaryColor,
+              fontSize: AppInsets.font20,
+              fontWeight: FontWeight.bold),
+        ),
         action: null,
         backButton: BackButton(
           onPressed: () => context.pop(),
+          color: context.onPrimaryColor,
         ));
   }
 

@@ -178,7 +178,7 @@ class RouteMidpoint extends Equatable {
 
   Map<String, dynamic> toJson() => {
         "city": city?.id,
-        // "arrivalTime": arrivalTime?.toIso8601String(),
+        "arrivalTime": arrivalTime?.toIso8601String(),
         // "departureTime": departureTime?.toIso8601String(),
         // 'order': order,
         // '_id': id,
