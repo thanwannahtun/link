@@ -615,6 +615,14 @@ class RouteMidpointDetailWidget extends StatelessWidget {
               Text(m.price.toString()).styled(fw: FontWeight.bold),
             ],
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Arrival Time").styled(color: context.greyColor),
+              Text(DateTimeUtil.displayTime(m.arrivalTime, nullValue: "-"))
+                  .styled(color: context.greyColor),
+            ],
+          ),
           ExpandableText(
             text: (m.description ?? "No description"),
             textStyle: TextStyle(color: context.greyColor),
