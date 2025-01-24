@@ -35,17 +35,26 @@ class PostRouteCubit extends Cubit<PostRouteState> {
     return _page;
   }
 
-  /// clearing ther state's [routeModels]
+  /// clearing the state's [routeModels]
+  ///
+  /// useful for scenario such as
+  /// [refreshing] the pages
+  ///
+  void clearRouteModels() {
+    emit(state.copyWith(routeModels: []));
+  }
+
+  /// clearing the state's [routes]
   ///
   /// useful for scenario such as
   /// [refreshing] the pages
   ///
   void clearRoutes() {
-    emit(state.copyWith(routeModels: []));
+    emit(state.copyWith(routes: []));
   }
 
-  /// update the [_page] value
-  /// if [value] is ommited , set [_page] to 1
+  /// update the [_page] value.
+  /// if [value] is ommited , set [_page] to [1]
   void updatePage({int? value}) {
     _page = value ?? 1;
   }

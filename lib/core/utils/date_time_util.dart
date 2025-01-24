@@ -49,6 +49,12 @@ class DateTimeUtil {
     );
   }
 
+  static String displayTime(DateTime? dateTime, {String? nullValue}) {
+    return dateTime != null
+        ? DateFormat('hh:mm a').format(dateTime)
+        : nullValue ?? "";
+  }
+
   // Date & Time picker Dialogs
 
   static Future<DateTime?> showDateTimePickerDialog(BuildContext context,

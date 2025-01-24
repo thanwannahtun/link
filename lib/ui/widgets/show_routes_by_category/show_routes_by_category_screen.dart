@@ -1,8 +1,7 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,14 +19,15 @@ import 'package:link/domain/enums/category_type.dart';
 import 'package:link/models/app.dart';
 import 'package:link/models/city.dart';
 import 'package:link/models/post.dart';
-import 'package:link/ui/screens/post_route_card.dart';
 import 'package:link/ui/screens/profile/route_model_card.dart';
 import 'package:link/ui/screens/route_detail_page.dart';
 import 'package:link/ui/sections/upload/route_array_upload/route_model/route_model.dart';
-import 'package:link/ui/utils/context.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widgets/custom_scaffold_body.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:link/ui/widgets/route_fetched_widgets/route_fetched_widgets.dart';
+
+import 'widgets/show_routes_by_category_fetch_more_shimmer_widget.dart';
+import 'widgets/show_routes_by_category_fetching_widget.dart';
 
 class ShowRoutesByCategoryScreen extends StatefulWidget {
   const ShowRoutesByCategoryScreen({super.key});
@@ -56,7 +56,6 @@ class _ShowRoutesByCategoryScreenState
 
   @override
   void initState() {
-    print("initStateCalled  :HotAndTrendingScreen");
     super.initState();
     initialQuery = APIQuery(categoryType: CategoryType.trendingRoutes);
     getPostWithRouteQuery = APIQuery(categoryType: CategoryType.postWithRoutes);
@@ -97,20 +96,21 @@ class _ShowRoutesByCategoryScreenState
   }
 
   void _onBottomDoubleSelect(NavigationStates event) {
-    print(event);
     if (mounted) {
       if (event == NavigationStates.B) {
-        print(
-            "[NavigationStates] State Equal ::: ${event == context.read<BottomSelectCubit>().state} ");
+        if (kDebugMode) {
+          print(
+              "[NavigationStates] State Equal ::: ${event == context.read<BottomSelectCubit>().state} ");
+        }
         if (context.read<BottomSelectCubit>().state == NavigationStates.B) {
-          print("[NavigationStates] Hello World! ");
+          if (kDebugMode) {
+            print("[NavigationStates] Hello World! ");
+          }
           // Update the UI conditionally
         }
       }
     }
   }
-
-  // int _fetchToggle = 0; // Counter to alternate between fetches
 
   void _onScroll() {
     if (_debounceTimer?.isActive ?? false) {
@@ -119,14 +119,16 @@ class _ShowRoutesByCategoryScreenState
 
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       if (_isBottom && (_postRouteCubit.state.status != BlocStatus.fetching)) {
-        print("_isBottom $_isBottom ");
+        if (kDebugMode) {
+          print("_isBottom $_isBottom ");
+        }
 
         // if (_fetchToggle % 2 == 0) {
         if (_postRouteCubit.getPage % 4 == 0) {
           // Fetch vertical list
           _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
         } else {
-          print("fetched for post with routes");
+          // debugPrint("fetched for post with routes");
 
           // Fetch horizontal list (posts with routes)
           _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
@@ -164,13 +166,7 @@ class _ShowRoutesByCategoryScreenState
   Widget build(BuildContext context) {
     return CustomScaffoldBody(
       body: RefreshIndicator.adaptive(
-        onRefresh: () async {
-          // _postRouteCubit.updatePage(); // set page to default
-          _trendingPosts = [];
-          _trendingRoutes = [];
-          _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
-        },
-        // child: _customScrollViewWidget(),
+        onRefresh: _onRefresh,
         child: _body(),
       ),
       backButton: _pushedRoutePage
@@ -209,6 +205,16 @@ class _ShowRoutesByCategoryScreenState
     );
   }
 
+  Future<void> _onRefresh() async {
+    _postRouteCubit
+      ..clearRoutes()
+      ..clearRouteModels()
+      ..updatePage();
+    _trendingPosts = [];
+    _trendingRoutes = [];
+    _postRouteCubit.getRoutesByCategory(query: query ?? initialQuery);
+  }
+
   /// For Temporary Purpose
   City getRandomCity() {
     final random = Random();
@@ -221,152 +227,111 @@ class _ShowRoutesByCategoryScreenState
     return BlocConsumer<PostRouteCubit, PostRouteState>(
       bloc: _postRouteCubit,
       builder: (context, state) {
-        debugPrint("::::::::::::: ${state.status}");
-        if (state.status == BlocStatus.fetchFailed && _trendingRoutes.isEmpty) {
-          return _buildShimmer(context);
-        } else if (state.status == BlocStatus.fetching &&
-            // _trendingPosts.isEmpty) {
-            _trendingRoutes.isEmpty) {
-          return _buildShimmer(context);
-        } else if (state.status == BlocStatus.fetched) {
+        /// Append the data fetched
+        if (state.status == BlocStatus.fetched) {
           _trendingPosts = state.routes;
           _trendingRoutes = state.routeModels;
         }
 
-        return _showPosts();
-
-        // final newPosts = state.routes;
-        // final newRoutes = state.routeModels;
-        // if (_postRouteCubit.getPage % 4 == 0) {
-        //   _trendingPosts.addAll(newPosts);
-        // }
-        // if (!(_postRouteCubit.getPage % 4 == 0)) {
-        //   _trendingRoutes.addAll(newRoutes);
-        // }
-        //
-        // print("=====> newRoutes ${newRoutes.length}");
-        //
-        // // final newPosts = state.routes;
-        // print("=====> _trendingRoutes after fetched ${_trendingRoutes.length}");
-        //
-        // return _showPosts();
-      },
-      listener: (context, state) {
+        /// Show error widget
         if (state.status == BlocStatus.fetchFailed &&
-            // _trendingPosts.isNotEmpty) {
-            _trendingRoutes.isNotEmpty) {
-          context.showSnackBar(SnackBar(
-            content: Text(state.error ?? "Internet Connection Error!"),
-          ));
-        }
-        /*
-        if (state.status == BlocStatus.fetchFailed) {
-          context.showSnackBar(
-            SnackBar(
-              content: Text(state.error ?? "Internet Connection Error!!"),
-              duration: const Duration(seconds: 3),
-              action: SnackBarAction(
-                  label: "Retry",
-                  onPressed: () {
-                    _postRouteCubit.fetchRoutes(
-                        query: {"categoryType": "trending", "limit": 10});
-                  }),
-            ),
+            state.routeModels.isEmpty) {
+          return const CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: true,
+                child: RouteFetchedFailWidget(),
+              ),
+            ],
           );
         }
-        */
+
+        /// Show loading shimmer
+        if (state.status == BlocStatus.fetching && state.routeModels.isEmpty) {
+          return const CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: true,
+                child: ShowRoutesByCategoryFetchingWidget(),
+              ),
+            ],
+          );
+        }
+
+        /// Show empty widget
+        if (state.status == BlocStatus.fetched && state.routeModels.isEmpty) {
+          return CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                child: RouteFetchedEmptyWidget(
+                  onActionPressed: () =>
+                      context.pushNamed(RouteLists.uploadNewPost),
+                ),
+              ),
+            ],
+          );
+        }
+
+        /// Show data state
+        return CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            _buildSliverAppBar(context),
+            _showPosts(),
+          ],
+        );
       },
+      listener: (context, state) {},
     );
   }
 
   Widget _showPosts() {
-    // if (_trendingPosts.isEmpty) {
-    if (_trendingRoutes.isEmpty) {
-      return _showEmptyTrendingWidget();
-    }
-    return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset10),
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            _buildSliverAppBar(context),
-            SliverList(
-                delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                // Insert widget every 15 items or based on other conditions
-                final shouldShowHorizontalWidget = (index % 15 == 0) &&
-                    index != 0 &&
-                    _trendingPosts.isNotEmpty;
+    return SliverList(
+        delegate: SliverChildBuilderDelegate(
+      (context, index) {
+        // Insert widget every 15 items or based on other conditions
+        final shouldShowHorizontalWidget =
+            ((index % 15) - 1 == 0) && index != 0 && _trendingPosts.isNotEmpty;
 
-                if (shouldShowHorizontalWidget) {
-                  return HorizontalPostWithRoutesWidget(
-                    posts: _trendingPosts,
-                    onFetchAllPressed: () {
-                      _postRouteCubit.getPostWithRoutes(
-                          query: getPostWithRouteQuery);
-                    },
-                  );
-                }
+        if (shouldShowHorizontalWidget) {
+          return HorizontalPostWithRoutesWidget(
+            posts: _trendingPosts,
+            onFetchAllPressed: () {
+              _postRouteCubit.getPostWithRoutes(query: getPostWithRouteQuery);
+            },
+          );
+        }
 
-                // Calculate the actual index considering additional horizontal widgets
-                final adjustedIndex = index - (index ~/ 15);
+        // Calculate the actual index considering additional horizontal widgets
+        final adjustedIndex = index - (index ~/ 15);
 
-                if (adjustedIndex >= 0 &&
-                    adjustedIndex < _trendingRoutes.length) {
-                  RouteModel route = _trendingRoutes[adjustedIndex];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: RouteInfoCardWidget(
-                      route: route,
-                      onRoutePressed: (route) {
-                        context.pushNamed(RouteLists.routeDetailPage,
-                            arguments: route);
-                      },
-                      onAgencyPressed: (route) {
-                        context.pushNamed(RouteLists.publicAgencyProfile,
-                            arguments: route.agency);
-                      },
-                    ),
-                  );
-                }
-
-                // Fallback for invalid index
-                return Shimmer.fromColors(
-                  baseColor: context.greyColor,
-                  highlightColor: context.greyFilled,
-                  child: const SizedBox(
-                    width: double.infinity,
-                    height: 250,
-                    child: Card(),
-                  ),
-                );
+        if (adjustedIndex >= 0 && adjustedIndex < _trendingRoutes.length) {
+          RouteModel route = _trendingRoutes[adjustedIndex];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: RouteInfoCardWidget(
+              route: route,
+              onRoutePressed: (route) {
+                context.pushNamed(RouteLists.routeDetailPage, arguments: route);
               },
-              childCount: _trendingRoutes.isNotEmpty
-                  ? _trendingRoutes.length +
-                      (_trendingRoutes.length ~/ 15) +
-                      (_postRouteCubit.state.status == BlocStatus.fetching
-                          ? 3
-                          : 0)
-                  : 0,
-            )),
-          ],
-        )
-        /*
-      Column(
-        children: [
-          SizedBox(
-            height: 45,
-            child: _buildSuggestionChips(),
-          ),
-          Expanded(
-              child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset5),
-            child: _postViewBuilder(),
-          )),
-        ],
-      ),
-      */
-        );
+              onAgencyPressed: (route) {
+                context.pushNamed(RouteLists.publicAgencyProfile,
+                    arguments: route.agency);
+              },
+            ),
+          );
+        }
+
+        // Fallback for invalid index
+        return const ShowRoutesByCategoryFetchMoreShimmerWidget();
+      },
+      childCount: _trendingRoutes.isNotEmpty
+          ? _trendingRoutes.length +
+              (_trendingRoutes.length ~/ 15) +
+              (_postRouteCubit.state.status == BlocStatus.fetching ? 3 : 0)
+          : 0,
+    ));
   }
 
   SliverAppBar _buildSliverAppBar(BuildContext context) {
@@ -374,8 +339,6 @@ class _ShowRoutesByCategoryScreenState
       floating: true,
       snap: true,
       shadowColor: context.greyFilled,
-      // pinned: true,
-      // expandedHeight: 20.0,
       automaticallyImplyLeading: false,
       backgroundColor: Theme.of(context).cardColor,
       flexibleSpace: FlexibleSpaceBar(
@@ -403,208 +366,11 @@ class _ShowRoutesByCategoryScreenState
     );
   }
 
-  Column _showEmptyTrendingWidget() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Center(
-          child: Card.filled(
-            elevation: 3,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppInsets.inset25, vertical: AppInsets.inset35),
-              child: Column(
-                children: [
-                  const Text(
-                    "There is no Trending Posts for you",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(
-                    height: AppInsets.inset10,
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                          onPressed: () => _postRouteCubit.getRoutesByCategory(
-                              query: query ?? initialQuery),
-                          child: const Icon(Icons.refresh_rounded)),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      ElevatedButton(
-                          onPressed: () =>
-                              context.pushNamed(RouteLists.uploadNewPost),
-                          child: const Text("Start Creating A Post!")),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
   Future<Object?> goPageDetail(Post post) =>
       context.pushNamed(RouteLists.trendingRouteCardDetail, arguments: post);
 
   Future<Object?> goAgencyPage(Post post) =>
       context.pushNamed(RouteLists.publicAgencyProfile, arguments: post.agency);
-
-  // Navigator.of(context)
-  // .pushNamed(RouteLists.postDetailPage, arguments: post);
-
-  _buildShimmer(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 50,
-          child: ListView.builder(
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(left: 5),
-                child: Shimmer.fromColors(
-                  baseColor: context.primaryColor,
-                  highlightColor: context.onPrimaryColor,
-                  child: const Chip(
-                    label: Text(" suggestion "),
-                    deleteIcon: Icon(Icons.search),
-                  ),
-                ),
-              );
-            },
-            scrollDirection: Axis.horizontal,
-            itemCount: 10,
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: 10,
-            itemBuilder: (context, index) {
-              return Shimmer.fromColors(
-                baseColor: context.primaryColor,
-                highlightColor: context.onPrimaryColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: PostRouteCard(
-                    post: const Post(),
-                    loading: true,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-final List<String> images = [];
-
-class ImagePageViewBuilder extends StatelessWidget {
-  const ImagePageViewBuilder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return PageView.builder(
-      itemCount: images.length,
-      itemBuilder: (context, index) {
-        return CachedImage(imageUrl: images[index]);
-      },
-    );
-  }
-}
-
-class HorizontalScrollableListWidget extends StatelessWidget {
-  const HorizontalScrollableListWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(
-            height: 250.0, // Adjust based on image size
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: images.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Image.network(images[index]),
-                );
-              },
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemBuilder: (context, index) => const Text("hello"),
-              itemCount: 40,
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class ThumbnailWidget extends StatelessWidget {
-  const ThumbnailWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return PageView.builder(
-      itemCount: images.length,
-      itemBuilder: (context, index) {
-        return Stack(
-          children: [
-            CachedImage(imageUrl: images[index]),
-            const Positioned(
-              bottom: 8.0,
-              right: 8.0,
-              child: Icon(Icons.play_arrow, color: Colors.white, size: 30.0),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class SliverGridWidget extends StatelessWidget {
-  const SliverGridWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 200.0,
-          flexibleSpace: FlexibleSpaceBar(
-            background: CachedImage(imageUrl: ""),
-          ),
-        ),
-        SliverGrid(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return Image.network(images[index]);
-            },
-            childCount: images.length,
-          ),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class HorizontalPostWithRoutesWidget extends StatelessWidget {

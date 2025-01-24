@@ -81,10 +81,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   Future<void> _onRefresh() async {
     context.read<CityCubit>().fetchCities();
     _suggestedRouteBloc
-      ..clearRoutes()
+      ..clearRouteModels()
       ..updatePage();
     _trendingRouteBloc
-      ..clearRoutes()
+      ..clearRouteModels()
       ..updatePage();
     _trendingRouteBloc.getRoutesByCategory(
         query: APIQuery(categoryType: CategoryType.trendingRoutes));

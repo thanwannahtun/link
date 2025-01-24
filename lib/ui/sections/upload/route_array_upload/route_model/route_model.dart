@@ -1,6 +1,8 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:link/models/app.dart';
+import 'package:path/path.dart';
 
 import '../../../../../models/agency.dart';
 import '../../../../../models/city.dart';
@@ -65,7 +67,10 @@ class RouteModel extends Equatable {
       // seats: json['seats'] as List<dynamic>?,
       description: json['description'],
       isSponsored: json['isSponsored'],
-      image: json['image'] != null ? '${App.baseImgUrl}${json['image']}' : null,
+
+      /// image: json['image'] != null ? '${App.baseImgUrl}${json['image']}' : null,
+      /// Urls from Cloudinary Cloud Storage
+      image: json['image'],
     );
   }
 
@@ -81,7 +86,8 @@ class RouteModel extends Equatable {
         // 'createdAt': createdAt?.toIso8601String(),
         // 'seats': seats,
         'description': description,
-        'isSponsored': isSponsored
+        'isSponsored': isSponsored,
+        'image': image != null ? basename(File(image ?? "").path) : null,
       };
 
   RouteModel copyWith({
@@ -172,7 +178,7 @@ class RouteMidpoint extends Equatable {
 
   Map<String, dynamic> toJson() => {
         "city": city?.id,
-        // "arrivalTime": arrivalTime?.toIso8601String(),
+        "arrivalTime": arrivalTime?.toIso8601String(),
         // "departureTime": departureTime?.toIso8601String(),
         // 'order': order,
         // '_id': id,
