@@ -18,7 +18,7 @@ class RouteFetchedFailWidget extends StatelessWidget {
             children: [
               Text(
                 "Something went wrong!\n"
-                "Please check you Network Connection 🛜",
+                "Please check your Network Connection 🛜",
                 // context.read<ConnectivityBloc>().state.status.toUpperCase(),
                 style: Theme.of(context)
                     .textTheme
