@@ -216,6 +216,8 @@ class AppTheme {
   static ElevatedButtonThemeData elevatedButtonDarkThemeData() {
     return ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          splashFactory: InkRipple.splashFactory, // Or InkSplash
+          surfaceTintColor: Colors.blue.withAlpha(30),
           iconColor: DarkTheme.buttonIconColor,
       backgroundColor: DarkTheme.buttonBgColor,
       textStyle: const TextStyle(

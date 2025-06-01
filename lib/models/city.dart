@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 part 'city.g.dart';
 
 @HiveType(typeId: 0)
+// ignore: must_be_immutable
 class City extends HiveObject with EquatableMixin {
   @HiveField(0)
   final String? id;

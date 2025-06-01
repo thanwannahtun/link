@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:link/bloc/bottom_select/bottom_select_cubit.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/ui/utils/route_list.dart';
@@ -37,15 +39,20 @@ class _DesktopPlatformNavigationBuilderState
     return Container(
       width: widget.isExtended ? 200 : 100,
       decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onSecondary,
         border: Border(
           right: BorderSide(
-            color: colorScheme.tertiaryContainer,
+            color: Theme.of(context).colorScheme.tertiaryContainer,
             width: 3.0,
           ),
         ),
       ),
       child: Stack(children: [
         NavigationRail(
+          backgroundColor: Theme.of(context).colorScheme.onSecondary,
+          indicatorShape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
           extended: widget.isExtended,
           labelType: widget.isExtended
               ? NavigationRailLabelType.none
@@ -66,6 +73,7 @@ class _DesktopPlatformNavigationBuilderState
               children: [
                 FloatingActionButton.extended(
                   key: const Key('upload_fab'),
+                  heroTag: 'upload_fab',
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
@@ -129,15 +137,15 @@ class _DesktopPlatformNavigationBuilderState
                 ),
                 backgroundColor: context.successColor,
                 onPressed: () {
-                  context.pushNamed(RouteLists.profileScreen);
+                  context
+                      .read<BottomSelectCubit>()
+                      .navigateTo(state: NavigationStates.profile);
                 },
                 child: const Icon(Icons.person),
               ),
             ],
           ),
         )
-
-        ///
       ]),
     );
   }
@@ -152,12 +160,7 @@ class Destination {
 }
 
 const List<Destination> destinations = <Destination>[
-  Destination(
-    Icons.home_outlined,
-    'Home',
-    Icons.home,
-  ),
+  Destination(Icons.home_outlined, 'Home', Icons.home),
   Destination(Icons.search_rounded, 'Hot', Icons.search),
   Destination(Icons.history_rounded, 'History', Icons.history),
-  // Destination(Icons.group_outlined, 'Groups'),
 ];

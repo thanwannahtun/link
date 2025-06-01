@@ -50,8 +50,6 @@ class _RouteCardFactory {
         return SuggestedRouteCard();
       case CategoryType.postWithRoutes:
         return PostWithRoutesCard();
-      default:
-        throw UnimplementedError('CategoryType $categoryType not implemented');
-    }
+     }
   }
 }

@@ -20,7 +20,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        /// for table and above layout
+        /// for tablet and above layout
         bool widerLayout = constraints.maxWidth > PlatformType.tablet.width;
         // final isExtended = constraints.maxWidth > 1000;
         final isExtended = constraints.maxWidth > PlatformType.laptop.width;
@@ -33,7 +33,8 @@ class App extends StatelessWidget {
                   if (widerLayout)
                     DesktopPlatformNavigationBuilder(
                       isExtended: isExtended,
-                      selectedDestinationIndex: 1,
+                      selectedDestinationIndex:
+                          NavigationStates.values.indexOf(state),
                       onDestinationSelected: (value) {
                         context
                             .read<BottomSelectCubit>()
@@ -69,17 +70,16 @@ class App extends StatelessWidget {
   }
 
   int toggleIndexedScreen(NavigationStates state) {
+
     switch (state) {
-      case NavigationStates.A:
+      case NavigationStates.home:
         return 0;
-      case NavigationStates.B:
+      case NavigationStates.explore:
         return 1;
-      case NavigationStates.C:
+      case NavigationStates.activity:
         return 2;
-      case NavigationStates.D:
+      case NavigationStates.profile:
         return 3;
-      default:
-        return 0;// Default case to handle unexpected states
     }
   }
 }

@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
@@ -84,17 +85,9 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
     return CustomScaffoldBody(
         key: const Key("NewRouteUploadScreen"),
-        body: Padding(
-          padding: const EdgeInsets.only(
-              top: AppInsets.inset15, left: 50, right: 50, bottom: 3),
-          child: Column(
-            children: [
-              Expanded(child: _buildFormFields()),
-            ],
-          ),
-        ),
+        body: _buildFormFields(),
         floatingActionButton: FloatingActionButton(
-          key:const Key("add_route") ,
+          key: const Key("add_route"),
           backgroundColor: context.successColor,
           onPressed: _addNewRoute,
           tooltip: "New Route",
@@ -118,23 +111,31 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   }
 
   Widget _buildFormFields() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset25),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            _titleField(),
-            const SizedBox(height: 16),
-            _descriptionField(context),
-            const SizedBox(height: 16),
-            _buildRoutesListView(),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final widerLayout = constraints.maxWidth > PlatformType.mobile.width;
+        final padding = widerLayout ?
+            const EdgeInsets.symmetric(horizontal: AppInsets.inset35) :
+            const EdgeInsets.symmetric(horizontal: AppInsets.inset15);
+        return SingleChildScrollView(
+          padding: padding,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                _titleField(),
+                const SizedBox(height: 16),
+                _descriptionField(context),
+                const SizedBox(height: 16),
+                _buildRoutesListView(constraints),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -196,7 +197,6 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     );
   }
 
-
   Future<void> _pickImageMultiple() async {
     final pickedFiles = await ImagePicker().pickMultiImage();
     if (pickedFiles.isNotEmpty) {
@@ -221,41 +221,29 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     );
   }
 
-  /// For Simple ListTile Routes List Design
-  Widget _buildRoutesListView() {
+  /// For Simple ListTile Routes Grid Design
+  Widget _buildRoutesListView(BoxConstraints constraints) {
+
     return BlocBuilder<PostCreateCubit, PostCreateState>(
       bloc: _postCreateCubit,
       builder: (context, state) {
         if (state.status == BlocStatus.added) {
           routes = state.routes;
-          return LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final mobile = constraints.maxWidth < PlatformType.tablet.width;
-              // final laptop = constraints.maxWidth < PlatformType.laptop.width;
-              final laptop = constraints.maxWidth < 1000;
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: mobile
-                      ? 1
-                      : laptop
-                          ? 2
-                          : 3,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 16,
-                  // childAspectRatio: 3,
-                ),
-                itemCount: routes.length,
-                itemBuilder: (context, index) {
-                  final route = routes[index];
-                  return RouteCardWidget(
-                    route: route,
-                    onEditRoute: () => _editRoute(route, index),
-                    onRemoveRoute: () =>
-                        _postCreateCubit.updateOrDeleteRoute(index: index),
-                  );
-                },
+
+          return MasonryGridView.count(
+            crossAxisCount: _getCrossAxisCount(constraints),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 16,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: routes.length,
+            itemBuilder: (context, index) {
+              final route = routes[index];
+              return RouteCardWidget(
+                route: route,
+                onEditRoute: () => _editRoute(route, index),
+                onRemoveRoute: () =>
+                    _postCreateCubit.updateOrDeleteRoute(index: index),
               );
             },
           );
@@ -265,6 +253,16 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
       },
     );
   }
+  int _getCrossAxisCount(BoxConstraints constraints) {
+    if (constraints.maxWidth < PlatformType.tablet.width) {
+      return 1;
+    } else if (constraints.maxWidth < PlatformType.laptop.width) {
+      return 2;
+    } else {
+      return 3;
+    }
+  }
+
 
   void _addNewRoute() async {
     await showModalBottomSheet<Route>(
@@ -319,7 +317,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
               type: SnackBarType.success);
         }
         if (state.status == BlocStatus.uploadFailed) {
-          SnackbarUtils.showSnackBar(context, "Failed to upload!",
+          SnackbarUtils.showSnackBar(context, state.error ?? "Upload Failed",
               type: SnackBarType.error);
         }
       },
@@ -335,7 +333,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
               ),
             ),
             onPressed: null,
-            child: const Text("Loading.."),
+            child: const Icon(Icons.file_upload_outlined,color: Colors.white,),
           );
         }
 
@@ -349,11 +347,7 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
             ),
           ),
           onPressed: () => _uploadRoute(),
-          child: const Text(
-            "Upload",
-            style: TextStyle(
-                fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          child: const Icon(Icons.file_upload_outlined,color: Colors.white,),
         );
       },
     );
@@ -416,9 +410,13 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // margin: const EdgeInsets.all(10),
-      elevation: 2,
+      borderOnForeground: true,
+      color: Theme.of(context).colorScheme.onSecondary,
       shape: RoundedRectangleBorder(
+        side: BorderSide(
+          color: context.onPrimaryColor.withAlpha(150),
+          width: 0.5,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
@@ -468,36 +466,33 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
             ),
             const Divider(height: 16.0, thickness: 0.05),
             // Midpoints Section
-            Padding(
-              padding: const EdgeInsets.only(left: AppInsets.inset15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ..._buildMidpointSummaries(widget.route.midpoints ?? []),
-                  if ((widget.route.midpoints?.length ?? 0) > 2)
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isExpanded = !isExpanded;
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          children: [
-                            Text(
-                              isExpanded ? "Collapse" : "View All",
-                              style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: context.successColor,
-                                  color: context.successColor),
-                            ),
-                          ],
-                        ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ..._buildMidpointSummaries(widget.route.midpoints ?? []),
+                if ((widget.route.midpoints?.length ?? 0) > 2)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isExpanded = !isExpanded;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          Text(
+                            isExpanded ? "Collapse" : "View All",
+                            style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                decorationColor: context.successColor,
+                                color: context.successColor),
+                          ),
+                        ],
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
 
             const Divider(height: 16.0, thickness: 0.05),
@@ -594,6 +589,8 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
     int displayedMidpoints = isExpanded ? midpoints.length : 2;
     return midpoints.take(displayedMidpoints).map((midpoint) {
       return Card(
+        // color: Theme.of(context).colorScheme.onSecondary.withAlpha(200),
+        color: Colors.black54,
         margin: const EdgeInsets.only(bottom: 5),
         child: Padding(
           padding: const EdgeInsets.all(8.0),

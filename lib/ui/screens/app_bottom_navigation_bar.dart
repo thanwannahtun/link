@@ -46,7 +46,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
   @override
   void initState() {
     super.initState();
-    _currentIndex = NavigationStates.A.index;
+    _currentIndex = NavigationStates.home.index;
   }
 
   @override

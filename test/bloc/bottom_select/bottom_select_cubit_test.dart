@@ -12,33 +12,33 @@ void main() {
   group(
     BottomSelectCubit,
     () {
-      const currentState = NavigationStates.C;
+      const currentState = NavigationStates.activity;
 
       test(
-        "Initial state is ${NavigationStates.A}",
-        () => expect(sut.state, NavigationStates.A),
+        "Initial state is ${NavigationStates.home}",
+        () => expect(sut.state, NavigationStates.home),
       );
 
       blocTest<BottomSelectCubit, NavigationStates>(
-        "navigate to ${NavigationStates.B}",
+        "navigate to ${NavigationStates.explore}",
         build: () {
           return sut;
         },
-        seed: () => NavigationStates.A,
-        act: (cubit) => cubit.navigateTo(state: NavigationStates.B),
-        expect: () => [NavigationStates.B],
+        seed: () => NavigationStates.home,
+        act: (cubit) => cubit.navigateTo(state: NavigationStates.explore),
+        expect: () => [NavigationStates.explore],
       );
 
       blocTest<BottomSelectCubit, NavigationStates>(
-        "current state is $currentState and navigate to ${NavigationStates.A} and keep navigating to $currentState",
+        "current state is $currentState and navigate to ${NavigationStates.home} and keep navigating to $currentState",
         build: () {
           return sut;
         },
         seed: () => currentState,
         act: (cubit) => cubit
-          ..navigateTo(state: NavigationStates.A)
+          ..navigateTo(state: NavigationStates.home)
           ..navigateTo(state: currentState),
-        expect: () => [NavigationStates.A, currentState],
+        expect: () => [NavigationStates.home, currentState],
       );
     },
   );

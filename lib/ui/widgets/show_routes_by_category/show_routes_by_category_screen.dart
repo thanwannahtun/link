@@ -97,12 +97,12 @@ class _ShowRoutesByCategoryScreenState
 
   void _onBottomDoubleSelect(NavigationStates event) {
     if (mounted) {
-      if (event == NavigationStates.B) {
+      if (event == NavigationStates.explore) {
         if (kDebugMode) {
           print(
               "[NavigationStates] State Equal ::: ${event == context.read<BottomSelectCubit>().state} ");
         }
-        if (context.read<BottomSelectCubit>().state == NavigationStates.B) {
+        if (context.read<BottomSelectCubit>().state == NavigationStates.explore) {
           if (kDebugMode) {
             print("[NavigationStates] Hello World! ");
           }
