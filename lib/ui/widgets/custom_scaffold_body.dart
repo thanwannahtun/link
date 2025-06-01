@@ -9,6 +9,7 @@ class CustomScaffoldBody extends StatelessWidget {
       this.backButton,
       this.resizeToAvoidBottomInset,
       this.action,
+      this.floatingActionButton,
       this.persistentFooterButtons});
 
   final Widget body;
@@ -16,6 +17,7 @@ class CustomScaffoldBody extends StatelessWidget {
   Widget? action;
   bool? resizeToAvoidBottomInset;
   Widget? backButton;
+  Widget? floatingActionButton;
   List<Widget>? persistentFooterButtons;
 
   @override
@@ -23,13 +25,15 @@ class CustomScaffoldBody extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       persistentFooterButtons: persistentFooterButtons,
-      appBar: _appBar(),
+      appBar: _appBar(context),
       body: _body(context),
+      floatingActionButton:floatingActionButton,
     );
   }
 
-  AppBar _appBar() {
+  AppBar _appBar(BuildContext context) {
     return AppBar(
+      backgroundColor: Theme.of(context).colorScheme.onSecondary,
       title: title,
       leadingWidth: backButton != null ? 56 : 0.0,
       // 56 == default
@@ -41,17 +45,18 @@ class CustomScaffoldBody extends StatelessWidget {
 
   Widget _body(BuildContext context) {
     return Container(
-        color: Theme.of(context).appBarTheme.backgroundColor,
+        // color: Theme.of(context).appBarTheme.backgroundColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: DraggableScrollableSheet(
           maxChildSize: 1,
           initialChildSize: 1,
           minChildSize: 1,
           builder: (context, scrollController) {
             return Container(
-              decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
+              decoration: const BoxDecoration(
+                  // color: Theme.of(context).scaffoldBackgroundColor,
                   // color: Theme.of(context).cardColor,
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10),
                   )),

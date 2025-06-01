@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-enum Platform {
+enum PlatformType {
   mobile(380),
   tablet(780),
   laptop(1300),
   desktop(1500);
 
   final int width;
-  const Platform(this.width);
+  const PlatformType(this.width);
 
-  operator >(Platform other) {
+  operator >(PlatformType other) {
     return width > other.width;
   }
 
@@ -22,34 +22,34 @@ enum Platform {
   }
 
   static bool isMobile(BuildContext context) =>
-      (context.size?.width ?? 0) <= Platform.mobile.width;
+      (context.size?.width ?? 0) <= PlatformType.mobile.width;
 
   static bool isTablet(BuildContext context) =>
-      (context.size?.width ?? 0) >= Platform.mobile.width &&
-      (context.size?.width ?? 0) <= Platform.laptop.width;
+      (context.size?.width ?? 0) >= PlatformType.mobile.width &&
+      (context.size?.width ?? 0) <= PlatformType.laptop.width;
 
   static bool isLapTop(BuildContext context) =>
-      (context.size?.width ?? 0) >= Platform.tablet.width &&
-      (context.size?.width ?? 0) <= Platform.desktop.width;
+      (context.size?.width ?? 0) >= PlatformType.tablet.width &&
+      (context.size?.width ?? 0) <= PlatformType.desktop.width;
 
   static bool isDeskTop(BuildContext context) =>
-      (context.size?.width ?? 0) > Platform.laptop.width;
+      (context.size?.width ?? 0) > PlatformType.laptop.width;
 
   /// [hello]
 // !  world
 // * nice
 // todo : great
 // ? normal
-  static Platform currentPlatform(BuildContext context) {
-    Platform platform;
+  static PlatformType currentPlatform(BuildContext context) {
+    PlatformType platform;
     if (isDeskTop(context)) {
-      platform = Platform.desktop;
+      platform = PlatformType.desktop;
     } else if (isLapTop(context)) {
-      platform = Platform.laptop;
+      platform = PlatformType.laptop;
     } else if (isMobile(context)) {
-      platform = Platform.mobile;
+      platform = PlatformType.mobile;
     } else {
-      platform = Platform.tablet;
+      platform = PlatformType.tablet;
     }
     return platform;
   }

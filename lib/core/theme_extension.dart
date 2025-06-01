@@ -17,7 +17,7 @@ extension TextThemeExtensions on BuildContext {
 
   Color get tertiaryColor => Theme.of(this).colorScheme.tertiary;
 
-  Color get successColor => Colors.blue;
+  Color get successColor => Colors.blue.shade800;
 
   Color get dangerColor => Colors.red;
 

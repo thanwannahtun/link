@@ -127,7 +127,7 @@ class _RouteCardVerticalWidgetState extends State<RouteCardVerticalWidget> {
                     Icon(
                       Icons.pin_drop,
                       color:
-                          Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                          Theme.of(context).iconTheme.color?.withAlpha(180),
                       size: 15,
                     ),
                     const SizedBox(

@@ -179,7 +179,7 @@ class _ShowRoutesByCategoryScreenState
         (query?.categoryType?.title) ??
             (initialQuery.categoryType?.title ?? ""),
         style: TextStyle(
-            color: context.onPrimaryColor,
+            color: Theme.of(context).textTheme.headlineLarge?.color,
             fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),

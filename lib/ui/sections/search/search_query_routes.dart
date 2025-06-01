@@ -81,7 +81,7 @@ class _SearchQueryRoutesState extends State<SearchQueryRoutes> {
           IconButton.filled(
               style: ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll(
-                    context.tertiaryColor.withOpacity(0.8)),
+                    context.tertiaryColor.withAlpha(200)),
               ),
               onPressed: () {},
               icon: Icon(

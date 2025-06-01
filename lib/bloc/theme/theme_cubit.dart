@@ -44,14 +44,25 @@ class ThemeCubit extends Cubit<ThemeMode> {
 
   /// Retrieve ThemeMode from a String
   Future<ThemeMode> _getThemeMode() async {
-    final themeModeString = await _hiveUtil.getValueByKey<String>(
-        HiveKeys.themeKey,
-        boxName: HiveBoxName.themeMode,
-        defaultValue: ThemeMode.system.name);
-    return ThemeMode.values.firstWhere(
-      (e) => e.name == themeModeString,
-      orElse: () => ThemeMode.system, // Default fallback
-    );
+    try{
+      if (kDebugMode) {
+        print(">>> Getting Thememode in _getThemeMode");
+      }
+      final themeModeString = await _hiveUtil.getValueByKey<String>(
+          HiveKeys.themeKey,
+          boxName: HiveBoxName.themeMode,
+          defaultValue: ThemeMode.system.name);
+      return ThemeMode.values.firstWhere(
+            (e) => e.name == themeModeString,
+        orElse: () => ThemeMode.system, // Default fallback
+      );
+    } on Exception catch (e,staceTrace) {
+      if (kDebugMode) {
+        print(">>> Error in _getThemeMode: $e ");
+        print(">>> Strace in _getThemeMode: $staceTrace ");
+      }
+      rethrow;
+    }
   }
 }
 /*

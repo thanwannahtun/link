@@ -98,7 +98,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                             controller: originController,
                             initialValue: origin?.name,
                             filled: true,
-                            fillColor: Colors.grey.withOpacity(0.1),
+                            fillColor: Colors.grey.withAlpha(25),
                             border: InputBorder.none,
                             hintText: "Enter Origin",
                             onSelected: (value) {
@@ -122,7 +122,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                               setState(() {});
                             },
                             filled: true,
-                            fillColor: Colors.grey.withOpacity(0.1),
+                            fillColor: Colors.grey.withAlpha(25),
                             border: InputBorder.none,
                             labelText: "Destination",
                             hintText: "Enter Destination",
@@ -199,7 +199,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
         style: TextStyle(color: context.greyColor),
         controller: _routeDescriptionController,
         decoration: InputDecoration(
-          fillColor: Colors.grey.withOpacity(0.1),
+          fillColor: Colors.grey.withAlpha(25),
           filled: true,
           labelStyle: Theme.of(context)
               .textTheme
@@ -289,7 +289,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withAlpha(180),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.close, color: Colors.white),
@@ -326,7 +326,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
       initialValue: initialValue,
       keyboardType: keyboardType,
       decoration: InputDecoration(
-        fillColor: Colors.grey.withOpacity(0.1),
+        fillColor: Colors.grey.withAlpha(25),
         filled: true,
         labelText: label,
         hintText: hintText,
@@ -356,7 +356,7 @@ class _AddRouteScreenState extends State<AddRouteScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             labelText: 'Schedule Date',
-            fillColor: Colors.grey.withOpacity(0.1),
+            fillColor: Colors.grey.withAlpha(25),
             filled: true,
             hintText: "Enter number",
             labelStyle: Theme.of(context)

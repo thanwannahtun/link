@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
+import 'package:link/core/utils/platform.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/sections/upload/post_create/post_create_cubit.dart';
@@ -82,18 +83,22 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     debugPrint("rebuild");
 
     return CustomScaffoldBody(
+        key: const Key("NewRouteUploadScreen"),
         body: Padding(
           padding: const EdgeInsets.only(
-              top: AppInsets.inset15,
-              left: AppInsets.inset15,
-              right: AppInsets.inset15,
-              bottom: 3),
+              top: AppInsets.inset15, left: 50, right: 50, bottom: 3),
           child: Column(
             children: [
               Expanded(child: _buildFormFields()),
-              _buildSubmitButton(),
             ],
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          key:const Key("add_route") ,
+          backgroundColor: context.successColor,
+          onPressed: _addNewRoute,
+          tooltip: "New Route",
+          child: const Icon(Icons.add),
         ),
         title: Text(
           'Create New Post',
@@ -102,7 +107,10 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
               fontSize: AppInsets.font20,
               fontWeight: FontWeight.bold),
         ),
-        action: null,
+        action: Container(
+          margin: const EdgeInsets.only(right: AppInsets.inset15),
+          child: _buildSubmitButton(),
+        ),
         backButton: BackButton(
           onPressed: () => context.pop(),
           color: context.onPrimaryColor,
@@ -111,12 +119,12 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
   Widget _buildFormFields() {
     return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: AppInsets.inset25),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // _buildImageCarousel(),
             const SizedBox(height: 8),
             _titleField(),
             const SizedBox(height: 16),
@@ -188,87 +196,6 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     );
   }
 
-  Widget _buildImageCarousel() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // const Opacity(
-        //   opacity: 0.7,
-        //   child: Text('Images',
-        //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        // ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: images.length + 1, // Include the "Add" button
-            itemBuilder: (context, index) {
-              if (index == images.length) {
-                // Add new image button
-                return GestureDetector(
-                  onTap: _pickImageMultiple,
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(child: Icon(Icons.add_a_photo)),
-                  ),
-                );
-              }
-              return Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.file(
-                      File(images[index]),
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          images.removeAt(index);
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-        /*
-        SizedBox(
-          height: 100,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildImageCard(),
-              _buildImageCard(),
-              _buildImageCard(),
-            ],
-          ),
-        ),
-      */
-      ],
-    );
-  }
 
   Future<void> _pickImageMultiple() async {
     final pickedFiles = await ImagePicker().pickMultiImage();
@@ -296,18 +223,29 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
 
   /// For Simple ListTile Routes List Design
   Widget _buildRoutesListView() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 8),
-        BlocBuilder<PostCreateCubit, PostCreateState>(
-          bloc: _postCreateCubit,
-          builder: (context, state) {
-            if (state.status == BlocStatus.added) {
-              routes = state.routes;
-              return ListView.builder(
+    return BlocBuilder<PostCreateCubit, PostCreateState>(
+      bloc: _postCreateCubit,
+      builder: (context, state) {
+        if (state.status == BlocStatus.added) {
+          routes = state.routes;
+          return LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final mobile = constraints.maxWidth < PlatformType.tablet.width;
+              // final laptop = constraints.maxWidth < PlatformType.laptop.width;
+              final laptop = constraints.maxWidth < 1000;
+              return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: mobile
+                      ? 1
+                      : laptop
+                          ? 2
+                          : 3,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 16,
+                  // childAspectRatio: 3,
+                ),
                 itemCount: routes.length,
                 itemBuilder: (context, index) {
                   final route = routes[index];
@@ -319,25 +257,12 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
                   );
                 },
               );
-            } else {
-              return Container();
-            }
-          },
-        ),
-        const SizedBox(height: 8),
-        Center(
-          child: ElevatedButton.icon(
-            onPressed: _addNewRoute,
-            icon: const Icon(Icons.add),
-            label: const Center(
-              child: Text(
-                'Add Route(s)',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ),
-        )
-      ],
+            },
+          );
+        } else {
+          return Container();
+        }
+      },
     );
   }
 
@@ -385,53 +310,53 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   }
 
   Widget _buildSubmitButton() {
-    return ElevatedButton(
-        onPressed: () {
-          // Submit to the server
-          _uploadRoute();
-        },
-        child: BlocConsumer<PostRouteCubit, PostRouteState>(
-          builder: (BuildContext context, PostRouteState state) {
-            if (state.status == BlocStatus.uploading) {
-              return const Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator.adaptive(strokeWidth: 3),
-                    Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Text("uploading..."),
-                    ),
-                  ],
-                ),
-              );
-            } else if (state.status == BlocStatus.uploadFailed) {
-              return const Center(
-                child: Text(
-                  'Try again',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red),
-                ),
-              );
-            }
-            return const Center(
-              child: Text(
-                'Upload Route',
-                style: TextStyle(fontSize: 16),
+    return BlocConsumer<PostRouteCubit, PostRouteState>(
+      listener: (BuildContext context, PostRouteState state) {
+        if (state.status == BlocStatus.uploaded) {
+          /// exit the page
+          context.pop();
+          SnackbarUtils.showSnackBar(context, "Successfully Uploaded",
+              type: SnackBarType.success);
+        }
+        if (state.status == BlocStatus.uploadFailed) {
+          SnackbarUtils.showSnackBar(context, "Failed to upload!",
+              type: SnackBarType.error);
+        }
+      },
+      builder: (BuildContext context, PostRouteState state) {
+        if (state.status == BlocStatus.uploading) {
+          return ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade800,
+              textStyle: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          },
-          listener: (BuildContext context, PostRouteState state) {
-            if (state.status == BlocStatus.uploaded) {
-              context.pop();
-              SnackbarUtils.showSnackBar(context, "Successfully Uploaded",
-                  type: SnackBarType.success);
-            }
-          },
-        )).padding(padding: const EdgeInsets.symmetric(vertical: 5));
+            ),
+            onPressed: null,
+            child: const Text("Loading.."),
+          );
+        }
+
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue.shade800,
+            textStyle: const TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onPressed: () => _uploadRoute(),
+          child: const Text(
+            "Upload",
+            style: TextStyle(
+                fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        );
+      },
+    );
   }
 
   _uploadRoute() async {

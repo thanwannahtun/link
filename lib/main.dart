@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -15,6 +18,7 @@ import 'package:link/repositories/city_repo.dart';
 import 'package:link/ui/utils/route_generator.dart';
 import 'package:link/ui/utils/route_list.dart';
 import 'package:link/ui/widgets/connectivity/connectiviy_listener.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'bloc/agency/agency_cubit.dart';
 import 'ui/widgets/multi_repository_provider_wrapper.dart';
@@ -25,7 +29,23 @@ final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Hive.initFlutter();
+  String? path;
+  /// if web
+  /// find the suitable path
+  /// if current platform is linux , macos , window then use getApplicationSupportDirectory()
+  /// else use getApplicationDocumentsDirectory()
+
+  if (kIsWeb) {
+    // path = null;
+    path = (await getTemporaryDirectory()).path;
+  } else if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+    path = (await getApplicationSupportDirectory()).path;
+  } else {
+    path = (await getApplicationDocumentsDirectory()).path;
+  }
+  debugPrint(">>> path :: $path ");
+  await Hive.initFlutter(path);
+  // await Hive.initFlutter();
 
   // Register Adapter
   Hive.registerAdapter(CityAdapter());

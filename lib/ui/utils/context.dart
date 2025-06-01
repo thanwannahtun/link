@@ -125,10 +125,10 @@ class Context {
                           border: Border(
                               top: BorderSide(
                                   color:
-                                      context.tertiaryColor.withOpacity(0.7)),
+                                      context.tertiaryColor.withAlpha(180)),
                               bottom: BorderSide(
                                   color:
-                                      context.tertiaryColor.withOpacity(0.7)))),
+                                      context.tertiaryColor.withAlpha(180)))),
                       child: ListView.separated(
                           shrinkWrap: true,
                           itemBuilder: itemBuilder,

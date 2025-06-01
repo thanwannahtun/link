@@ -120,7 +120,7 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
       controller: _priceController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
-        fillColor: Colors.grey.withOpacity(0.1),
+        fillColor: Colors.grey.withAlpha(25),
         filled: true,
         labelText: "Price",
         hintText: "Enter number",
@@ -175,7 +175,7 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
           _selectedCity = city;
         },
         initialValue: widget.initialValue?.city?.name ?? '',
-        fillColor: Theme.of(context).primaryColor.withOpacity(0.5),
+        fillColor: Theme.of(context).primaryColor.withAlpha(125),
         filled: true,
         border: InputBorder.none,
         hintText: "Enter Midpoint",
@@ -210,7 +210,7 @@ class _AddOrUpdateMidpointWidgetState extends State<MidpointBottomSheet> {
       maxLines: null,
       minLines: 3,
       decoration: InputDecoration(
-        fillColor: Colors.grey.withOpacity(0.1),
+        fillColor: Colors.grey.withAlpha(25),
         filled: true,
         border: InputBorder.none,
         hintText: ".. short description",
