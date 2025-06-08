@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:link/core/theme_extension.dart';
+import 'package:link/ui/screens/profile/agency_info_action_bar.dart';
 import 'package:link/ui/widget_extension.dart';
 
 import '../../../bloc/agency/agency_cubit.dart';
@@ -14,6 +15,7 @@ import '../../../domain/bloc_utils/bloc_status.dart';
 import '../../../models/agency.dart';
 import '../../../models/post.dart';
 import '../post_route_card.dart';
+import 'sliver_persistent_header_delegate.dart';
 
 class PublicAgencyProfileScreen extends StatefulWidget {
   const PublicAgencyProfileScreen({super.key});
@@ -44,6 +46,8 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
   late final ValueNotifier<String?> _postSectionFilterNotifier;
   final List<String> categories = ['Latest', 'Popular'];
 
+  bool widerScreen = false;
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +75,9 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
 
   @override
   void didChangeDependencies() {
+    print("didChangeDependencies called!");
+    /// widerScreen
+    widerScreen = MediaQuery.of(context).size.width > 600;
     if (_initial) {
       if (ModalRoute.of(context)?.settings.arguments != null) {
         Agency agency = ModalRoute.of(context)?.settings.arguments as Agency;
@@ -85,33 +92,6 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     super.didChangeDependencies();
   }
 
-  // Method to handle tab change
-  void _onTabChanged(int index) {
-    switch (index) {
-      case 0:
-        // Fetch posts data
-        // if (_postTabCubitPosts.isEmpty) {
-        //   _postTabCubit.fetchRoutes(query: {"limit": 10});
-        // }
-        break;
-      case 1:
-        // Fetch services data
-
-        if (_agencyLists.isEmpty) {
-          _agencyListBloc.fetAgencies();
-        }
-        break;
-      case 2:
-        // Fetch ratings data
-        context.read<AgencyCubit>().fetchRatings();
-        break;
-      case 3:
-        // Fetch gallery images
-        context.read<AgencyCubit>().fetchGalleryImages();
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     print("build method Called!");
@@ -120,76 +100,42 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
       builder: (BuildContext context, AgencyState state) {
         if (state.status == BlocStatus.fetched) {
           _agency = state.agencies.first;
-          return DefaultTabController(
-            length: 4, // Number of sections (tabs)
-            child: Scaffold(
-              // appBar: _appBar(),
-              body: NestedScrollView(
-                headerSliverBuilder: (context, innerBoxIsScrolled) {
-                  return [
-                    // SliverAppBar to stick the TabBar when scrolling
-                    // _sliverAppBar_normal(),
-                    _sliverAppBarDegree2(),
-                    //
-                    _agencyInfoBoxAdapter(),
-                    // Custom SliverPersistentHeader with TabBar
-                    _customSliverPersistentHeader(),
-                    // _sliverList_builder(),
-                  ];
-                },
-                body: TabBarView(
-                  // body: IndexedStack(
-                  //   index: _currentIndex,
-                  // controller: _tabController,
-                  children: [
-                    _buildPostSection(context),
-                    _buildServicesSection(context),
-                    _buildRatingsSection(context),
-                    _buildGallerySection(context),
-                  ],
-                ),
-              ),
-              /*Column(
-            children: [
-              // The info widget you want to place between AppBar and TabBar
-              Container(
-                height: 200, // Your desired height
-                color: Colors.blueGrey, // Customize as needed
-                child: const Center(
-                  child: Text(
-                    'Agency Highlight Info',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+
+              return DefaultTabController(
+              length: 4, // Number of sections (tabs)
+              child: Scaffold(
+                body: NestedScrollView(
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
+                  key: const PageStorageKey(
+                      "public_agency_profile_tab_bar_view"),
+                  headerSliverBuilder: (context, innerBoxIsScrolled) {
+                    return [
+                      _agencyAppBar(),
+                      _agencyInfoBoxAdapter(),
+                      SliverToBoxAdapter(
+                          child: Divider(color: Colors.grey.shade900)),
+                      const AgencyInfoActionBar(),
+                      SliverToBoxAdapter(
+                          child:
+                              Divider(height: 1, color: Colors.grey.shade900)),
+                      _profileStickySliverHeader(widerScreen),
+
+                    ];
+                  },
+                  body: TabBarView(
+                    children: [
+                      _buildAboutSection(context),
+                      _buildPostSection(context),
+                      _buildServicesSection(context),
+                      _buildGallerySection(context),
+                    ],
                   ),
                 ),
               ),
-
-              // The TabBar (below the info widget)
-              const TabBar(
-                isScrollable: true,
-                tabs: [
-                  Tab(text: "About"),
-                  Tab(text: "Services Offered"),
-                  Tab(text: "Ratings & Reviews"),
-                  Tab(text: "Gallery"),
-                ],
-              ),
-
-              TabBarView(
-                children: [
-                  _buildAboutSection(context),
-                  _buildServicesSection(context),
-                  _buildRatingsSection(context),
-                  _buildGallerySection(context),
-                ],
-              ).expanded(),
-            ],
-          ),
-          */
-            ),
+            );},
           );
         } else {
           return const Scaffold(
@@ -224,32 +170,51 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     );
   }
 
-  SliverPersistentHeader _customSliverPersistentHeader() {
+  SliverPersistentHeader _profileStickySliverHeader(bool widerScreen) {
     return SliverPersistentHeader(
       pinned: true, // Makes the TabBar stick to the top
       delegate: CustomSliverPersistentHeaderDelegate(
         child: TabBar(
-          isScrollable: true,
-          overlayColor: WidgetStatePropertyAll(context.primaryColor),
-          indicatorColor: Colors.deepPurpleAccent,
-          indicatorWeight: 3.0,
+          indicator: BoxDecoration(
+            color: context.tertiaryColor,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          isScrollable: widerScreen ? false : true,
+          indicatorWeight: 1,
           // controller: _tabController,
-          onTap: (value) {
-            print("onTap ::: $value");
-            // _currentIndex = value;
-            _onTabChanged(value);
-            // setState(() {});
-            // _onTabChanged(_currentIndex);
-          },
-          tabs: const [
-            Tab(text: "Posts"),
-            Tab(text: "Services Offered"),
-            Tab(text: "Ratings & Reviews"),
-            Tab(text: "Gallery"),
+          onTap: (value) {},
+          tabs: [
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Tab(text: "About")),
+            Container(
+                margin: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Tab(text: "Posts")),
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Tab(text: "Services")),
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Tab(text: "Gallery")),
           ],
-          dividerColor: context.primaryColor,
-          unselectedLabelColor: context.primaryColor,
-          labelColor: context.secondaryColor,
+          dividerHeight: 0.05,
+          splashBorderRadius: BorderRadius.circular(5),
+          splashFactory: InkSplash.splashFactory,
+          labelColor: context.onPrimaryColor,
+          unselectedLabelColor: Colors.grey.shade800,
         ),
       ),
     );
@@ -268,9 +233,10 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     );
   }
 
-  SliverAppBar _sliverAppBarDegree2() {
+  SliverAppBar _agencyAppBar() {
     return SliverAppBar(
       pinned: true,
+      backgroundColor:Theme.of(context).scaffoldBackgroundColor,
       floating: false,
       // automaticallyImplyLeading: false, // Removes back button
       expandedHeight: 200.0, // Expands the AppBar
@@ -280,9 +246,9 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
 
         title: Text(
           _agency?.name ?? 'Agency Name',
-          style: const TextStyle(
+          style:  TextStyle(
             fontSize: 20,
-            color: Colors.white,
+            color:Theme.of(context).textTheme.headlineSmall?.color  ,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -290,7 +256,7 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
           fit: StackFit.expand,
           children: [
             Container(
-              decoration: const BoxDecoration(
+              decoration:  const BoxDecoration(
                   backgroundBlendMode: BlendMode.screen,
                   gradient: LinearGradient(
                     colors: [Colors.deepPurple, Colors.blueAccent],
@@ -318,72 +284,13 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     // return _buildPostContentWidgetNestedScrollView();
     // _nestedScrollViewForPostContentSection(categories, allPosts);
     // return BuildPostSection();
-    return const PostSectionBuilder();
+    return const PostSectionBuilder(key: Key("post_section_builder"));
     // return BuildPostSection(
     //     postSectionFilterNotifier: _postSectionFilterNotifier,
     //     categories: categories,
     //     bloc: _postTabCubit,
     //     postTabCubitPosts: _postTabCubitPosts);
   }
-
-/*
-  // ignore: unused_element
-  NestedScrollView _nestedScrollViewForPostContentSection(
-      List<String> categories, List<PostModel> allPosts) {
-    return NestedScrollView(
-      headerSliverBuilder: (context, innerBoxIsScrolled) {
-        return [
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyHeaderDelegate(
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownButton<String>(
-                  value: categories.first,
-                  onChanged: (String? newValue) {
-                    // setState(() {
-                    //   selectedCategory = newValue;
-                    //   filterPosts(); // Filter posts based on selected category
-                    // });
-                  },
-                  items:
-                      categories.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-          ),
-        ];
-      },
-      body: BlocConsumer<PostRouteCubit, PostRouteState>(
-          bloc: _postTabCubit,
-          listener: (BuildContext context, PostRouteState state) {},
-          builder: (BuildContext context, PostRouteState state) {
-            return CustomScrollView(
-              slivers: [
-                _agencyInfoBoxAdapter(),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      return ListTile(
-                        title: Text(allPosts[index].title),
-                        subtitle: Text(allPosts[index].content),
-                      );
-                    },
-                    childCount: allPosts.length,
-                  ),
-                ),
-              ],
-            );
-          }),
-    );
-  }
-*/
 
   ///
   ///
@@ -460,6 +367,7 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     print("rebuild _buildServicesSection");
 
     return Column(
+      key: const PageStorageKey("services_section"),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
@@ -503,11 +411,11 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
   }
 
   // Ratings and Reviews Section
-  Widget _buildRatingsSection(BuildContext context) {
+  Widget _buildAboutSection(BuildContext context) {
     print("rebuild _buildRatingsSection");
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      key: const PageStorageKey("ratings_and_reviews_section"),
       children: [
         const Text(
           'Ratings & Reviews',
@@ -574,9 +482,9 @@ class _PublicAgencyProfileScreenState extends State<PublicAgencyProfileScreen>
     /// For Tempory purpose
     List<String> gallery = ["", "", "", "", "", "", "", "", "", ""];
     // : [];
-    return Column(children: [
+    return Column(key: const PageStorageKey("gallery_section"), children: [
       Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(AppInsets.inset15),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -689,10 +597,8 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
 
   @override
   void didChangeDependencies() {
-    print(">PostSectionBuilder> didChangeDependencies");
     super.didChangeDependencies();
     if (_initial) {
-      print(">PostSectionBuilder> _initial $_initial");
       if (_postOfAgencies.isEmpty) {
         // _postRouteCubit.fetchRoutes(
         //     query: {"limit": 10, "agency_id": "66b8d3c63e1a9b47a2c0e6a5"});
@@ -705,6 +611,7 @@ class _PostSectionBuilderState extends State<PostSectionBuilder>
     super.build(context);
     return Scaffold(
       body: Column(
+        key: widget.key,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
@@ -932,63 +839,6 @@ class PostContentWidget extends StatelessWidget {
   }
 }
 
-// Custom SliverPersistentHeaderDelegate class
-class CustomSliverPersistentHeaderDelegate
-    extends SliverPersistentHeaderDelegate {
-  final TabBar child;
-
-  CustomSliverPersistentHeaderDelegate({required this.child});
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white, // Background color for the TabBar
-      child: child, // The TabBar is the child widget
-    );
-  }
-
-  @override
-  double get maxExtent => child.preferredSize.height;
-
-  @override
-  double get minExtent => child.preferredSize.height;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return true;
-  }
-}
-
-// Sticky Header Delegate for Dropdown
-class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  _StickyHeaderDelegate({required this.child});
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      child: child,
-    );
-  }
-
-  @override
-  double get maxExtent => child is PreferredSizeWidget
-      ? (child as PreferredSizeWidget).preferredSize.height
-      : 100;
-
-  @override
-  double get minExtent => maxExtent;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return true;
-  }
-}
-
 /// Model
 ///
 // Sample data model for Post
@@ -1053,60 +903,3 @@ class _DropdownCategoryState extends State<DropdownCategory> {
     );
   }
 }
-
-/*
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:link/core/theme_extension.dart';
-import 'package:link/domain/bloc_utils/bloc_status.dart';
-
-import '../../../bloc/agency/agency_cubit.dart';
-import '../../../models/agency.dart';
-
-class PublicProfileScreen extends StatefulWidget {
-  const PublicProfileScreen({super.key});
-
-  @override
-  State<PublicProfileScreen> createState() => _PublicProfileScreenState();
-}
-
-class _PublicProfileScreenState extends State<PublicProfileScreen> {
-  Agency? _agency;
-
-  bool _initial = true;
-
-  @override
-  void didChangeDependencies() {
-    if (_initial) {
-      if (ModalRoute.of(context)?.settings.arguments != null) {
-        Agency agency = ModalRoute.of(context)?.settings.arguments as Agency;
-        context.read<AgencyCubit>().fetAgencies(agencyId: agency.id);
-      }
-      _initial = false;
-    }
-    super.didChangeDependencies();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<AgencyCubit, AgencyState>(
-        listener: (BuildContext context, AgencyState state) {},
-        builder: (BuildContext context, AgencyState state) {
-          if (state.status == BlocStatus.fetched) {
-            _agency = state.agencies.first;
-            print("_agency::: ${_agency?.toJson()} ");
-            return Scaffold(
-              appBar: AppBar(
-                title: Text(_agency?.name ?? "HELLO"),
-              ),
-              backgroundColor: context.tertiaryColor,
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator.adaptive(),
-            );
-          }
-        });
-  }
-}
-*/

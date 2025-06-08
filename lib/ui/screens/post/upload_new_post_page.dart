@@ -417,7 +417,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
   Text _showMidpointDescription(BuildContext context) {
     return Text(
       "this is short info description",
-      style: TextStyle(color: context.onPrimaryColor.withOpacity(0.8)),
+      style: TextStyle(color: context.onPrimaryColor.withAlpha(200)),
       textAlign: TextAlign.center,
     );
   }
@@ -1015,7 +1015,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       controller: _midpointDescriptionController,
       decoration: AppStyle.inputDecoration(context).copyWith(
           hintText: "Description",
-          hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7))),
+          hintStyle: TextStyle(color: context.onPrimaryColor.withAlpha(180))),
     );
   }
 
@@ -1063,7 +1063,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       controller: _midpointDepartureTimeController,
       decoration: AppStyle.inputDecoration(context).copyWith(
         suffixIcon: const Icon(Icons.date_range_rounded),
-        hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7)),
+        hintStyle: TextStyle(color: context.onPrimaryColor.withAlpha(180)),
         hintText:
             " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}",
       ),
@@ -1087,7 +1087,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       controller: _midpointArrivalDateController,
       decoration: AppStyle.inputDecoration(context).copyWith(
           suffixIcon: const Icon(Icons.date_range_rounded),
-          hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7)),
+          hintStyle: TextStyle(color: context.onPrimaryColor.withAlpha(180)),
           hintText:
               " ${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}"),
     );
@@ -1130,7 +1130,7 @@ class _UploadNewPostPageState extends State<UploadNewPostPage> {
       controller: _midpointCityController,
       decoration: AppStyle.inputDecoration(context).copyWith(
         hintText: "City Name",
-        hintStyle: TextStyle(color: context.onPrimaryColor.withOpacity(0.7)),
+        hintStyle: TextStyle(color: context.onPrimaryColor.withAlpha(180)),
         suffixIcon: const Icon(Icons.location_on_outlined),
       ),
       style: TextStyle(color: context.onPrimaryColor),

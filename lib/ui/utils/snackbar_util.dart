@@ -103,7 +103,6 @@ class SnackbarUtils {
       case SnackBarType.warning:
         return Icons.warning;
       case SnackBarType.info:
-      default:
         return Icons.info;
     }
   }
@@ -118,7 +117,7 @@ class SnackbarUtils {
       case SnackBarType.warning:
         return Colors.orange;
       case SnackBarType.info:
-      default:
+      // default:
         return Colors.blue;
     }
   }

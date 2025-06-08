@@ -9,6 +9,7 @@ import 'package:link/ui/screens/post/upload_new_post_page.dart';
 
 import 'package:link/ui/sections/hot_and_trending/trending_route_card_detail.dart';
 import 'package:link/ui/screens/post_detail.dart';
+import 'package:link/ui/sections/profile/profile_screen.dart';
 import 'package:link/ui/widgets/show_routes_by_category/show_routes_by_category_screen.dart';
 import 'package:link/ui/screens/splash_screen.dart';
 import 'package:link/ui/sections/hot_and_trending/trending_routes_card.dart';
@@ -117,6 +118,19 @@ class RouteGenerator {
                     postRouteRepo: context.read<PostRouteRepo>()),
               ),
             ], child: const HeroHomeScreen());
+          },
+        );
+
+      case RouteLists.profileScreen:
+        return _navigateRoute(
+          settings: settings,
+          builder: (context) {
+            return MultiBlocProvider(providers: [
+              BlocProvider<PostRouteCubit>(
+                create: (BuildContext context) => PostRouteCubit(
+                    postRouteRepo: context.read<PostRouteRepo>()),
+              ),
+            ], child: const ProfileScreen());
           },
         );
 

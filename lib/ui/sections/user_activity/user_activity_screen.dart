@@ -26,7 +26,7 @@ class _UserActivityScreenState extends State<UserActivityScreen> {
       title: Text(
         "Activity",
         style: TextStyle(
-            color: context.onPrimaryColor,
+            color: Theme.of(context).textTheme.headlineLarge?.color,
             fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),

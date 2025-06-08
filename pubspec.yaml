@@ -69,6 +69,9 @@ dependencies:
   # for internet connection status checking
   connectivity_plus:
 
+  # for grid view
+  flutter_staggered_grid_view: ^0.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

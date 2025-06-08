@@ -9,6 +9,7 @@ import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/app_insets.dart';
 import 'package:link/core/utils/date_time_util.dart';
+import 'package:link/core/utils/platform.dart';
 import 'package:link/domain/api_utils/api_query.dart';
 import 'package:link/domain/api_utils/search_routes_query.dart';
 import 'package:link/domain/enums/category_type.dart';
@@ -65,12 +66,17 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
       resizeToAvoidBottomInset: false,
       body: RefreshIndicator.adaptive(
         onRefresh: _onRefresh,
-        child: _heroBody(context),
+        child: LayoutBuilder(builder: (context, constraints) {
+          /// for table and above layout
+          bool widerLayout = constraints.maxWidth > PlatformType.tablet.width;
+
+          return _heroBody(context, widerLayout);
+        }),
       ),
-      title: Text(
+      title:  Text(
         "Home",
         style: TextStyle(
-            color: context.onPrimaryColor,
+            color: Theme.of(context).textTheme.headlineLarge?.color,
             fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),
@@ -105,20 +111,32 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     );
   }
 
-  Widget _heroBody(BuildContext context) {
+  Widget _heroBody(BuildContext context, bool widerLayout) {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(5.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _originDestinationCard(context),
-            _dateChoiceActionCard(),
+            widerLayout
+                ? IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _originDestinationCard(context).expanded(flex: 2),
+                        _dateChoiceActionCard().expanded(),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+            if (!widerLayout) _originDestinationCard(context),
+            if (!widerLayout) _dateChoiceActionCard(),
+
             const SizedBox(height: AppInsets.inset8),
             Container(
               padding: const EdgeInsets.only(bottom: AppInsets.inset5),
               margin: const EdgeInsets.all(0.0),
-              color: Theme.of(context).cardColor.withOpacity(0.8),
+              color: Theme.of(context).cardColor.withAlpha(200),
               child: Column(
                 children: [
                   _trendingSearchTitleField(context),
@@ -132,13 +150,11 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 ],
               ).padding(padding: const EdgeInsets.all(5)),
             ),
-            const SizedBox(
-              height: AppInsets.inset8,
-            ),
+            const SizedBox(height: AppInsets.inset8),
             Container(
               padding: const EdgeInsets.only(bottom: AppInsets.inset5),
               margin: const EdgeInsets.all(0.0),
-              color: Theme.of(context).cardColor.withOpacity(0.5),
+              color: Theme.of(context).cardColor.withAlpha(125),
               child: Column(
                 children: [
                   _sponsoredPostsTitleField(context),
@@ -239,6 +255,7 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
   Card _dateChoiceActionCard() {
     return Card.filled(
       elevation: 2.0,
+      margin: const EdgeInsets.symmetric(vertical: AppInsets.inset5),
       shape: const BeveledRectangleBorder(
           borderRadius: BorderRadius.only(
               topRight: Radius.circular(5), bottomRight: Radius.circular(5))),
@@ -249,69 +266,56 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(
                   horizontal: AppInsets.inset15, vertical: AppInsets.inset8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "When you want to go?",
-                      ),
-                      const SizedBox(
-                        height: AppInsets.inset15,
-                      ),
-                      InkWell(
-                        onTap: () async {
-                          DateTime? value = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDateNotifier.value,
-                              firstDate: DateTime.now(),
-                              lastDate: DateTime(DateTime.now().year + 10));
-                          if (value != null) {
-                            _selectedDateNotifier.value = value;
-                          }
-                        },
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.date_range_sharp,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: AppInsets.inset15),
-                              child: ValueListenableBuilder<DateTime?>(
-                                valueListenable: _selectedDateNotifier,
-                                builder: (context, value, child) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                        border: Border(
-                                            bottom: BorderSide(
-                                                color: context.primaryColor,
-                                                style: BorderStyle.solid))),
-                                    child: Text(
-                                        DateTimeUtil.formatDate(
-                                            value ?? DateTime.now()),
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
+                  const Text(
+                    "When you want to go?",
                   ),
-
-                  /// How many people
-                  // const Column(
-                  //   children: [
-                  //     Icon(Icons.arrow_drop_up_rounded),
-                  //     Text('5'),
-                  //     Icon(Icons.arrow_drop_down_rounded),
-                  //   ],
-                  // )
+                  const SizedBox(
+                    height: AppInsets.inset15,
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      DateTime? value = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDateNotifier.value,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(DateTime.now().year + 10));
+                      if (value != null) {
+                        _selectedDateNotifier.value = value;
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.date_range_sharp,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppInsets.inset15),
+                          child: ValueListenableBuilder<DateTime?>(
+                            valueListenable: _selectedDateNotifier,
+                            builder: (context, value, child) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            color: context.primaryColor,
+                                            style: BorderStyle.solid))),
+                                child: Text(
+                                    DateTimeUtil.formatDate(
+                                        value ?? DateTime.now()),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
@@ -327,8 +331,10 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                 padding:
                     const EdgeInsets.symmetric(vertical: AppInsets.inset25),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
+                      tooltip: "Search Routes",
                       onPressed: () {
                         _navigateToSearchedRoutesScreen();
                       },
@@ -383,9 +389,13 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
     return BlocBuilder<CityCubit, CityState>(
       builder: (BuildContext context, CityState state) {
         return Card.filled(
+          margin: const EdgeInsets.symmetric(vertical: AppInsets.inset5),
           elevation: 2.0,
           shape: const BeveledRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.zero)),
+            borderRadius: BorderRadius.zero,
+            // borderRadius: BorderRadius.only(
+            //     topLeft: Radius.circular(5), topRight: Radius.circular(5)),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
@@ -407,11 +417,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               onSelected: (city) {
                                 _originNotifier.value = city;
                               },
-                              // border: InputBorder.none,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                  borderSide: BorderSide.none),
                               // labelText: "Origin",
-                              fillColor: Theme.of(context)
-                                  .primaryColor
-                                  .withOpacity(0.5),
+                              fillColor:
+                                  Theme.of(context).primaryColor.withAlpha(150),
                               filled: true,
                               hintText: "From Origin",
                               validator: (value) => (value!.isEmpty ||
@@ -474,11 +485,12 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
                               onSelected: (city) {
                                 _destinationNotifier.value = city;
                               },
-                              fillColor: Theme.of(context)
-                                  .primaryColor
-                                  .withOpacity(0.5),
+                              fillColor:
+                                  Theme.of(context).primaryColor.withAlpha(125),
                               filled: true,
-                              // border: InputBorder.none,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                  borderSide: BorderSide.none),
                               // labelText: "Destination",
                               hintText: "To Destination",
                               validator: (value) => (value!.isEmpty ||
@@ -495,44 +507,44 @@ class _HeroHomeScreenState extends State<HeroHomeScreen> {
 
                   /// FILTER
 
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: selections.map((value) {
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: StatefulBuilder(
-                              builder: (BuildContext context,
-                                  void Function(void Function()) rebuild) {
-                                return FilterChip(
-                                  color: WidgetStatePropertyAll(
-                                      context.primaryColor),
-                                  label: Text(
-                                    value,
-                                    style: TextStyle(
-                                        color: context.secondaryColor),
-                                  ),
-                                  selected: selectedHobbies.contains(value),
-                                  onSelected: (bool isSelected) {
-                                    rebuild(() {
-                                      if (isSelected) {
-                                        selectedHobbies.add(value);
-                                      } else {
-                                        selectedHobbies.remove(value);
-                                      }
-                                    });
-                                  },
-                                );
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(top: 8.0),
+                  //   child: SingleChildScrollView(
+                  //     scrollDirection: Axis.horizontal,
+                  //     child: Row(
+                  //       children: selections.map((value) {
+                  //         return Padding(
+                  //           padding:
+                  //               const EdgeInsets.symmetric(horizontal: 8.0),
+                  //           child: StatefulBuilder(
+                  //             builder: (BuildContext context,
+                  //                 void Function(void Function()) rebuild) {
+                  //               return FilterChip(
+                  //                 color: WidgetStatePropertyAll(
+                  //                     context.primaryColor),
+                  //                 label: Text(
+                  //                   value,
+                  //                   style: TextStyle(
+                  //                       color: context.secondaryColor),
+                  //                 ),
+                  //                 selected: selectedHobbies.contains(value),
+                  //                 onSelected: (bool isSelected) {
+                  //                   rebuild(() {
+                  //                     if (isSelected) {
+                  //                       selectedHobbies.add(value);
+                  //                     } else {
+                  //                       selectedHobbies.remove(value);
+                  //                     }
+                  //                   });
+                  //                 },
+                  //               );
+                  //             },
+                  //           ),
+                  //         );
+                  //       }).toList(),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

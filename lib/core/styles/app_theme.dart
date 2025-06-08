@@ -27,7 +27,7 @@ class AppTheme {
       secondary: LightTheme.secondaryBg,
       tertiary: LightTheme.tertiaryBg,
       onPrimary: Colors.white,
-      onSecondary: Color(0xf5f5f5ff),
+      onSecondary: Color(0xffd5dae0),
     );
 
     TextTheme lightTextTheme = const TextTheme(
@@ -70,8 +70,10 @@ class AppTheme {
     );
 
     return ThemeData(
-      scaffoldBackgroundColor: const Color.fromARGB(255, 241, 248, 250),
+      useMaterial3: true,
+      brightness: Brightness.light,
       appBarTheme: const AppBarTheme(
+        elevation: 0.0,
         backgroundColor: LightTheme.tertiaryBg,
         titleTextStyle: TextStyle(
             color: LightTheme.onPrimary,
@@ -79,7 +81,6 @@ class AppTheme {
             fontWeight: FontWeight.bold),
       ),
 
-      brightness: Brightness.light,
       primaryColor: LightTheme.primaryBg,
       textTheme: lightTextTheme,
       //
@@ -164,25 +165,30 @@ class AppTheme {
           color: DarkTheme.primaryText),
     );
     return ThemeData(
-      scaffoldBackgroundColor: const Color(0xFF0E0D0D),
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      // scaffoldBackgroundColor: const Color(0xFF0E0D0D),
       appBarTheme: const AppBarTheme(
+        elevation: 0.0,
         backgroundColor: DarkTheme.tertiaryBg,
         titleTextStyle: TextStyle(
             color: LightTheme.onPrimary,
             fontSize: AppInsets.font20,
             fontWeight: FontWeight.bold),
       ),
-
-      brightness: Brightness.dark,
       primaryColor: DarkTheme.primaryBg,
       textTheme: darkTextTheme,
       //
       dividerColor: DarkTheme.primaryAsset,
-      elevatedButtonTheme: elevatedButtonThemeData(),
+      iconButtonTheme: const IconButtonThemeData(
+        style:
+            ButtonStyle(iconColor: WidgetStatePropertyAll(DarkTheme.buttonIconColor)),
+      ),
+      elevatedButtonTheme: elevatedButtonDarkThemeData(),
       textButtonTheme: textButtonThemeData(),
       // outlinedButtonTheme: outlinedButtonThemeData,
       iconTheme: const IconThemeData(
-        color: Colors.white70, // White for visibility in dark backgrounds
+        color: DarkTheme.buttonIconColor, // White for visibility in dark backgrounds
         size: 24.0, // Default size
         opacity: 1.0, // Fully opaque
       ),
@@ -196,14 +202,30 @@ class AppTheme {
   static ElevatedButtonThemeData elevatedButtonThemeData() {
     return ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+
+          iconColor: DarkTheme.buttonIconColor,
+      backgroundColor: LightTheme.buttonBgColor,
       textStyle: const TextStyle(
-          color: DarkTheme.primaryText, fontWeight: FontWeight.bold),
-      backgroundColor: LightTheme.secondaryBg,
-      foregroundColor: LightTheme.primaryBg,
-      // disabledBackgroundColor: Colors.grey,
+          color: LightTheme.buttonTextColor, fontWeight: FontWeight.bold),
+      disabledBackgroundColor: Colors.grey,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppInsets.inset5)),
-      overlayColor: LightTheme.secondaryBg.withBlue(255),
+      overlayColor: LightTheme.buttonTextColor,
+    ));
+  }
+  static ElevatedButtonThemeData elevatedButtonDarkThemeData() {
+    return ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          splashFactory: InkRipple.splashFactory, // Or InkSplash
+          surfaceTintColor: Colors.blue.withAlpha(30),
+          iconColor: DarkTheme.buttonIconColor,
+      backgroundColor: DarkTheme.buttonBgColor,
+      textStyle: const TextStyle(
+          color: DarkTheme.buttonTextColor, fontWeight: FontWeight.bold),
+      disabledBackgroundColor: Colors.grey,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppInsets.inset5)),
+      overlayColor: DarkTheme.buttonTextColor,
     ));
   }
 
@@ -212,7 +234,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
       textStyle:
           const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-      foregroundColor: LightTheme.secondaryBg,
+      // foregroundColor: LightTheme.secondaryBg,
       disabledBackgroundColor: Colors.grey,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppInsets.inset5)),

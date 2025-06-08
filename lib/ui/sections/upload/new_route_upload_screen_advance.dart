@@ -5,10 +5,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:link/core/extensions/navigator_extension.dart';
 import 'package:link/core/theme_extension.dart';
 import 'package:link/core/utils/date_time_util.dart';
+import 'package:link/core/utils/platform.dart';
 import 'package:link/domain/bloc_utils/bloc_status.dart';
 import 'package:link/models/post.dart';
 import 'package:link/ui/sections/upload/post_create/post_create_cubit.dart';
@@ -82,18 +84,14 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     debugPrint("rebuild");
 
     return CustomScaffoldBody(
-        body: Padding(
-          padding: const EdgeInsets.only(
-              top: AppInsets.inset15,
-              left: AppInsets.inset15,
-              right: AppInsets.inset15,
-              bottom: 3),
-          child: Column(
-            children: [
-              Expanded(child: _buildFormFields()),
-              _buildSubmitButton(),
-            ],
-          ),
+        key: const Key("NewRouteUploadScreen"),
+        body: _buildFormFields(),
+        floatingActionButton: FloatingActionButton(
+          key: const Key("add_route"),
+          backgroundColor: context.successColor,
+          onPressed: _addNewRoute,
+          tooltip: "New Route",
+          child: const Icon(Icons.add),
         ),
         title: Text(
           'Create New Post',
@@ -102,7 +100,10 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
               fontSize: AppInsets.font20,
               fontWeight: FontWeight.bold),
         ),
-        action: null,
+        action: Container(
+          margin: const EdgeInsets.only(right: AppInsets.inset15),
+          child: _buildSubmitButton(),
+        ),
         backButton: BackButton(
           onPressed: () => context.pop(),
           color: context.onPrimaryColor,
@@ -110,23 +111,31 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   }
 
   Widget _buildFormFields() {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // _buildImageCarousel(),
-            const SizedBox(height: 8),
-            _titleField(),
-            const SizedBox(height: 16),
-            _descriptionField(context),
-            const SizedBox(height: 16),
-            _buildRoutesListView(),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final widerLayout = constraints.maxWidth > PlatformType.mobile.width;
+        final padding = widerLayout ?
+            const EdgeInsets.symmetric(horizontal: AppInsets.inset35) :
+            const EdgeInsets.symmetric(horizontal: AppInsets.inset15);
+        return SingleChildScrollView(
+          padding: padding,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                _titleField(),
+                const SizedBox(height: 16),
+                _descriptionField(context),
+                const SizedBox(height: 16),
+                _buildRoutesListView(constraints),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -188,88 +197,6 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     );
   }
 
-  Widget _buildImageCarousel() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // const Opacity(
-        //   opacity: 0.7,
-        //   child: Text('Images',
-        //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        // ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: images.length + 1, // Include the "Add" button
-            itemBuilder: (context, index) {
-              if (index == images.length) {
-                // Add new image button
-                return GestureDetector(
-                  onTap: _pickImageMultiple,
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(child: Icon(Icons.add_a_photo)),
-                  ),
-                );
-              }
-              return Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.file(
-                      File(images[index]),
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          images.removeAt(index);
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-        /*
-        SizedBox(
-          height: 100,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildImageCard(),
-              _buildImageCard(),
-              _buildImageCard(),
-            ],
-          ),
-        ),
-      */
-      ],
-    );
-  }
-
   Future<void> _pickImageMultiple() async {
     final pickedFiles = await ImagePicker().pickMultiImage();
     if (pickedFiles.isNotEmpty) {
@@ -294,52 +221,48 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
     );
   }
 
-  /// For Simple ListTile Routes List Design
-  Widget _buildRoutesListView() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 8),
-        BlocBuilder<PostCreateCubit, PostCreateState>(
-          bloc: _postCreateCubit,
-          builder: (context, state) {
-            if (state.status == BlocStatus.added) {
-              routes = state.routes;
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: routes.length,
-                itemBuilder: (context, index) {
-                  final route = routes[index];
-                  return RouteCardWidget(
-                    route: route,
-                    onEditRoute: () => _editRoute(route, index),
-                    onRemoveRoute: () =>
-                        _postCreateCubit.updateOrDeleteRoute(index: index),
-                  );
-                },
+  /// For Simple ListTile Routes Grid Design
+  Widget _buildRoutesListView(BoxConstraints constraints) {
+
+    return BlocBuilder<PostCreateCubit, PostCreateState>(
+      bloc: _postCreateCubit,
+      builder: (context, state) {
+        if (state.status == BlocStatus.added) {
+          routes = state.routes;
+
+          return MasonryGridView.count(
+            crossAxisCount: _getCrossAxisCount(constraints),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 16,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: routes.length,
+            itemBuilder: (context, index) {
+              final route = routes[index];
+              return RouteCardWidget(
+                route: route,
+                onEditRoute: () => _editRoute(route, index),
+                onRemoveRoute: () =>
+                    _postCreateCubit.updateOrDeleteRoute(index: index),
               );
-            } else {
-              return Container();
-            }
-          },
-        ),
-        const SizedBox(height: 8),
-        Center(
-          child: ElevatedButton.icon(
-            onPressed: _addNewRoute,
-            icon: const Icon(Icons.add),
-            label: const Center(
-              child: Text(
-                'Add Route(s)',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ),
-        )
-      ],
+            },
+          );
+        } else {
+          return Container();
+        }
+      },
     );
   }
+  int _getCrossAxisCount(BoxConstraints constraints) {
+    if (constraints.maxWidth < PlatformType.tablet.width) {
+      return 1;
+    } else if (constraints.maxWidth < PlatformType.laptop.width) {
+      return 2;
+    } else {
+      return 3;
+    }
+  }
+
 
   void _addNewRoute() async {
     await showModalBottomSheet<Route>(
@@ -385,53 +308,49 @@ class _NewRouteUploadScreenState extends State<NewRouteUploadScreen> {
   }
 
   Widget _buildSubmitButton() {
-    return ElevatedButton(
-        onPressed: () {
-          // Submit to the server
-          _uploadRoute();
-        },
-        child: BlocConsumer<PostRouteCubit, PostRouteState>(
-          builder: (BuildContext context, PostRouteState state) {
-            if (state.status == BlocStatus.uploading) {
-              return const Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator.adaptive(strokeWidth: 3),
-                    Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Text("uploading..."),
-                    ),
-                  ],
-                ),
-              );
-            } else if (state.status == BlocStatus.uploadFailed) {
-              return const Center(
-                child: Text(
-                  'Try again',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red),
-                ),
-              );
-            }
-            return const Center(
-              child: Text(
-                'Upload Route',
-                style: TextStyle(fontSize: 16),
+    return BlocConsumer<PostRouteCubit, PostRouteState>(
+      listener: (BuildContext context, PostRouteState state) {
+        if (state.status == BlocStatus.uploaded) {
+          /// exit the page
+          context.pop();
+          SnackbarUtils.showSnackBar(context, "Successfully Uploaded",
+              type: SnackBarType.success);
+        }
+        if (state.status == BlocStatus.uploadFailed) {
+          SnackbarUtils.showSnackBar(context, state.error ?? "Upload Failed",
+              type: SnackBarType.error);
+        }
+      },
+      builder: (BuildContext context, PostRouteState state) {
+        if (state.status == BlocStatus.uploading) {
+          return ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade800,
+              textStyle: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          },
-          listener: (BuildContext context, PostRouteState state) {
-            if (state.status == BlocStatus.uploaded) {
-              context.pop();
-              SnackbarUtils.showSnackBar(context, "Successfully Uploaded",
-                  type: SnackBarType.success);
-            }
-          },
-        )).padding(padding: const EdgeInsets.symmetric(vertical: 5));
+            ),
+            onPressed: null,
+            child: const Icon(Icons.file_upload_outlined,color: Colors.white,),
+          );
+        }
+
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue.shade800,
+            textStyle: const TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onPressed: () => _uploadRoute(),
+          child: const Icon(Icons.file_upload_outlined,color: Colors.white,),
+        );
+      },
+    );
   }
 
   _uploadRoute() async {
@@ -491,9 +410,13 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // margin: const EdgeInsets.all(10),
-      elevation: 2,
+      borderOnForeground: true,
+      color: Theme.of(context).colorScheme.onSecondary,
       shape: RoundedRectangleBorder(
+        side: BorderSide(
+          color: context.onPrimaryColor.withAlpha(150),
+          width: 0.5,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
@@ -543,36 +466,33 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
             ),
             const Divider(height: 16.0, thickness: 0.05),
             // Midpoints Section
-            Padding(
-              padding: const EdgeInsets.only(left: AppInsets.inset15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ..._buildMidpointSummaries(widget.route.midpoints ?? []),
-                  if ((widget.route.midpoints?.length ?? 0) > 2)
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isExpanded = !isExpanded;
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          children: [
-                            Text(
-                              isExpanded ? "Collapse" : "View All",
-                              style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: context.successColor,
-                                  color: context.successColor),
-                            ),
-                          ],
-                        ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ..._buildMidpointSummaries(widget.route.midpoints ?? []),
+                if ((widget.route.midpoints?.length ?? 0) > 2)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isExpanded = !isExpanded;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          Text(
+                            isExpanded ? "Collapse" : "View All",
+                            style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                decorationColor: context.successColor,
+                                color: context.successColor),
+                          ),
+                        ],
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
 
             const Divider(height: 16.0, thickness: 0.05),
@@ -669,6 +589,8 @@ class _RouteCardWidgetState extends State<RouteCardWidget> {
     int displayedMidpoints = isExpanded ? midpoints.length : 2;
     return midpoints.take(displayedMidpoints).map((midpoint) {
       return Card(
+        // color: Theme.of(context).colorScheme.onSecondary.withAlpha(200),
+        color: Colors.black54,
         margin: const EdgeInsets.only(bottom: 5),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
